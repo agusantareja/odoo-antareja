@@ -7,7 +7,7 @@ class UserDelegate(models.Model):
     _name = 'user.delegate'
     _inherit = [
         _name,
-        'approval.transaction.mixin'
+        'approval.transaction.mixin','mail.template.internal.mixin'
     ]
 
     # add state for approval

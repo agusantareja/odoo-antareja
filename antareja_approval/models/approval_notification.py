@@ -88,7 +88,7 @@ class AbstractApprovalNotification(models.AbstractModel):
     def notify_approval_by_users(self, users, **kwargs):
         if self.env.context.get('__ignore_notify_approval_by_users') or not users:
             return
-        template, res_id = self.get_notification_template_reject_task(**kwargs)
+        template, res_id = self.get_notification_template_approval_task(**kwargs)
         if template:
             template.send_notification_to_users(users,res_id)
         else:

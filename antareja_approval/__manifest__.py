@@ -6,7 +6,7 @@
     """,
     'category': 'Tools',
     'author': 'ChatGPT + Agus',
-    'depends': ['base', 'mail', 'antareja_notification'],
+    'depends': ['base', 'mail','antareja_base', 'antareja_notification'],
     'data': [
         'data/notification_template_data.xml',
         'security/ir.model.access.csv',
