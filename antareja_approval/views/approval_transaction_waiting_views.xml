@@ -1,0 +1,69 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_approval_transaction_waiting_tree" model="ir.ui.view">
+        <field name="name">approval.transaction.waiting.tree</field>
+        <field name="model">approval.transaction.waiting</field>
+        <field name="arch" type="xml">
+            <tree string="Waiting Approvals">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="request_date"/>
+                <field name="state"/>
+                <field name="status_approval"/>
+                <field name="type_approval"/>
+                <field name="user_id"/>
+                <field name="group_id"/>
+                <field name="next_approval_task_ref"/>
+                <button name="action_show_detail" string="Show Detail" type="object" class="oe_highlight"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_approval_transaction_waiting_form" model="ir.ui.view">
+        <field name="name">approval.transaction.waiting.form</field>
+        <field name="model">approval.transaction.waiting</field>
+        <field name="arch" type="xml">
+            <form string="Waiting Approval Detail">
+                <sheet>
+                    <header>
+                        <field name="status_approval" widget="statusbar" statusbar_visible="draft,waiting_approval,approved,rejected"/>
+                    </header>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                        <field name="request_date"/>
+                        <field name="state"/>
+                        <field name="status_approval"/>
+                    </group>
+                    <group string="Approval Context">
+                        <field name="transaction_model_name"/>
+                        <field name="transaction_id"/>
+                        <field name="approval_stage_model_name"/>
+                        <field name="approval_stage_id"/>
+<!--                        <field name="approval_model_name"/>-->
+<!--                        <field name="approval_line_id"/>-->
+                    </group>
+                    <group string="Current Approval">
+                        <field name="type_approval"/>
+                        <field name="user_id"/>
+                        <field name="group_id"/>
+                    </group>
+                    <footer>
+                        <button name="action_show_detail" string="Open Document" type="object" class="btn-primary"/>
+                        <button string="Close" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_approval_transaction_waiting" model="ir.actions.act_window">
+        <field name="name">Waiting Approvals</field>
+        <field name="res_model">approval.transaction.waiting</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+</odoo>

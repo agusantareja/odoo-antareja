@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_approval_matrix_tiered_rule_user,approval.matrix.tiered.rule User,model_approval_matrix_tiered_rule,base.group_user,1,0,0,0
+access_approval_matrix_tiered_rule_admin,approval.matrix.tiered.rule Admin,model_approval_matrix_tiered_rule,base.group_erp_manager,1,1,1,1
+
+access_approval_matrix_tiered_rule_line_user,approval.matrix.tiered.rule.line User,model_approval_matrix_tiered_rule_line,base.group_user,1,0,0,0
+access_approval_matrix_tiered_rule_line_admin,approval.matrix.tiered.rule.line Admin,model_approval_matrix_tiered_rule_line,base.group_erp_manager,1,1,1,1

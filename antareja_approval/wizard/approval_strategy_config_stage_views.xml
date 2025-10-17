@@ -1,0 +1,23 @@
+<odoo>
+    <record id="view_approval_strategy_config_form" model="ir.ui.view">
+        <field name="name">approval.strategy.config.form</field>
+        <field name="model">approval.strategy.config.stage</field>
+        <field name="inherit_id" ref="view_approval_strategy_stage_form"/>
+        <field name="arch" type="xml">
+            <!-- Misalnya ubah footer -->
+            <xpath expr="//header" position="after">
+                <field name="error_message" readonly="1"/>
+            </xpath>
+            <xpath expr="//page[@id='page_config']//field[@name='status_reject']" position="after">
+                <field name="stage_mandatory" readonly="1" />
+            </xpath>
+            <xpath expr="//footer" position="replace">
+                <footer>
+                    <button name="button_create" string="Save" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

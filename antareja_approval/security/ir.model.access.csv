@@ -1,0 +1,25 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_approval_transaction_instance_user,approval.transaction.instance User,model_approval_transaction_instance,base.group_user,1,1,1,0
+access_approval_transaction_instance_admin,approval.transaction.instance Admin,model_approval_transaction_instance,base.group_erp_manager,1,1,1,1
+
+access_approval_transaction_stage_user,approval.transaction.stage User,model_approval_transaction_stage,base.group_user,1,1,1,0
+access_approval_transaction_stage_admin,approval.transaction.stage Admin,model_approval_transaction_stage,base.group_erp_manager,1,1,1,1
+
+access_approval_transaction_task_user,approval.transaction.task User,model_approval_transaction_task,base.group_user,1,1,1,0
+access_approval_transaction_task_admin,approval.transaction.task Admin,model_approval_transaction_task,base.group_erp_manager,1,1,1,1
+
+access_approval_audit_log,approval.audit.log,model_approval_audit_log,base.group_user,1,0,1,0
+
+approval_strategy_config_stage,approval.strategy.config.stage,model_approval_strategy_config_stage,base.group_user,1,1,1,1
+approval_strategy_config_task,approval.strategy.config.task,model_approval_strategy_config_task,base.group_user,1,1,1,1
+
+access_approval_strategy_template_instance_user,approval.strategy.template.instance User,model_approval_strategy_template_instance,base.group_user,1,0,0,0
+access_approval_strategy_template_instance_admin,approval.strategy.template.instance Admin,model_approval_strategy_template_instance,base.group_erp_manager,1,1,1,1
+
+access_approval_strategy_template_stage_user,approval.strategy.template.stage User,model_approval_strategy_template_stage,base.group_user,1,0,0,0
+access_approval_strategy_template_stage_admin,approval.strategy.template.stage Admin,model_approval_strategy_template_stage,base.group_erp_manager,1,1,1,1
+
+access_approval_transaction_task_user,approval.transaction.task User,model_approval_transaction_task,base.group_user,1,1,1,0
+
+access_approval_popup_reject_message_user,approval.popup.reject.message User,model_approval_popup_reject_message,base.group_user,1,1,1,1

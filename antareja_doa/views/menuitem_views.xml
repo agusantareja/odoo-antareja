@@ -1,0 +1,12 @@
+<odoo>
+    <menuitem id="menu_doa_root" name="Delegation of Authority" sequence="10"/>
+    <!-- Menu -->
+
+    <menuitem id="menu_user_delegate" name="User Delegation" parent="menu_doa_root"/>
+    <menuitem id="menu_user_delegate_rules" name="User Delegation Rules" parent="menu_user_delegate"
+              action="action_user_delegate"/>
+
+    <menuitem id="configuration_menu" name="Configuration" parent="menu_doa_root" sequence="99" groups="base.group_erp_manager"/>
+<!--    <menuitem id="doa_settings_menu" name="Meeting Settings" parent="configuration_menu" action="doa_settings_action" sequence="1" groups="base.group_erp_manager"/>-->
+
+</odoo>

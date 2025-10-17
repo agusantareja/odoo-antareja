@@ -1,0 +1,138 @@
+<odoo>
+
+    <record id="view_approval_transaction_task_search" model="ir.ui.view">
+        <field name="name">approval.transaction.search</field>
+        <field name="model">approval.transaction.task</field>
+        <field name="arch" type="xml">
+            <search string="Approval Search">
+                <field name="status_approval"/>
+                <filter string="My Approvals" name="filter_can_approve"
+                        domain="[('access_approval', '=', True)]"/>
+<!--                <filter string="Proxy Only" name="proxy_only" context="{'proxy_only': 1}"/>-->
+<!--                <filter string="Direct Approver" name="direct_approver" context="{'direct_only': 1}"/>-->
+            </search>
+        </field>
+    </record>
+    <record id="view_approval_transaction_task_form" model="ir.ui.view">
+        <field name="name">approval.transaction.form</field>
+        <field name="model">approval.transaction.task</field>
+        <field name="arch" type="xml">
+            <form string="Approval Transaction">
+                <sheet>
+                    <header>
+                        <field name="access_approval" invisible="1"/>
+                        <button name="action_approve_task" type="object" string="Approve"
+                                attrs="{'invisible': ['|',('status_approval','!=','waiting_approval'),('access_approval','=',False)]}"/>
+                        <button name="action_reject_popup" type="object" string="Reject"
+                                attrs="{'invisible': ['|',('status_approval','!=','waiting_approval'),('access_approval','=',False)]}"/>
+                        <field name="status_approval" widget="statusbar"
+                               statusbar_visible="draft,waiting,approved,rejected,cancelled"/>
+                        <button name="action_fix_status" type="object" string="fix Status" groups="base.group_no_one" />
+
+                    </header>
+                    <group>
+                        <group>
+                            <field name="type_approval"/>
+                            <field name="user_id" attrs="{'invisible': [('type_approval','!=','user')]}"/>
+                            <field name="group_id" attrs="{'invisible': [('type_approval','!=','group')]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="approval_task_execution" string="Task Execution">
+                            <group>
+                                <group>
+                                    <field name="date_execution" readonly="1"/>
+                                    <field name="reason_approval" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="user_execution_id" readonly="1"/>
+<!--                                     <field name="user_behalf_of_id" readonly="1"/>-->
+                                </group>
+                            </group>
+                        </page>
+                        <page name="approval_task_relation" string="Task Relation">
+                            <group>
+                                <group>
+                                    <field name="transaction_id" readonly="1" />
+                                    <field name="transaction_model_name" readonly="1" />
+                                </group>
+                                <group>
+                                    <field name="approval_stage_id" readonly="1" />
+                                    <field name="approval_stage_model_name" readonly="1" />
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+<!--                    <notebook>-->
+<!--                        <page string="Audit Log">-->
+<!--                            <field name="audit_log_ids" context="{'default_approval_id': active_id}">-->
+<!--                                <tree>-->
+<!--                                    <field name="proxy_user_id"/>-->
+<!--                                    <field name="delegator_user_id"/>-->
+<!--                                    <field name="action_type"/>-->
+<!--                                    <field name="create_date"/>-->
+<!--                                </tree>-->
+<!--                            </field>-->
+<!--                        </page>-->
+<!--                    </notebook>-->
+                    <footer>
+                        <button name="notify_user_approval_task" string="Notification"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                        />
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_approval_transaction_task_tree" model="ir.ui.view">
+        <field name="name">approval.transaction.tree</field>
+        <field name="model">approval.transaction.task</field>
+        <field name="arch" type="xml">
+            <tree string="Approval Transactions">
+                <field name="approval_stage_id"/>
+                <field name="type_approval"/>
+                <field name="user_id"/>
+                <field name="group_id"/>
+                <field name="status_approval"/>
+                <field name="user_execution_id"/>
+                <field name="date_execution"/>
+                <field name="access_approval" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_approval_transaction_task" model="ir.actions.act_window">
+        <field name="name">Approval Task</field>
+        <field name="res_model">approval.transaction.task</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_approval_transaction_task_search"/>
+    </record>
+
+    <record id="action_my_approval_transaction_task" model="ir.actions.act_window">
+        <field name="name">Approval My</field>
+        <field name="res_model">approval.transaction.task</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">
+            [('status_approval','=','waiting_approval'),('access_approval','=',True)]
+        </field>
+        <field name="context">
+            {'create':0,'edit':0}
+        </field>
+    </record>
+<!--    <record id="action_my_approval_transaction_line" model="ir.actions.server">-->
+<!--        <field name="name">My Approvals</field>-->
+<!--        <field name="model_id" ref="base.model_res_users"/>-->
+<!--        <field name="binding_model_id" ref="base.model_res_users"/>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--            action = env['approval.transaction.line'].action_my_approval_transaction()-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--    <menuitem id="menu_my_approval_transaction"-->
+<!--              name="My Approvals"-->
+<!--              parent="menu_approval_transaction_lineroot_user_delegate"-->
+<!--              action="action_my_approval_transaction"/>-->
+
+</odoo>

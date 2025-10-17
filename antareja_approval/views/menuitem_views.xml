@@ -1,0 +1,36 @@
+<odoo>
+    <menuitem id="menu_approval_management_root" name="Approval Management" sequence="10"/>
+    <!-- Menu -->
+    <menuitem id="menu_approval_transaction" name="Approval" sequence="10" parent="menu_approval_management_root"/>
+
+    <menuitem id="menu_approval_transaction_waiting"
+              name="Waiting Approvals"
+              parent="menu_approval_transaction"
+              action="action_my_approval_transaction_instance" sequence="5"/>
+
+    <menuitem id="menu_approval_transaction_stage"
+              name="Approval Stage"
+              parent="menu_approval_transaction"
+              action="action_approval_transaction_stage" sequence="10"/>
+
+    <menuitem id="menu_approval_audit_log"
+              name="Approval Audit Log"
+              parent="menu_approval_transaction"
+              action="view_approval_audit_log_action" sequence="20"/>
+    <!-- MENU -->
+    <menuitem id="menu_approval_strategy_config" name="Template Config"
+              parent="menu_approval_management_root" sequence="10"/>
+
+    <menuitem id="menu_approval_strategy_template_instance" name="Instance"
+              parent="menu_approval_strategy_config"
+              action="action_approval_strategy_template_instance"
+              sequence="20"/>
+<!--    <menuitem id="menu_approval_strategy_template_stage" name="Stages"-->
+<!--              parent="menu_approval_strategy_config"-->
+<!--              action="action_approval_strategy_template_stage"-->
+<!--              sequence="20"/>-->
+<!--    <menuitem id="menu_user_delegate" name="User Delegation" parent="menu_approval_management_root"/>-->
+<!--    <menuitem id="menu_user_delegate_rules" name="User Delegation Rules" parent="menu_user_delegate"-->
+<!--              action="action_user_delegate"/>-->
+
+</odoo>

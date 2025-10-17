@@ -1,0 +1,200 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_approval_transaction_instance_search" model="ir.ui.view">
+        <field name="name">approval.transaction.instance</field>
+        <field name="model">approval.transaction.instance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="next_approval_task_id"/>
+                <filter string="My Approvals" name="filter_can_approve"
+                        domain="[('access_approval', '=', True)]"/>
+
+            </search>
+        </field>
+    </record>
+
+    <record id="view_approval_transaction_instance_tree" model="ir.ui.view">
+        <field name="name">approval.transaction.instance.tree</field>
+        <field name="model">approval.transaction.instance</field>
+        <field name="arch" type="xml">
+            <tree string="Approval Transaction instances">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="request_date"/>
+                <field name="requester_id"/>
+<!--                <field name="status_approval"/>-->
+<!--                <field name="status_waiting_approval"/>-->
+                <field name="next_approval_task_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_approval_transaction_instance_form" model="ir.ui.view">
+        <field name="name">approval.transaction.instance.form</field>
+        <field name="model">approval.transaction.instance</field>
+        <field name="arch" type="xml">
+            <form string="Approval Transaction instance">
+                <header>
+                    <field name="access_approval" invisible="1"/>
+                    <button name="action_approve_transaction" type="object" string="Approve"
+                                attrs="{'invisible': ['|',('is_completed','=',True),('access_approval','=',False)]}"/>
+                    <button name="action_reject_popup" type="object" string="Reject"
+                                attrs="{'invisible': ['|',('is_completed','=',True),('access_approval','=',False)]}"/>
+<!--                    <button name="action_approval_transaction" string="Open Transaction" type="object" class="btn-primary"-->
+<!--                                attrs="{'invisible': [('access_approval','=',False)]}"-->
+<!--                    />-->
+                    <field name="active" invisible="1"/>
+<!--                    <field name="state" widget="statusbar" />-->
+<!--                    <field name="status_approval"  invisible="1" />-->
+<!--                    <field name="stage_strategy_inline" invisible="1"/>-->
+
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Name . . ." readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="description" readonly="1"/>
+                            <field name="transaction_ref" readonly="1"/>
+                        </group>
+                        <group>
+
+                            <field name="requester_id" readonly="1"/>
+                            <field name="request_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Approval" id="default_approval">
+                            <field name="approval_stages" readonly="1" />
+                            <field name="approval_tasks" readonly="1" />
+                        </page>
+                        <page string="Current Approval">
+                            <group >
+                                <field name="stage_status" readonly="1" />
+                                <field name="is_completed" readonly="1"/>
+                                <field name="next_approval_task_id" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Flow Config" id="page_config">
+                            <group>
+                                <group>
+                                    <field name="approval_template_instance_id" readonly="1"/>
+                                    <field name="transaction_id" readonly="1"/>
+                                    <field name="transaction_model_name" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="draft_status_approval" readonly="1"/>
+                                    <field name="starting_status_approval" readonly="1"/>
+                                    <field name="finish_status_approval" readonly="1"/>
+                                </group>
+                            </group>
+<!--                            <group>-->
+<!--                                <group>-->
+<!--                                    <field name="status_waiting_approval" readonly="1"/>-->
+<!--                                    <field name="status_approved" readonly="1"/>-->
+<!--                                    <field name="status_reject" readonly="1" />-->
+<!--                                </group>-->
+<!--                                <group>-->
+<!--                                    <field name="transaction_id" readonly="1"/>-->
+<!--                                    <field name="transaction_model_name" readonly="1"/>-->
+<!--                                    <field name="transaction_stage_field" readonly="1" />-->
+<!--                                </group>-->
+<!--                                <group>-->
+<!--                                    <field name="stage_strategy_config_name" readonly="1"/>-->
+<!--                                    <field name="stage_strategy_config_model_name" readonly="1"/>-->
+<!--                                    <field name="stage_strategy_inline" readonly="1"/>-->
+<!--                                    <field name="stage_strategy_inline_model_name" readonly="1" />-->
+<!--                                </group>-->
+<!--                            </group>-->
+                        </page>
+                    </notebook>
+                    <footer>
+                        <button name="notify_user_next_approval_task" string="Notification"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                                attrs="{'invisible': [('is_completed','=',True)]}"
+                        />
+
+<!--                        <button name="capture_inline_approval_task" string="Capture"-->
+<!--                                type="object" class="oe_highlight" groups="base.group_no_one"-->
+<!--                        />-->
+                        <button name="setup_approval_stage" string="Setup Approval"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                                attrs="{'invisible': [('is_completed','=',True)]}"
+                        />
+                        <button name="check_next_approval_task" string="Check Next Approval"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                                attrs="{'invisible': [('is_completed','=',True)]}"
+                        />
+                        <button name="action_fix_status" string="Fix Status"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                        />
+                         <button name="action_approval_transaction" string="Open Transaction"
+                                type="object"
+                                class="btn-primary"
+                        />
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_waiting_approval_transaction_instance_tree" model="ir.ui.view">
+        <field name="name">approval.transaction.instance.tree</field>
+        <field name="model">approval.transaction.instance</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <tree string="Approval Transaction instances">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="request_date"/>
+                <field name="requester_id"/>
+<!--                <field name="status_approval"/>-->
+                <field name="next_approval_task_id"/>
+                <button name="action_approval_transaction" string="Open Transaction"
+                                type="object"
+                                class="btn-primary"
+                />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_approval_transaction_instance" model="ir.actions.act_window">
+        <field name="name">Approval Transactions</field>
+        <field name="res_model">approval.transaction.instance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_approval_transaction_instance_search"/>
+        <field name="context">
+            {
+                'create':0
+            }
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                approval transactions here.
+            </p>
+        </field>
+
+    </record>
+
+    <record id="action_my_approval_transaction_instance" model="ir.actions.act_window">
+        <field name="name">My Approval</field>
+        <field name="res_model">approval.transaction.instance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_waiting_approval_transaction_instance_tree"/>
+        <field name="domain"> [('is_completed','=',False),('access_approval','=',True)]</field>
+        <field name="context">
+            {'create':0}
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                approval transactions here.
+            </p>
+        </field>
+    </record>
+
+</odoo>
