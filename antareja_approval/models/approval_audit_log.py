@@ -98,9 +98,11 @@ class AbstractApprovalAuditLog(models.AbstractModel):
 class ApprovalAuditLog(models.Model):
     _name = 'approval.audit.log'
     _inherit = ['abstract.approval.audit.log',
-                'approval.transaction.able.mixin']
+                'approval.transaction.able.mixin',
+                _name]
     _description = 'Approval Audit Log'
     _order = 'create_date desc'
+
 
     approval_instance_id = fields.Many2one(
         'approval.transaction.instance',
@@ -143,12 +145,13 @@ class ApprovalAuditLog(models.Model):
             self.approval_task_id.notify_transaction_comment(message=message)
 
     def create_audit_log(self, without_send_message=False, **kwargs):
-        _field = self._fields
-        create_dict = {key: value for key, value in kwargs.items() if key in _field}
-        ignored_keys = [key for key in kwargs if key not in _field]
-        if ignored_keys:
-            _logger.warning("Ignored unknown fields in audit log: %s", ignored_keys)
-        result = self.create([create_dict])[0]
+        # _field = self._fields
+        # create_dict = {key: value for key, value in kwargs.items() if key in _field}
+        # ignored_keys = [key for key in kwargs if key not in _field]
+        # if ignored_keys:
+        #     _logger.warning("Ignored unknown fields in audit log: %s", ignored_keys)
+        # result = self.create([create_dict])[0]
+        result = super(ApprovalAuditLog,self).create_audit_log(**kwargs)
         if not without_send_message:
             result.send_message()
         return result

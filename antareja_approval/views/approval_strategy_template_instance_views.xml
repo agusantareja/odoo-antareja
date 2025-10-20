@@ -7,6 +7,7 @@
             <tree string="Approval Strategy Template Stages" default_order="transaction_model_name, sequence">
                 <field name="active"/>
                 <field name="sequence"/>
+                <field name="name"/>
                 <field name="transaction_model_name"/>
             </tree>
         </field>
@@ -19,24 +20,41 @@
         <field name="arch" type="xml">
             <form string="Approval Strategy Template Stage">
                 <header>
+                    <field name="active" invisible="1"/>
+
 <!--                    <button name="action_try_config"-->
 <!--                            string="Try Config"-->
 <!--                            type="object"-->
 <!--                            class="btn-secondary"/>-->
                 </header>
                 <sheet>
-                    <group col="2">
-                        <field name="active"/>
-                        <field name="sequence"/>
-                        <field name="transaction_model_name"/>
-                        <field name="description"/>
-                        <field name="draft_status_approval"/>
-                        <field name="starting_status_approval"/>
-                        <field name="approval_stages"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="transaction_model_name"/>
+                        </group>
+                        <group>
+                            <field name="draft_status_approval"/>
+                            <field name="starting_status_approval"/>
+                            <field name="finish_status_approval"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page string="Result">
-                            <field name="approval_template_stage_ids" readonly="1" />
+                        <page string="Description">
+                           <field name="description"/>
+                        </page>
+                        <page string="Code">
+                           <field name="code"/>
+                        </page>
+                        <page string="Template Stages">
+                            <field name="approval_template_stage_ids">
+                                <tree>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="stage_strategy_name"/>
+                                    <field name="stage_strategy_config_model_name" />
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
