@@ -6,11 +6,11 @@
     """,
     'category': 'Tools',
     'author': 'ChatGPT + Agus',
-    'depends': ['base', 'mail'],
+    'depends': ['base', 'mail', 'antareja_approval'],
     'data': [
         'security/ir.model.access.csv',
         'views/approval_matrix_tiered_rule_views.xml',
-        # 'views/menuitem_views.xml',
+        'views/menuitem_views.xml',
 
     ],
     'installable': True,

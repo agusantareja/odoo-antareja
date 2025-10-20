@@ -5,7 +5,7 @@
         <field name="model">approval.matrix.tiered.rule</field>
         <field name="arch" type="xml">
             <tree string="Matrix Tiered" default_order="limit_amount">
-                <field name="active"/>
+                <field name="active" invisible="1"/>
                 <field name="name"/>
                 <field name="model"/>
                 <field name="context"/>
@@ -28,13 +28,21 @@
 <!--                            type="object"-->
 <!--                            class="btn-secondary"/>-->
                 </header>
+                <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
                 <sheet>
-                    <group col="2">
-                        <field name="name"/>
-                        <field name="model"/>
-                        <field name="context"/>
-                        <field name="company_id"/>
-                        <field name="limit_amount"/>
+                    <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1><field name="name" class="oe_inline"/></h1>
+                        </div>
+                    <group>
+                        <group>
+                            <field name="model"/>
+                            <field name="context"/>
+                        </group>
+                        <group>
+                            <field name="limit_amount"/>
+                            <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Tiered Config">
@@ -42,7 +50,7 @@
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>
-                                    <field name="group_ids"/>
+                                    <field name="group_ids" widget="many2many_tags"/>
                                     <field name="start_amount"/>
                                 </tree>
                             </field>
