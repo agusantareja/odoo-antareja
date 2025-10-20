@@ -20,14 +20,18 @@ class ApprovalTieredMatrixRule(models.Model):
 
     # setup when configuration
     def get_approval_matrix_rule(self, **kwargs):
-        model = kwargs.get('model')
-        context = kwargs.get('context')
+        model = kwargs.get('transaction_model_name')
+        context = kwargs.get('transaction_model_context')
         transaction_amount = kwargs.get('transaction_amount')
         company_id = kwargs.get('company_id')
-        domain = [('model', '=', model), ('context', '=', context), ('company_id', '=', company_id),
-                  ('limit_amount', '>=', transaction_amount)]
-
-        return self.search(domain, order='limit_amount', limit=1)
+        def get_rule(domain):
+            return self.search(domain, order='limit_amount', limit=1)
+        return (
+                get_rule([('model', '=', model),('limit_amount', '>=', transaction_amount),('context', '=', context),('company_id', '=', company_id)]) or
+                get_rule([('model', '=', model),('limit_amount', '>=', transaction_amount),('context', '=', context),('company_id', '=', False)]) or
+                get_rule([('model', '=', model), ('limit_amount', '>=', transaction_amount), ('context', '=', False),('company_id', '=', company_id)]) or
+                get_rule([('model', '=', model), ('limit_amount', '>=', transaction_amount), ('context', '=', False),('company_id', '=', False)])
+                )
 
     def get_approval_line(self, **kwargs):
         approval_line = []
@@ -41,8 +45,7 @@ class ApprovalTieredMatrixRule(models.Model):
                     })
         return approval_line
 
-
-class AbstractApprovalNotification(models.AbstractModel):
+class ApprovalNotification(models.Model):
     _name = "approval.matrix.tiered.rule.line"
     _description = """
     Mixin : Approval Notification Approval Task Model
