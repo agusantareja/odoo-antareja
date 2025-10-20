@@ -94,6 +94,8 @@
                 <field name="type_approval"/>
                 <field name="user_id"/>
                 <field name="group_id"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="group_ids" widget="many2many_tags"/>
                 <field name="status_approval"/>
                 <field name="user_execution_id"/>
                 <field name="date_execution"/>

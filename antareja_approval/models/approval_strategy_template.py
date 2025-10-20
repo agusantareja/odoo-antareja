@@ -22,6 +22,7 @@ class ApprovalStrategyTemplateInstance(models.Model):
         default=10, string='Sequence',
         help="Sequence of the approval strategy template instance."
     )
+    name = fields.Char()
     code = fields.Text(string="Get template stage from python code", required=True)
     approval_template_stage_ids = fields.One2many(
         comodel_name='approval.strategy.template.stage',
@@ -85,21 +86,19 @@ class ApprovalStrategyTemplateInstance(models.Model):
             raise UserError(_("Invalid transaction object provided."))
 
         if self:
-            if self.ensure_one().transaction_model_name != transaction_object._name:
+            approval_instance = self.ensure_one()
+            if approval_instance.transaction_model_name != transaction_object._name:
                 raise UserError(_("Transaction model name does not match the approval strategy template instance."))
         else:
-            self = self.search(
-                [('transaction_model_name', '=', transaction_object._name)],
-                limit=1
-            )  # Ensure the model is registered
+            approval_instance = self.get_approval_strategy_template_instance(transaction_object)
 
-        if not self:
+        if not approval_instance:
             raise UserError(
                 _("Approval strategy template instance not found for model: %s") % transaction_object.transaction_model_name)
 
         ModelInstance = self.env['approval.transaction.instance']
         _fields = dict(ModelInstance._fields)
-        source = self.get_approval_instance_config(
+        source = approval_instance.get_approval_instance_config(
             transaction_object=transaction_object,
         )
         # save only field that exist in approval.transaction.instance
@@ -128,6 +127,15 @@ class ApprovalStrategyTemplateInstance(models.Model):
 
         return result
 
+    def get_approval_strategy_template_instance(self, transaction_object=None, **kwargs):
+        if not transaction_object or not isinstance(transaction_object, models.BaseModel):
+            raise UserError(_("Invalid transaction object provided."))
+        return self.search(
+                [('transaction_model_name', '=', transaction_object._name)],
+                limit=1
+        )
+
+    approval_stages = fields.One2many(store=False)
 
 class ApprovalStrategyTemplateStage(models.Model):
     _name = "approval.strategy.template.stage"
