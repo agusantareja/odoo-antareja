@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <record id="notification_log_tree" model="ir.ui.view">
+            <field name="name">notification.log.tree</field>
+            <field name="model">notification.log</field>
+            <field name="inherit_id" ref="antareja_notification.notification_log_tree"/>
+            <field name="arch" type="xml">
+                <tree position="inside">
+                    <field name="whatapp_id" invisible="1"/>
+                    <button name="action_show_whatapp" string="Show Whatapp" type="object" class="oe_highlight" attrs="{'invisible':[('whatapp_id','=',0)]}"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+</odoo>

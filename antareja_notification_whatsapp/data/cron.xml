@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record model="ir.cron" id="notification_whatsapp_cron">
+    <field name="name">User Delegate Cron</field>
+    <field name="model_id" ref="ahda_dynamic_whatsapp_client.model_whatsapp_log"/>
+    <field name="state">code</field>
+    <field name="code">model.cron_send()</field>
+    <field name="user_id" ref="base.user_root"/>
+    <field name="interval_number">30</field>
+    <field name="interval_type">minutes</field>
+    <field name="nextcall" eval="DateTime.now().strftime('%Y-%m-%d %H:05:00')" />
+    <field name="numbercall">-1</field>
+    <field name="active">True</field>
+  </record>
+</odoo>
