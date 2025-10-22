@@ -26,5 +26,28 @@ class ResUsers(models.Model):
 
         return self._has_group_id(group_id)
 
-    def get_users_for_notification(self):
+    def get_users_for_notification(self,company=None):
+        if company and self:
+            user_have_company = self.browse()
+            for user in self:
+                if company.id in user.company_ids.ids:
+                    user_have_company |= user
+            return user_have_company
         return self
+
+    def has_delegate_group_ext_id(self, group_ext_id):
+        group_id = self.env.ref(group_ext_id).id
+        return group_id and self.has_delegate_group_id(group_id)
+
+    @api.model
+    def has_delegate_group_id(self, group_id: int):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
+        return False
+
+    def get_delegators(self):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
+        return self.browse()
