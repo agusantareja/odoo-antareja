@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
-from odoo import models
+from odoo import models,fields
 
 
 class InternalUrlMixin(models.AbstractModel):
     _name = 'mail.template.internal.mixin'
     _description = 'Internal URL Mixin (Backend Only with Auto Menu)'
+
+    notification_to_user_id = fields.Many2one(
+        'res.users', string='Notification to User',
+        compute="_compute_notification_to_user_id",
+        help="User who will receive the notification.",
+    )
+    def _compute_notification_to_user_id(self):
+        for rec in self:
+            rec.notification_to_user_id = self.env.context.get('notification_to_user_id', False)
 
     def get_internal_description(self):
         """

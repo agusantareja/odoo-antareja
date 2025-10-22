@@ -22,13 +22,11 @@
                     <field name="user_id"/>
                     <field name="notification_template_id"/>
                     <field name="receiver_id"/>
-
-                    <field name="mail_id" invisible="1"/>
-                    <field name="send_message_id" invisible="1"/>
-                    <field name="chat_message_id" invisible="1"/>
+                    <field name="mail_id" optional="hide"/>
+                    <field name="send_message_id" optional="hide"/>
+                    <field name="chat_message_id" optional="hide"/>
                     <button name="action_show_mail" string="Show Mail" type="object" class="oe_highlight" attrs="{'invisible':[('mail_id','=',0)]}"/>
                     <button name="action_show_send_message" string="Show WA" type="object" class="oe_highlight" attrs="{'invisible':[('send_message_id','=',0)]}"/>
-                    <button name="action_show_chat_message" string="Show Chat" type="object" class="oe_highlight" attrs="{'invisible':[('chat_message_id','=',0)]}"/>
                 </tree>
             </field>
         </record>

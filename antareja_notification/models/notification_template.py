@@ -10,12 +10,20 @@ class NotificationTemplate(models.Model):
     active = fields.Boolean(default=True)
     name = fields.Char("Notification")
     model = fields.Char("Model")
+    scope = fields.Char("Scope", default="INTRA")
     template_email = fields.Many2one('mail.template')
     template_wa = fields.Many2one('mail.template')
     template_chatter = fields.Many2one('mail.template')
 
     def get_test_email(self):
-        return self.env['ir.config_parameter'].get_param('send_message_cron.test_email') or "False"
+        return self.env['ir.config_parameter'].sudo().get_param('send_message_cron.test_email') or "False"
+
+    def get_test_wa(self):
+        return self.env['ir.config_parameter'].sudo().get_param('notif_wa_test') or "False"
+
+    def get_wa_scope_default(self):
+        return self.env['ir.config_parameter'].sudo().get_param('antareja_notification.scope_default')
+
 
     def send_notification_to_users(self,users,res_id):
         if not users or not res_id:
