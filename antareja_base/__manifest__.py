@@ -13,5 +13,11 @@
     # any module necessary for this one to work correctly
     'depends': ['base'],
     # always loaded
-    'data': [],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/approval_audit_log_views.xml',
+        'views/approval_task_views.xml',
+    ],
+    'demo': [],
+    'installable': True,
 }
