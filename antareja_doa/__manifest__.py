@@ -13,7 +13,7 @@
     'category': 'Security & Access Rights',
     'version': '13.0.0.0.1',
     # any module necessary for this one to work correctly
-    'depends': ['base', 'mail'],
+    'depends': ['base', 'mail','antareja_base'],
     # always loaded
     'data': [
         'data/user_delegate_cron.xml',
