@@ -1,0 +1,21 @@
+{
+    'name': 'AHDA Dynamic WhatsApp API Client',
+    'version': '1.0.0',
+    'summary': 'A fully configurable WhatsApp API client for Odoo, supporting template-based messaging, partner targeting, and automation.',
+    'author': 'AHDA Tech Solution',
+    'category': 'Tools',
+    'depends': ['base','base_automation'],
+    'data': [
+        'security/ir.model.access.csv',
+        # 'views/ir_actions_server_views.xml',
+        'views/whatsapp_template_views.xml',
+        'views/whatsapp_api.xml',
+        'views/whatsapp_log_views.xml',
+        'views/menu.xml',
+    ],
+    'installable': True,
+    'application': True,
+    'price': 49,
+    'currency': 'EUR',
+    'license': 'LGPL-3',
+}
