@@ -1,0 +1,108 @@
+<div
+    style="width:100%;margin:40px auto 0 auto;background:#fff;border-radius:12px;box-shadow:0 2px 12px 0 #e6e6e6;padding:2.2em 1.5em 1.5em 1.5em;font-family:'Inter',Arial,sans-serif;color:#222;">
+    <h1 style="font-size:1.7em;color:#2d7d46;font-weight:700;margin-bottom:0.2em;letter-spacing:-1px;">AHDA Dynamic WhatsApp Client</h1>
+    <div style="color:#6a7a6c;font-size:1em;margin-bottom:1.5em;">A fully configurable WhatsApp API client for Odoo,
+        supporting template-based messaging, partner targeting, and automation.</div>
+    <h2 style="color:#2d7d46;font-size:1.1em;margin-top:1.7em;margin-bottom:0.6em;font-weight:600;">Key Features</h2>
+        <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+        <li style="position:relative;margin-bottom:0.3em;">Define WhatsApp message
+            templates with dynamic parameters</li>
+        <li style="position:relative;margin-bottom:0.3em;">Configure recipient logic using
+            Python expressions</li>
+        <li style="position:relative;margin-bottom:0.3em;">Use <code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">${...}</code>
+            expressions for dynamic parameter values</li>
+        <li style="position:relative;margin-bottom:0.3em;">Integrate with WhatsApp API
+            endpoints</li>
+        <li style="position:relative;margin-bottom:0.3em;">Log and track sent messages,
+            with a smart button to view logs per API</li>
+        <li style="position:relative;margin-bottom:0.3em;">Dynamic method injection for models to enable WhatsApp messaging</li>
+    </ul>
+    <h2 style="color:#2d7d46;font-size:1.1em;margin-top:1.7em;margin-bottom:0.6em;font-weight:600;">How to Use</h2>
+    <ol style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+        <li>Go to <b>Settings &rarr; WhatsApp API</b> to configure your WhatsApp API endpoint and headers.</li>
+        <li>Go to <b>Settings &rarr; WhatsApp Templates</b> to create message templates.</li>
+        <li>In the template form:
+            <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+                <li><b>Recipient</b>: Enter a Python expression that returns a list or recordset of <code
+                        style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">res.partner</code>
+                    (e.g., <code
+                        style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">obj.partner_ids</code>).
+                </li>
+                <li><b>Parameters</b>: For type <b>Expression</b>, use <code
+                        style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">${...}</code>
+                    expressions (e.g., <code
+                        style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">${obj.name}</code>).
+                </li>
+            </ul>
+        </li>
+        <li>Trigger sending via automation or manually from the record:
+            <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+                <li>Use in automated rules:
+                    <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+                        <li>Go to <b>Settings → Technical → Automation → Automated Actions</b></li>
+                        <li>Create a new automated action with your desired trigger (e.g., "On Create", "On Update")</li>
+                        <li>Set the action type to <b>"Send Whatsapp API"</b></li>
+                        <li>Select the desired WhatsApp template in the "Whatsapp Template" field</li>
+                    </ul>
+                </li>
+                <li>Use as action server, manually trigger:
+                    <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+                        <li>Go to <b>Settings → Technical → Actions → Server Actions</b></li>
+                        <li>Create a new server action and set the model and action type to <b>"Send Whatsapp API"</b></li>
+                        <li>Select the desired WhatsApp template in the "Whatsapp Template" field</li>
+                        <li>Add the server action to the model's "Action" menu or create a button</li>
+                        <li>Users can manually trigger WhatsApp messages from record forms</li>
+                    </ul>
+                </li>
+                <li>Manual usage from any model (Python code):
+                    <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+                        <li>Just call <code style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">send_whatsapp_by_template('&lt;Template Name&gt;')</code> on any recordset of the target model.</li>
+                        <li>Works on single or multiple records (vectorized).</li>
+                        <li>The argument is the WhatsApp Template's <b>Name</b> for that model.</li>
+                        <li>Alternative: fetch the template and call <code style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">template.send(records)</code>.</li>
+
+                                    <li><b>Example:</b><br/>
+            <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:4px;padding:10px;margin:8px 0;font-family:monospace;font-size:0.9em;">
+# single record<br/>
+self.send_whatsapp_by_template('Order Confirmation')<br/>
+
+# For a batch of orders<br/>
+orders = self.env['sale.order'].search([('state', '=', 'sale')])<br/>
+orders.send_whatsapp_by_template('Order Confirmation')
+            </div>
+
+                       
+                </li>
+            </ul>
+        </li>
+        <li>View logs for each WhatsApp API by clicking the smart button in the API form.</li>
+    </ol>
+    <h2 style="color:#2d7d46;font-size:1.1em;margin-top:1.7em;margin-bottom:0.6em;font-weight:600;">Available Variables in Templates
+    </h2>
+    <ul style="margin:0.5em 0 0.5em 1.5em;padding:0;">
+        <li><code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">obj</code>:
+            The current record (same as <code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">object</code>)
+        </li>
+        <li><code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">partner</code>:
+            The recipient partner (from the recipient expression)</li>
+        <li><code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">phone</code>:
+            The recipient's phone number</li>
+        <li><code
+                style="background:#e9f5ee;color:#2d7d46;padding:2px 6px;border-radius:4px;font-size:0.98em;">ctx</code>:
+            The Odoo context</li>
+    </ul>
+  
+
+    <div style="background:#e9f5ee;border-radius:8px;padding:1em 1.2em;margin-top:2em;font-size:1em;">
+Contact Us:<br/>
+<b>AHDA Tech Solution, Jakarta</b><br/>
+Odoo Consultation, Customization, and Implementation<br/>
+<a href="mailto:ahdasolution@gmail.com">ahdasolution@gmail.com</a><br/>
+Jakarta, Indonesia
+    </div>
+</div>

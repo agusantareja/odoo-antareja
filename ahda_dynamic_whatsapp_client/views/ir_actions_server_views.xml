@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_server_action_form_template">
+            <field name="name">ir.actions.server.form</field>
+            <field name="model">ir.actions.server</field>
+            <field name="inherit_id" ref="base.view_server_action_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='help_info']" position="after">
+                    <page name="whatsapp" string="Whatsapp">
+                        <field name="whatsapp_template_id" options="{'no_create': True, 'no_open': True}"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

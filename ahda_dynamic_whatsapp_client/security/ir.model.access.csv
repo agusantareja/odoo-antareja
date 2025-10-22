@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_whatsapp_api_manager,whatsapp_api_manager,model_whatsapp_api,,1,1,1,1
+acesss_whatsapp_api_param,whatsapp_api_param,model_whatsapp_api_param,,1,1,1,1
+access_whatsapp_template_manager,whatsapp_template_manager,model_whatsapp_template,,1,1,1,1
+access_whatsapp_template_param_manager,whatsapp_template_param_manager,model_whatsapp_template_param,,1,1,1,1
+access_whatsapp_log,whatsapp_log,model_whatsapp_log,,1,0,0,0
