@@ -1,0 +1,18 @@
+<odoo>
+  <data>
+    <menuitem name="Whatsapp API Client" id="whatsapp_setting_menu" sequence="99" parent="base.menu_custom"/>
+    <menuitem
+      id="whatsapp_api_menu"
+      name="API Services"
+      sequence="2" action="whatsapp_api_action"
+      parent="whatsapp_setting_menu"/>
+    <menuitem
+      id="whatsapp_template_menu"
+      name="Template"
+      sequence="10" action="action_whatsapp_template"
+      parent="whatsapp_setting_menu"/>
+
+    <menuitem id="menu_whatsapp_logs" name="Message Logs" parent="whatsapp_setting_menu" action="action_whatsapp_log_all" sequence="20"/>
+
+  </data>
+</odoo>
