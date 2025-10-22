@@ -54,7 +54,7 @@ class ResUsers(models.Model):
         help="List of users delegated by this user."
     )
 
-    def has_group(self, group_ext_id):
+    def has_group(self, group_ext_id=None):
         # use singleton's id if called on a non-empty recordset, otherwise
         # context uid
         # addons documents call document
@@ -80,33 +80,11 @@ class ResUsers(models.Model):
                 self.login, group_ext_id
             )
         return base_groups_access
-        # __ignore_delegated_user_proxy_activate veto untuk tidak melakukan pengecekan bila di lakukan di program
-        # __delegated_user_group_proxy_activate dari UI
-        # hack delegate user proxy activate
-        # if not base_groups_access and "fleet_group_manager" in group_ext_id:
-        #     print(group_ext_id)
-        # if not base_groups_access and not self.env.context.get(
-        #         '__ignore_delegated_user_proxy_activate') and self.env.context.get(
-        #     '__delegated_user_group_proxy_activate'):
-        #
-        #     base_groups_access = self.has_delegate_group_ext_id(group_ext_id)
-        #     if base_groups_access:
-        #         _logger.info(
-        #             "User %s has group %s through delegation.",
-        #             self.login, group_ext_id
-        #         )
-        # return base_groups_access
 
-    @api.model
-    @tools.ormcache('self._uid', 'group_id')
-    def has_group_id(self, group_id):
-        """Checks whether user belongs to given group.
-        """
-        self._cr.execute("""SELECT 1 FROM res_groups_users_rel as gu
-                            INNER JOIN ir_model_data d on gu.gid = d.res_id
-                            WHERE uid=%s AND res_id = %s""",
-                         (self._uid, group_id))
-        return bool(self._cr.fetchone())
+    def has_group_id(self, group_id, with_delegate=True):
+        if super(ResUsers,self).has_group_id(group_id):
+            return True
+        return with_delegate and self.has_delegate_group_id(group_id)
 
     @api.model
     def has_delegate_group_ext_id(self, group_ext_id):
@@ -119,7 +97,6 @@ class ResUsers(models.Model):
     def has_delegate_group_id(self, group_id: int):
         """
         Checks this user as proxy user have DoA form delegator user given group delegator user to poxy user.
-
         disarankan untuk menggunakan SQL agar lebih efisien
         """
         if group_id:
