@@ -1,0 +1,33 @@
+<odoo>
+    <record id="view_approval_task_tree" model="ir.ui.view">
+        <field name="name">approval.task.tree</field>
+        <field name="model">approval.task</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="transaction_ref" />
+                <field name="description"/>
+                <field name="date"/>
+                <field name="requester_id"/>
+                <field name="user_ids" widget="many2many_tags" optional="hide"/>
+                <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_approval_task_action" model="ir.actions.act_window">
+        <field name="name">Approval Task</field>
+        <field name="res_model">approval.task</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'create': 0,'edit': 0,'delete': 0}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="current_user_waiting_approval_action">
+        <field name="name">Waiting Approval</field>
+        <field name="res_model">approval.task</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[('user_have_access_to_approval', '=', True)]</field>
+        <field name="context">{'create': 0,'edit': 0,'delete': 0}</field>
+    </record>
+</odoo>
