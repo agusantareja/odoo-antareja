@@ -26,5 +26,11 @@ class ResUsers(models.Model):
 
         return self._has_group_id(group_id)
 
-    def get_users_for_notification(self):
+    def get_users_for_notification(self,company=None):
+        if company and self:
+            user_have_company = self.browse()
+            for user in self:
+                if company.id in user.company_ids.ids:
+                    user_have_company |= user
+            return user_have_company
         return self
