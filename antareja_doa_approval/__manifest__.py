@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 {
     'name': "DOA || Approval",
 
@@ -16,11 +17,13 @@
     'category': 'Uncategorized',
     'version': '13.0.1',
 
-    'depends': ['base', 'mail', 'hr', 'antareja_doa', 'antareja_approval'],
+    'depends': ['base', 'mail','antareja_base', 'hr', 'antareja_doa', 'antareja_hr_employee_approver'],
 
     # always loaded
     'data': [
-        'data/approval_strategy_template_stage_data.xml',
-        'views/user_delegate_views.xml'
+        'data/notification_template_approver.xml',
+        'data/approval_template_data.xml',
+        'views/user_delegate_views.xml',
+        'views/menuitem_views.xml',
     ],
 }

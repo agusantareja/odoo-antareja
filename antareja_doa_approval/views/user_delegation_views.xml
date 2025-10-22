@@ -1,0 +1,56 @@
+<odoo>
+    <record id="view_user_delegation_form" model="ir.ui.view">
+        <field name="name">user.delegation</field>
+        <field name="model">user.delegation</field>
+        <field name="priority" eval="16"/>
+        <field name="inherit_id" ref="antareja_doa.view_user_delegation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,waiting_approval,approved,active</attribute>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <field name="access_approval" invisible="1"/>
+                <!--                <field name="state_is_draft" invisible="1"/>-->
+                <button name="action_approve"
+                        string="Approve"
+                        type="object" class="oe_highlight"
+                        attrs="{'invisible': [('access_approval','=',False)]}"
+                />
+                <button name="action_reject"
+                        string="Reject"
+                        type="object" class="oe_highlight"
+                        attrs="{'invisible': ['|',('access_approval','=',False),('state', '=', 'draft')]}"
+                />
+                <!--                <button name="strategy_button_submit"-->
+                <!--                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
+                <!--                <button name="setup_approval_stage"-->
+                <!--                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
+                <!--                <button name="check_next_approval_task"-->
+                <!--                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
+            </xpath>
+            <!--            <xpath expr="//field[@name='end_date']" position="after">-->
+            <!--                <field name="request_date" readonly="1"/>-->
+            <!--            </xpath>-->
+            <notebook position="inside">
+                <page string="Approval Task">
+                    <field name="approval_task_line" readonly="1">
+                        <tree>
+                            <field name="id"/>
+                            <field name="user_id"/>
+                            <field name="status_approval"/>
+                            <field name="access_approval"/>
+                        </tree>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+
+    </record>
+
+    <record id="action_to_approve_user_delegation" model="ir.actions.act_window">
+        <field name="name">To Approve</field>
+        <field name="res_model">user.delegation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','=','waiting_approval'),('access_approval', '=', True)]</field>
+    </record>
+</odoo>
