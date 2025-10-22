@@ -1,0 +1,31 @@
+<odoo>
+    <!-- Log Form View -->
+    <record id="view_whatsapp_log_tree" model="ir.ui.view">
+        <field name="name">whatsapp.log.tree</field>
+        <field name="model">whatsapp.log</field>
+        <field name="inherit_id" ref="ahda_dynamic_whatsapp_client.view_whatsapp_log_tree"/>
+        <field name="arch" type="xml">
+            <tree position="inside">
+                <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" attrs="{'invisible':[('status','!=','pending')]}" />
+                <button name="mark_pending" string="Retry" type="object" icon="fa-repeat text-success" attrs="{'invisible':[('status','not in',['failed','cancel'])]}"/>
+                <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" attrs="{'invisible':[('status','!=','pending')]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_whatsapp_log_form" model="ir.ui.view">
+        <field name="name">whatsapp.log.form</field>
+        <field name="model">whatsapp.log</field>
+        <field name="inherit_id" ref="ahda_dynamic_whatsapp_client.view_whatsapp_log_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="send" string="Send Now" type="object" class="oe_highlight" attrs="{'invisible':[('status','!=','pending')]}" />
+                    <button name="mark_pending" string="Retry" type="object"  attrs="{'invisible':[('status','not in',['failed','cancel'])]}"/>
+                    <button name="cancel" string="Cancel" type="object"  attrs="{'invisible':[('status','!=','pending')]}"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,sent,cancel" />
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>
