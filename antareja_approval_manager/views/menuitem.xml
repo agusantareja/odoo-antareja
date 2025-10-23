@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_approval_management_root" name="Approval Management" sequence="10"/>
+
+    <menuitem id="menu_approval_user" name="Approval"
+              parent="menu_approval_management_root" sequence="10"
+    />
+
+    <menuitem id="current_user_waiting_approval_menu" name="Waiting Approval"
+              action="antareja_base.current_user_waiting_approval_action"
+              parent="menu_approval_user" sequence="1"
+    />
+    <menuitem id="current_user_approved_menu" name="Approved"
+              action="antareja_base.current_user_approved_action"
+              parent="menu_approval_user"
+              sequence="2"
+    />
+
+    <!-- Manager -->
+    <menuitem id="main_management_manager" name="Manager Approval"
+              parent="menu_approval_management_root"
+              sequence="10"
+              groups="base.user_admin"
+    />
+
+    <menuitem id="manager_waiting_approval_menu"
+              name="Manager Waiting"
+              action="antareja_base.view_approval_task_action"
+              parent="main_management_manager" sequence="2"
+              groups="base.user_admin"
+    />
+    <menuitem id="manager_approval_instance_menu"
+              name="Approval Instance"
+              action="antareja_base.action_approval_instance"
+              parent="main_management_manager" sequence="5"
+              groups="base.user_admin"
+    />
+    <menuitem id="manager_approved_menu"
+              name="Manager Approved"
+              action="antareja_base.view_approval_audit_log_action"
+              parent="main_management_manager" sequence="10"
+              groups="base.user_admin"
+    />
+
+    <menuitem id="main_management_configuration"
+              name="Configuration"
+              parent="menu_approval_management_root" sequence="100"
+              groups="base.user_admin"/>
+    <menuitem id="menu_approval_template"
+              name="Approval Template"
+              parent="main_management_configuration"
+              action="antareja_base.action_approval_template"
+              sequence="1"
+              groups="base.user_admin"
+    />
+</odoo>
+
