@@ -93,7 +93,7 @@ class AbstractApprovalAccess(models.AbstractModel):
 
         # CASE 2: Multi User (M2M)
         if 'user_ids' in self._fields:
-            rel_table = self._fields['user_ids'].relation_table
+            rel_table = self._fields['user_ids'].relation
             col_this = self._fields['user_ids'].column1
             col_user = self._fields['user_ids'].column2
             cr.execute(f"""
@@ -114,7 +114,7 @@ class AbstractApprovalAccess(models.AbstractModel):
 
         # CASE 4: Multi Group (M2M)
         if 'group_ids' in self._fields:
-            rel_table = self._fields['group_ids'].relation_table
+            rel_table = self._fields['group_ids'].relation
             col_this = self._fields['group_ids'].column1
             col_group = self._fields['group_ids'].column2
             cr.execute(f"""
