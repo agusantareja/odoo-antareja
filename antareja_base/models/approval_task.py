@@ -1,3 +1,4 @@
+from Tools.scripts.parse_html5_entities import create_dict
 
 from odoo import models, fields, api
 
@@ -7,8 +8,57 @@ from odoo.models import BaseModel
 
 _logger = logging.getLogger(__name__)
 
-def is_object_model(object):
-    return hasattr(object, '_name') and hasattr(object, '_fields')
+
+class ApprovalTransactionTask(models.AbstractModel):
+    _name = "approval.transaction.task.able.mixin"
+
+    def done_approval_transaction_task(self, **kwargs):
+        """
+        Approval task as done
+        """
+        self.ensure_one()
+        approval = self.get_approval_transaction_task()
+        if approval:
+            approval.approval_done(**kwargs)
+
+        if kwargs.get("skip_create_approval_log"):
+            return
+        self.create_approval_log(**kwargs)
+
+    def setup_approval_transaction_task(self, **kwargs):
+        """
+        Register to approval task system
+        """
+        self.ensure_one()
+        transaction_id = self.id
+        transaction_model_name = self._name
+        kw = dict(kwargs)
+
+        if 'name' not in kw:
+            kw['name'] = self.display_name
+
+        self.env['approval.task'].approval_setup(
+            transaction_id, transaction_model_name, **kw
+        )
+
+    def get_approval_transaction_task(self):
+        return  self.env['approval.task'].search([
+            ('transaction_id','=',self.id),
+            ('transaction_model_name','=',self._name),
+        ],limit=1)
+
+    def send_notification_approval(self, **kwargs):
+        approval = self.get_approval_transaction_task()
+        if approval:
+            approval.send_notification(**kwargs)
+
+    def create_approval_log(self, **kwargs):
+        self.ensure_one()
+        create_d = dict(kwargs)
+        create_d['transaction_id'] = self.id
+        create_d['transaction_model_name'] = self._name
+        self.env['approval.audit.log'].create_audit_log(**create_d)
+
 class ApprovalTask(models.Model):
     _name = 'approval.task'
     _inherit = 'approval.transaction.able.mixin'
@@ -101,8 +151,6 @@ class ApprovalTask(models.Model):
     def approval_done(self, **kwargs):
         self.unlink()
 
-
-
     def prepare_data(self,**kwargs):
         data = dict()
         def to_list_for_m2m(values):
@@ -154,5 +202,5 @@ class ApprovalTask(models.Model):
             approval_task = self.sudo().create(create_dict)
         return approval_task
 
-    def send_notification(self):
+    def send_notification(self, **kwargs):
         pass
