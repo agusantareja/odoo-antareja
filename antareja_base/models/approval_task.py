@@ -1,4 +1,4 @@
-from Tools.scripts.parse_html5_entities import create_dict
+# -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
 
