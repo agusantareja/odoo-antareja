@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 {
     'name': 'AHDA Dynamic WhatsApp API Client',
     'version': '1.0.0',
@@ -7,7 +9,7 @@
     'depends': ['base','base_automation'],
     'data': [
         'security/ir.model.access.csv',
-        # 'views/ir_actions_server_views.xml',
+        'views/ir_actions_server_views.xml',
         'views/whatsapp_template_views.xml',
         'views/whatsapp_api.xml',
         'views/whatsapp_log_views.xml',

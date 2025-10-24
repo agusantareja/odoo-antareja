@@ -7,8 +7,10 @@
             <field name="inherit_id" ref="base.view_server_action_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//page[@name='help_info']" position="after">
-                    <page name="whatsapp" string="Whatsapp">
-                        <field name="whatsapp_template_id" options="{'no_create': True, 'no_open': True}"/>
+                    <page name="whatsapp" string="WhatsApp">
+                        <group>
+                            <field name="whatsapp_template_id" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
                     </page>
                 </xpath>
             </field>

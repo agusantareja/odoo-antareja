@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+
 from odoo import models, api, fields
+
 
 class ir_action_server(models.Model):
     _inherit = "ir.actions.server"
 
     state = fields.Selection(selection_add=[
-        ('whatsapp','Send Whatsapp')],
+        ('whatsapp', 'Send WhatsApp Message')],
         ondelete={'whatsapp': 'cascade'},
         help="Type of server action. The following values are available:\n"
              "- 'Update a Record': update the values of a record\n"
@@ -16,10 +19,10 @@ class ir_action_server(models.Model):
              "- 'Execute Code': a block of Python code that will be executed\n"
              "- 'Send Webhook Notification': send a POST request to an external system, also known as a Webhook\n"
              "- 'Execute Existing Actions': define an action that triggers several other server actions\n"
-             "- 'Send Whatsapp API': send whatsapp via POST request to whatsapp API")
+             "- 'Send WhatsApp Message': send a WhatsApp message using the selected template")
 
-    whatsapp_template_id = fields.Many2one('whatsapp.template','Whatsapp Template',domain="[('model_id','=',model_id)]",
-        help="Whatsapp template to use for sending whatsapp messages.")
+    whatsapp_template_id = fields.Many2one('whatsapp.template','WhatsApp Template',domain="[('model_id','=',model_id)]",
+        help="WhatsApp template to use for sending WhatsApp messages.")
     
     @api.onchange('model_id')
     def _onchange_model_id(self):
