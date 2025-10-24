@@ -5,7 +5,7 @@ class ir_action_server(models.Model):
 
     state = fields.Selection(selection_add=[
         ('whatsapp','Send Whatsapp')],
-        ondelete={'whatsapp': 'cascade'},
+        #ondelete={'whatsapp': 'cascade'},
         help="Type of server action. The following values are available:\n"
              "- 'Update a Record': update the values of a record\n"
              "- 'Create Activity': create an activity (Discuss)\n"
