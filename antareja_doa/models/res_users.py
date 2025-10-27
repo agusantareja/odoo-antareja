@@ -82,22 +82,11 @@ class ResUsers(models.Model):
         return base_groups_access
 
     def has_group_id(self, group_id, with_delegate=True):
-        if super(ResUsers,self).has_group_id(group_id):
-            return True
-        return with_delegate and self.has_delegate_group_id(group_id)
-
-    @api.model
-    def has_delegate_group_ext_id(self, group_ext_id):
-        group_id = self.env.ref(group_ext_id).id
-        if group_id:
-            return self.has_delegate_group_id(group_id)
-        else:
-            return False
+        return super(ResUsers,self).has_group_id(group_id) or (with_delegate and self.has_delegate_group_id(group_id))
 
     def has_delegate_group_id(self, group_id: int):
         """
-        Checks this user as proxy user have DoA form delegator user given group delegator user to poxy user.
-        disarankan untuk menggunakan SQL agar lebih efisien
+        Checks this user as delegate/proxy user have DoA form delegator user given group delegator user to delegate/proxy user.
         """
         if group_id:
             uid = self.id
