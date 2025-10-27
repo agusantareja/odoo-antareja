@@ -34,3 +34,20 @@ class ResUsers(models.Model):
                     user_have_company |= user
             return user_have_company
         return self
+
+    def has_delegate_group_ext_id(self, group_ext_id):
+        group_id = self.env.ref(group_ext_id).id
+        return group_id and self.has_delegate_group_id(group_id)
+
+    @api.model
+    def has_delegate_group_id(self, group_id: int):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
+        return False
+
+    def get_delegators(self):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
+        return self.browse()

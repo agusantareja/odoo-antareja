@@ -1,63 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-
+from odoo.models import BaseModel
 import logging
 
-from odoo.models import BaseModel
-
 _logger = logging.getLogger(__name__)
-
-
-class ApprovalTransactionTask(models.AbstractModel):
-    _name = "approval.transaction.task.able.mixin"
-
-    def done_approval_transaction_task(self, **kwargs):
-        """
-        Approval task as done
-        """
-        self.ensure_one()
-        approval = self.get_approval_transaction_task()
-        if approval:
-            approval.approval_done(**kwargs)
-
-        if kwargs.get("skip_create_approval_log"):
-            return
-        self.create_approval_log(**kwargs)
-
-    def setup_approval_transaction_task(self, **kwargs):
-        """
-        Register to approval task system
-        """
-        self.ensure_one()
-        transaction_id = self.id
-        transaction_model_name = self._name
-        kw = dict(kwargs)
-
-        if 'name' not in kw:
-            kw['name'] = self.display_name
-
-        self.env['approval.task'].approval_setup(
-            transaction_id, transaction_model_name, **kw
-        )
-
-    def get_approval_transaction_task(self):
-        return  self.env['approval.task'].search([
-            ('transaction_id','=',self.id),
-            ('transaction_model_name','=',self._name),
-        ],limit=1)
-
-    def send_notification_approval(self, **kwargs):
-        approval = self.get_approval_transaction_task()
-        if approval:
-            approval.send_notification(**kwargs)
-
-    def create_approval_log(self, **kwargs):
-        self.ensure_one()
-        create_d = dict(kwargs)
-        create_d['transaction_id'] = self.id
-        create_d['transaction_model_name'] = self._name
-        self.env['approval.audit.log'].create_audit_log(**create_d)
 
 class ApprovalTask(models.Model):
     _name = 'approval.task'
@@ -81,7 +28,11 @@ class ApprovalTask(models.Model):
         'res.groups',  'approval_task_groups_rel','approval_task_id','group_id',
         help="Groups of users who can approve this task"
     )
-
+    requester_id = fields.Many2one(
+        'res.users', 'Requester',
+        default=lambda self: self.env.user,
+        help="User who requested the approval."
+    )
     user_have_access_to_approval = fields.Boolean(
         string="Can Approve",
         compute='_compute_user_have_access_to_approval',
@@ -98,7 +49,12 @@ class ApprovalTask(models.Model):
         current_uid = self.env.user.id
         cr = self._cr
         ids = set()
-
+        delegators = self.env.user.get_delegators()
+        if delegators:
+            user_and_delegator = delegators | self.env.user
+            user_filter = f"IN ({', '.join(str(d.id) for d in user_and_delegator)})"
+        else:
+            user_filter = f"= {current_uid}"
         # CASE: Multi User (M2M)
         if 'user_ids' in self._fields:
             rel_table = self._fields['user_ids'].relation
@@ -106,8 +62,8 @@ class ApprovalTask(models.Model):
             col_user = self._fields['user_ids'].column2
             cr.execute(f"""
                    SELECT {col_this} FROM {rel_table}
-                   WHERE {col_user} = %s
-               """, (current_uid,))
+                   WHERE {col_user} {user_filter}
+               """)
             ids.update(r[0] for r in cr.fetchall())
 
         # CASE: Multi Group (M2M)
@@ -119,7 +75,7 @@ class ApprovalTask(models.Model):
                    SELECT DISTINCT mg.{col_this}
                    FROM {rel_table} mg
                    JOIN res_groups_users_rel gu ON gu.gid = mg.{col_group}
-                   WHERE gu.uid = %s
+                   WHERE gu.uid {user_filter}
                """, (current_uid,))
             ids.update(r[0] for r in cr.fetchall())
         if (operator == '=' and value) or (operator == '!=' and not value):

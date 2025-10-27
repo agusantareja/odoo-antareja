@@ -8,6 +8,7 @@
                 <field name="transaction_ref" />
                 <field name="description"/>
                 <field name="date"/>
+                <field name="requester_id"/>
                 <field name="user_ids" widget="many2many_tags" optional="hide"/>
                 <field name="group_ids" widget="many2many_tags" optional="hide"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
