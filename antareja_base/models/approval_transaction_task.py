@@ -35,7 +35,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         if 'name' not in kw:
             kw['name'] = self.display_name
 
-        self.env['approval.task'].approval_setup(
+        return self.env['approval.task'].approval_setup(
             transaction_id, transaction_model_name, **kw
         )
 
