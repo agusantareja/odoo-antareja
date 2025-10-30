@@ -21,6 +21,13 @@ class NotificationLog(models.Model):
     chat_message_id = fields.Integer()
     chat_message_model = fields.Char()
 
+    res_id = fields.Integer()
+
+    def send_notification_to_user(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user(self.receiver_id,self.res_id)
+        if result:
+            self.write(result)
+
     def action_show_mail(self):
         self.ensure_one()
         if self.mail_model and self.mail_id:

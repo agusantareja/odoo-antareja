@@ -10,6 +10,19 @@ _logger = logging.getLogger(__name__)
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
 
+    approval_line_for_document = fields.Many2many(
+        'approval.audit.log',
+        string='Approval Line for Document',
+        compute='_compute_approval_line_for_document',
+        help="Approval line untuk di pakai di dokument lembar pengesahan"
+    )
+    def _compute_approval_line_for_document(self):
+        for rec in self:
+            rec.approval_line_for_document = rec.approval_line_for_document.get_approval_line_for_document(
+                self._name,
+                rec.id
+            )
+
     def done_approval_transaction_task(self, **kwargs):
         """
         Approval task as done
@@ -55,7 +68,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         create_d = dict(kwargs)
         create_d['transaction_id'] = self.id
         create_d['transaction_model_name'] = self._name
-        self.env['approval.audit.log'].create_audit_log(**create_d)
+        return self.env['approval.audit.log'].create_audit_log(**create_d)
 
     def unlink(self):
         list_ids = self.ids

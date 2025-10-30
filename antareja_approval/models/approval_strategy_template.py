@@ -155,6 +155,7 @@ class ApprovalStrategyTemplateStage(models.Model):
         # required=True,
         # ondelete='cascade',
     )
+    transaction_model_name = fields.Char(related='approval_template_instance_id.transaction_model_name',store=True,readonly=True )
 
     def name_get(self):
         return [

@@ -10,49 +10,67 @@
 <!--            </xpath>-->
             <xpath expr="//header" position="inside">
                 <field name="access_approval" invisible="1"/>
-                <field name="move_need_approval"  />
-                <field name="state_is_draft" />
+                <field name="move_need_approval"  invisible="1"/>
+                <field name="state_is_draft" invisible="1"/>
                 <button name="action_request_approval"
                         string="Request Approval"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible': ['|',('state_is_draft','=',False),('move_need_approval','=',False)]}"
+                        attrs="{'invisible': ['|',('approval_state','!=','draft'),('move_need_approval','=',False)]}"
                 />
                 <button name="action_approve_transaction"
                         string="Approve"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible': [('access_approval','=',False)]}"
+                        attrs="{'invisible': ['|',('access_approval','=',False),('approval_state', '=', 'draft')]}"
                 />
                 <button name="action_reject_transaction"
                         string="Reject"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible': ['|',('access_approval','=',False),('state', '=', 'draft')]}"
+                        attrs="{'invisible': ['|',('access_approval','=',False),('approval_state', '=', 'draft')]}"
                 />
-                <button name="strategy_button_submit"
-                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"
-                        attrs="{'invisible': [('move_need_approval','=',False)]}"
-                />
-                <button name="setup_approval_stage"
-                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"
-                        attrs="{'invisible': [('move_need_approval','=',False)]}"
-                />
-                <button name="check_next_approval_task"
-                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"
-                        attrs="{'invisible': [('move_need_approval','=',False)]}"
-                />
-                <field name="approval_state" widget="statusbar" statusbar_visible="draft,posted"
+<!--                <button name="strategy_button_submit"-->
+<!--                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"-->
+<!--                        attrs="{'invisible': [('move_need_approval','=',False)]}"-->
+<!--                />-->
+<!--                <button name="setup_approval_stage"-->
+<!--                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"-->
+<!--                        attrs="{'invisible': [('move_need_approval','=',False)]}"-->
+<!--                />-->
+<!--                <button name="check_next_approval_task"-->
+<!--                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"-->
+<!--                        attrs="{'invisible': [('move_need_approval','=',False)]}"-->
+<!--                />-->
+                <field name="approval_state" widget="statusbar" statusbar_visible="waiting_approval,approved"
                     attrs="{'invisible': [('move_need_approval','=',False)]}"
                 />
             </xpath>
-<!--            <xpath expr="//field[@name='end_date']" position="after">-->
-<!--                <field name="request_date" readonly="1"/>-->
-<!--            </xpath>-->
-            <xpath expr="//form//sheet" position="inside">
-                <notebook id="approval_form" attrs="{'invisible': [('move_need_approval','=',False)]}">
-                    <page name="approval_config" string="Approval Config">
-                        <field name="approval_stage_active" readonly="1"/>
-                        <field name="approval_stage_task_active" readonly="1"/>
+            <notebook  position="inside" >
+                <page string="Approval" attrs="{'invisible': [('move_need_approval','=',False)]}">
+                    <field name="approval_stage_task_line" readonly="1" attrs="{'invisible': [('approval_state','=','approved')]}"  >
+                        <tree string="Approval Transactions">
+                            <field name="approval_stage_id" optional="hide"/>
+                            <field name="type_approval" optional="hide"/>
+                            <field name="user_id" optional="hide"/>
+                            <field name="group_id" optional="hide"/>
+                            <field name="user_ids" widget="many2many_tags" optional="hide"/>
+                            <field name="group_ids" widget="many2many_tags"/>
+                            <field name="start_amount" optional="show"/>
+                            <field name="status_approval"/>
+                            <field name="user_execution_id"/>
+                            <field name="date_execution"/>
+                            <field name="access_approval" optional="hide"/>
+                        </tree>
+                    </field>
+                    <field name="approval_line_for_document" readonly="1"
+                           attrs="{'invisible': [('approval_state','!=','approved')]}" >
+                        <tree>
+                            <field name="user_id"/>
+                            <field name="action_type"/>
+                            <field name="create_date"/>
+                            <field name="notes"/>
+                        </tree>
+                    </field>
                     </page>
-                    <page string="Approval Task" >
+                <page name="approval_config" string="Approval Config" attrs="{'invisible': [('move_need_approval','=',False)]}" groups="base.group_no_one">
                         <group>
                             <group>
                                 <field name="approval_instance_id" readonly="1" context="{'create':False,'edit':False}"/>
@@ -60,13 +78,11 @@
                                 <field name="next_approval_task_ref" readonly="1" context="{'create':False,'edit':False}"/>
                             </group>
                         </group>
-                        <field name="approval_stage_task_line" readonly="1" />
-                    </page>
-                    <page string="Audit Trail">
+                    <field name="approval_stage_active" readonly="1"/>
+                    <field name="approval_stage_task_active" readonly="1"/>
                         <field name="approval_audit_log_line" readonly="1" />
                     </page>
                 </notebook>
-            </xpath>
         </field>
     </record>
 </odoo>

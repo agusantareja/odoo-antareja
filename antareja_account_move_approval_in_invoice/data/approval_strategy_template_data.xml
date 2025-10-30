@@ -13,7 +13,8 @@ transaction_object = kwargs.get('transaction_object')
 config.update({
     'name': (transaction_object and transaction_object.get_number_invoice() ) or 'Vendor Bill',
     'description': 'Vendor Bill',
-    'requester_id':transaction_object.user_id.id,
+    'company_id':transaction_object.company_id.id,
+    'requester_id':transaction_object.user_id.id or transaction_object.activity_user_id.id or transaction_object.create_uid.id,
     'request_date':transaction_object.date,
 })
 result=config
@@ -37,10 +38,9 @@ config.update({
     'name': (transaction_object and transaction_object.get_number_invoice() ) or 'Vendor Bill',
     'description': 'Vendor Bill',
     'stage_mandatory': True,
-    'transaction_model_context':'in_invoice',
+    'transaction_model_scope':'in_invoice',
     'transaction_amount':transaction_object.amount_total,
-    'company_id':transaction_object.company_id.id,
-    # 'stage_dynamic_approval': False,
+    'stage_dynamic_approval': False,
     # Notification configuration
     # 'notification_template_approval_id': self.env.ref('approval_strategy_employee.approval_mail_template').id,
     # 'notification_template_rejection_id': None

@@ -6,11 +6,13 @@ from ..tools.notification import to_integer
 from odoo import models, fields, api
 from lxml import etree
 from odoo import models, fields, api, _
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class AbstractApprovalTransaction(models.AbstractModel):
     _name = "approval.transaction.mixin"
-    _inherit = ["approval.next.task.able.mixin"]
+    _inherit = ["approval.next.task.able.mixin","approval.transaction.task.able.mixin"]
     _description = """
     Mixin : Approval Transaction
         """
@@ -74,7 +76,9 @@ class AbstractApprovalTransaction(models.AbstractModel):
         if self.approval_instance_id and not self.approval_instance_id.is_completed:
             self.approval_instance_id.write({"is_completed":True})
         self.approval_instance_id = None
-        return self.ensure_approval_instance()
+        approval_instance= self.ensure_approval_instance()
+        self.setup_approval_transaction_task()
+        return approval_instance
 
     def strategy_button_submit(self):
         self.ensure_one()
@@ -142,7 +146,50 @@ class AbstractApprovalTransaction(models.AbstractModel):
     def callback_approval_instance_approved(self, approval_instance):
         self.set_transaction_status(approval_instance.stage_status)
         self.check_next_approval_task()
+        if self.approval_instance_id.is_completed:
+            self.done_approval_transaction_task(skip_create_approval_log=True)
+
 
     def callback_approval_instance_rejected(self, approval_instance):
         self.set_transaction_status(approval_instance.stage_status)
         self.approval_instance_id = None
+        self.done_approval_transaction_task(skip_create_approval_log=True)
+
+    def setup_approval_transaction_task(self, **kwargs):
+        kw = dict(kwargs)
+        next_approval_task = self.get_next_approval_task()
+        if next_approval_task :
+            users = self.env['res.users'].browse()
+            groups = self.env['res.groups'].browse()
+            if next_approval_task.type_approval == 'user' and next_approval_task.user_id:
+                users |= next_approval_task.user_id
+
+            elif next_approval_task.type_approval == 'group' and next_approval_task.group_id:
+                groups |= next_approval_task.group_id
+
+            elif next_approval_task.type_approval == 'multi_user' and next_approval_task.user_ids:
+                users = next_approval_task.user_ids
+            elif next_approval_task.type_approval == 'multi_group' and next_approval_task.group_ids:
+                groups = next_approval_task.group_ids
+            else:
+                # === OPSI FALLBACK ===
+                if next_approval_task.user_id:
+                    users |= next_approval_task.user_id
+                if next_approval_task.user_ids:
+                    users |= next_approval_task.user_ids
+                if next_approval_task.group_id:
+                    groups |= next_approval_task.group_id
+                if next_approval_task.group_ids:
+                    groups |= next_approval_task.group_ids
+            if users:
+                kw['user_ids'] = users
+            if groups:
+                kw['group_ids'] = groups
+            kw.update({
+                'approval_instance_id': self.approval_instance_id.id
+            })
+            approval_transaction_task = super(AbstractApprovalTransaction, self).setup_approval_transaction_task(*kw)
+            _logger.info("next approval task found for transaction id %s -> %s", self.id, approval_transaction_task)
+            return approval_transaction_task
+        else:
+            _logger.info("No next approval task found for transaction id %s", self.id)
