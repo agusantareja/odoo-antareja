@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models,fields
+from odoo import models,fields,api
 
 
 class InternalUrlMixin(models.AbstractModel):
@@ -11,9 +11,11 @@ class InternalUrlMixin(models.AbstractModel):
         compute="_compute_notification_to_user_id",
         help="User who will receive the notification.",
     )
+
+    @api.depends_context('notification_to_user')
     def _compute_notification_to_user_id(self):
         for rec in self:
-            rec.notification_to_user_id = self.env.context.get('notification_to_user_id', False)
+            rec.notification_to_user_id = self.env.context.get('notification_to_user', False)
 
     def get_internal_description(self):
         """

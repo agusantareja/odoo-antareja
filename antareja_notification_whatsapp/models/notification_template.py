@@ -58,8 +58,8 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user(self, notification_to_user, res_id):
-        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id) or {}
+    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
+        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id,**kwargs) or {}
         result = self.send_notification_to_user_whatsapp(notification_to_user, res_id)
         if result:
             notif_log['whatapp_id'] = result.ids[0]

@@ -3,6 +3,8 @@ from odoo import models, fields, api
 from odoo.addons.antareja_approval.tools.utils import to_integer
 from odoo.addons.antareja_approval.tools.utils import ignore_delegated_user_context
 
+def have_method(obj, method):
+    return hasattr(obj, method) and callable(getattr(obj, method))
 
 class ApprovalAccessMixin(models.AbstractModel):
     _name = "approval.access.mixin"
@@ -220,3 +222,44 @@ class AbstractApprovalStatus(models.AbstractModel):
 
     def set_canceled_state(self):
         self.status_approval = APPROVAL_STATUS_CANCELLED
+
+
+class ApprovalTaskLineMixin(models.AbstractModel):
+    _name = "approval.task.line.mixin"
+    _description = "Approval Task Line Integration Mixin"
+
+    def register_to_approval_task(self, **kwargs):
+        self.ensure_one()
+        transaction_object = kwargs.get('transaction_object')
+        if transaction_object:
+            if have_method(transaction_object,"setup_approval_transaction_task"):
+                return transaction_object.setup_approval_transaction_task(**kwargs)
+            transaction_id = transaction_object.id
+            transaction_model_name = transaction_object._name
+        else:
+            transaction_id = kwargs.get('transaction_id')
+            transaction_model_name = kwargs.get('transaction_model_name')
+        return self.env['approval.task'].approval_setup(self, transaction_id,transaction_model_name,**kwargs)
+
+    def _create_approval_audit_log(self,**kwargs):
+        self.ensure_one()
+        transaction_object = kwargs.get('transaction_object')
+        kw = dict(kwargs)
+        if transaction_object:
+            if have_method(transaction_object,"create_approval_log"):
+                return transaction_object.create_approval_log(**kw)
+            kw.update(
+                transaction_id=transaction_object.id,
+                transaction_model_name = transaction_object._name
+            )
+        return self.env['approval.audit.log'].create_audit_log(**kw)
+
+    def create_approval_audit_log_approved(self,**kwargs):
+        kw = dict(kwargs)
+        kw['action_type'] = 'approve'
+        return self._create_approval_audit_log(**kw)
+
+    def create_approval_audit_log_rejected(self, **kwargs):
+        kw = dict(kwargs)
+        kw['action_type'] = 'reject'
+        return self._create_approval_audit_log(**kwargs)

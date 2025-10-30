@@ -15,6 +15,11 @@ class WhatsappTemplate(models.Model):
     _inherit = 'whatsapp.template'
     model = fields.Char(related='model_id.model')
 
+    def custom_render(self, template_str, context):
+        if isinstance(context,dict) and 'user' not in context:
+            context = dict(context,user= self.env.user)
+        return super(WhatsappTemplate,self).custom_render(template_str, context)
+
     def send_whatsapp(self, rec_id, force_send=False):
         _logger.info("Sending WhatsApp message using template: %s", self.name)
         self.ensure_one()

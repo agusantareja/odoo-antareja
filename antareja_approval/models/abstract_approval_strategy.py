@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
-# from gevent.resolver.cares import result
-# from odoo.addons.antareja_approval.models.abstract_approval_stage import APPROVAL_STATUS_LIST
-# from odoo.addons.antareja_approval.models.abstract_approval_stage import APPROVAL_STATUS_NOT_APPROVE
-# from odoo.addons.antareja_approval.tools.utils import to_integer
 
 from odoo import models, fields, api
 import logging
 
-# from odoo.exceptions import UserError
-
 
 class ApprovalStrategyStage(models.AbstractModel):
     _name = "abstract.approval.strategy.config"
+    _inherit = 'abstract.approval.stage.notification'
     _description = """
 
     This field will configurable in template, config wizard and stage

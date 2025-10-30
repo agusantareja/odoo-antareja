@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="notification_template_form" model="ir.ui.view">
+            <field name="name">notification.template.form</field>
+            <field name="model">notification.template</field>
+            <field name="inherit_id" ref="antareja_notification.notification_template_form"/>
+            <field name="arch" type="xml">
+                <field name="template_wa" position="after">
+                    <field name="template_whatsapp" />
+                </field>
+            </field>
+        </record>
+
+        <record id="notification_template_tree" model="ir.ui.view">
+            <field name="name">notification.template.tree</field>
+            <field name="model">notification.template</field>
+            <field name="inherit_id" ref="antareja_notification.notification_template_tree" />
+            <field name="arch" type="xml">
+                <field name="template_wa" position="after">
+                    <field name="template_whatsapp" />
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

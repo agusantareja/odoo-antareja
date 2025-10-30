@@ -24,25 +24,10 @@ class AbstractApprovalStageNotification(models.AbstractModel):
         string='Mail Bot Template Approval',
         help="Notification template used for reject notifications.")
 
-    # mail_bot_template_rejection_id = fields.Many2one(
-    #     'mail.template', string='Mail Bot Template Rejection',
-    #     help="Email template used for rejection notifications.")
-    #
-    # email_template_approval_id = fields.Many2one(
-    #     'mail.template', string='Email Template Approval',
-    #     help="Email template used for approval notifications.")
-    #
-    # email_template_rejection_id = fields.Many2one(
-    #     'mail.template', string='Email Template Rejection',
-    #     help="Email template used for rejection notifications.")
-    #
-    # whatsapp_template_approval_id = fields.Many2one(
-    #     'mail.template', string='Whatsapp Template Approval',
-    #     help="Email template used for approval notifications.")
-    #
-    # whatsapp_template_rejection_id = fields.Many2one(
-    #     'mail.template', string='Whatsapp Template Rejection',
-    #     help="Email template used for rejection notifications.")
+    notification_template_approved_id = fields.Many2one(
+        'notification.template',
+        string='Notification Template Approved',
+        help="Notification template used for reject notifications.")
 
 
 class AbstractApprovalNotification(models.AbstractModel):
@@ -50,7 +35,6 @@ class AbstractApprovalNotification(models.AbstractModel):
     _description = """
     Mixin : Approval Notification Approval Task Model
     """
-
     def get_object_model(self, value, model_name):
         """
         Mengembalikan recordset dari value dengan model yang ditentukan.
@@ -81,39 +65,15 @@ class AbstractApprovalNotification(models.AbstractModel):
         template = self.env.ref('antareja_approval.notification_template_approval_task')
         return template, self.id
 
-    # def get_email_template_approval_task(self, **kwargs):
-    #     template = self.env.ref('antareja_approval.mail_template_email_notification_approval_task')
-    #     return template, self.id
-
-    def notify_approval_by_users(self, users, **kwargs):
-        if self.env.context.get('__ignore_notify_approval_by_users') or not users:
-            return
-        template, res_id = self.get_notification_template_approval_task(**kwargs)
-        if template:
-            template.send_notification_to_users(users,res_id)
-        else:
-            _logger.warning("No notification template found for approval notification.")
-
     # reject
-    def get_notification_template_rejection_task(self, **kwargs):
+    def get_notification_template_approved_task(self, **kwargs):
         template = self.env.ref('antareja_approval.notification_template_approval_task')
         return template, self.id
 
-    # def get_email_template_rejection_task_user(self, **kwargs):
-    #     template = self.env.ref('antareja_approval.mail_template_email_notification_rejection_task')
-    #     return template, self.id
+    def get_notification_template_rejection_task(self, **kwargs):
+        template = self.env.ref('antareja_approval.notification_template_rejection_task')
+        return template, self.id
 
-    def notify_reject_task_users(self, users, **kwargs):
-        if self.env.context.get('__ignore_notify_rejected_by_users') or not users:
-            return
-        template, res_id = self.get_notification_template_rejection_task(**kwargs)
-        if template:
-            template.send_notification_to_users(users,res_id)
-        else:
-            _logger.warning("No notification template found for approval notification.")
-
-    def notify_reject_task_user(self, requester, **kwargs):
-        self.notify_reject_task_users(requester, **kwargs)
 
 
     # transaction comment

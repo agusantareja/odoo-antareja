@@ -9,7 +9,10 @@
               action="antareja_base.current_user_waiting_approval_action"
               parent="antareja_approval.menu_approval_transaction" sequence="1"
     />
-    <menuitem id="current_user_approved_menu" name="Approved" action="antareja_base.current_user_approved_action" parent="antareja_approval.menu_approval_transaction" sequence="2" groups="base.group_no_one"/>
+    <menuitem id="current_user_approved_menu" name="Approved"
+              action="antareja_base.current_user_approved_action"
+              parent="antareja_approval.menu_approval_transaction"
+              sequence="2" />
 
 <!--    <menuitem id="menu_approval_transaction_waiting"-->
 <!--              name="Waiting Approvals"-->
@@ -42,10 +45,10 @@
     />
 
     <!-- MENU -->
-    <menuitem id="menu_approval_strategy_config" name="Template Config"
+    <menuitem id="menu_approval_strategy_config" name="Configuration"
               parent="menu_approval_management_root" sequence="10"/>
 
-    <menuitem id="menu_approval_strategy_template_instance" name="Instance"
+    <menuitem id="menu_approval_strategy_template_instance" name="Template Instance"
               parent="menu_approval_strategy_config"
               action="action_approval_strategy_template_instance"
               sequence="20"/>

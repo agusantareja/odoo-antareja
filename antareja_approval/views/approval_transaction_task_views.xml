@@ -28,13 +28,17 @@
                         <field name="status_approval" widget="statusbar"
                                statusbar_visible="draft,waiting,approved,rejected,cancelled"/>
                         <button name="action_fix_status" type="object" string="fix Status" groups="base.group_no_one" />
-
+                        <button name="notify_user_approval_task" string="Notification"
+                                type="object" class="oe_highlight" groups="base.group_no_one"
+                        />
                     </header>
                     <group>
                         <group>
                             <field name="type_approval"/>
                             <field name="user_id" attrs="{'invisible': [('type_approval','!=','user')]}"/>
                             <field name="group_id" attrs="{'invisible': [('type_approval','!=','group')]}"/>
+                            <field name="user_ids" attrs="{'invisible': [('type_approval','!=','multi_user')]}" widget="many2many_tags"/>
+                            <field name="group_ids" attrs="{'invisible': [('type_approval','!=','multi_group')]}" widget="many2many_tags"/>
                         </group>
                     </group>
                     <notebook>
@@ -63,23 +67,6 @@
                             </group>
                         </page>
                     </notebook>
-<!--                    <notebook>-->
-<!--                        <page string="Audit Log">-->
-<!--                            <field name="audit_log_ids" context="{'default_approval_id': active_id}">-->
-<!--                                <tree>-->
-<!--                                    <field name="proxy_user_id"/>-->
-<!--                                    <field name="delegator_user_id"/>-->
-<!--                                    <field name="action_type"/>-->
-<!--                                    <field name="create_date"/>-->
-<!--                                </tree>-->
-<!--                            </field>-->
-<!--                        </page>-->
-<!--                    </notebook>-->
-                    <footer>
-                        <button name="notify_user_approval_task" string="Notification"
-                                type="object" class="oe_highlight" groups="base.group_no_one"
-                        />
-                    </footer>
                 </sheet>
             </form>
         </field>
