@@ -43,7 +43,7 @@ class WhatsAppLog(models.Model):
             return header
 
         if not api_server:
-            self.write({
+            self.sudo().write({
                 'status': 'failed',
                 'failure_reason': "No API Service. Please check config Whatapp API Client",
             })

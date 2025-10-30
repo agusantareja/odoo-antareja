@@ -2,7 +2,7 @@ import os
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.addons.antareja_approval.tools.exception import ShowWizardFormError
-from ..tools.utils import have_method, get_requester_id, to_integer, get_strategy_from_field_name
+from ..tools.utils import have_method, get_requester_id, to_integer, get_company_id
 import requests
 import logging
 
@@ -94,6 +94,7 @@ class ApprovalStrategyInstanceMixin(models.AbstractModel):
         self.set_starting_status_approval()
         self.setup_approval_stage(config=config)
 
+
     def get_approval_strategy_config(self, transaction_object=None,stage_status=None, **kwargs):
         return self.ensure_approval_template_instance().get_approval_strategy_config(
             transaction_object=transaction_object or self.get_transaction_object(),stage_status=stage_status, **kwargs)
@@ -108,9 +109,13 @@ class ApprovalStrategyInstanceMixin(models.AbstractModel):
             'transaction_id': transaction_object.id,
             'transaction_model_name': self.transaction_model_name,
             'name': transaction_object.name,
-            'requester_id': to_integer(get_requester_id(transaction_object)),
+            'requester_id': to_integer(self.requester_id or get_requester_id(transaction_object)),
+            'company_id': to_integer(self.company_id or get_company_id(transaction_object)),
             'transaction_object':transaction_object
         }
+        if self.request_date:
+            source['request_date'] = self.request_date
+
         if config:
             source.update(
                 config
@@ -265,8 +270,11 @@ class ApprovalStrategyInstanceMixin(models.AbstractModel):
 
     def action_reject_transaction(self):
         """Reject the transaction."""
-        self.ensure_one()
-        if self.approval_stage_id:
+        rec = self.ensure_one()
+        if rec.approval_stage_id:
+            context = dict(rec.env.context)
+            context['active_model'] = self._name
+            context['active_id'] = rec.id
             # If no approval stage is set, we can reject inline stages
             return {
                 'name': 'Reject Message',
@@ -274,7 +282,7 @@ class ApprovalStrategyInstanceMixin(models.AbstractModel):
                 'view_mode': 'form',
                 'res_model': 'approval.popup.reject.message',
                 'target': 'new',
-                'context': dict(self.env.context),
+                'context': context,
             }
         else:
             raise UserError("No active approval stage.")

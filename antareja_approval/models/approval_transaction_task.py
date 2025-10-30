@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from ..tools.utils import to_integer
 from odoo import models, fields, tools, api
 from odoo.addons.antareja_approval.models.abstract_approval_stage import APPROVAL_STATUS_NOT_APPROVE
@@ -8,9 +9,18 @@ class ApprovalTransactionTask(models.Model):
     _name = "approval.transaction.task"
     _inherit = 'approval.strategy.task.mixin'
     _description = """
-    Mixin : Approval Transaction Data Waiting Approval Task Approval for user
+    Approval Transaction Data Waiting Approval Task Approval for user
     """
 
+    notification_to_user_id = fields.Many2one(
+        'res.users', string='Notification to User',
+        compute="_compute_notification_to_user_id",
+        help="User who will receive the notification.",
+    )
+    @api.depends_context('notification_to_user')
+    def _compute_notification_to_user_id(self):
+        for rec in self:
+            rec.notification_to_user_id = self.env.context.get('notification_to_user')
     sequence = fields.Integer(
         default=10, string='Sequence',
         help="Sequence of the approval line in the transaction"
@@ -26,6 +36,16 @@ class ApprovalTransactionTask(models.Model):
         related='approval_stage_id.approval_instance_id'
     )
     approval_stage_model_name = fields.Char(default='approval.transaction.stage')
+
+    internal_url = fields.Char(
+        string='Internal URL',
+        compute='_compute_internal_url',
+        help="Internal URL of the transaction."
+    )
+    @api.depends('transaction_model_name', 'transaction_id')
+    def _compute_internal_url(self):
+        for rec in self:
+            rec.internal_url = rec.get_transaction_object().get_internal_url()
 
     def get_approval_stage_object(self):
         return self.approval_stage_id
@@ -141,6 +161,21 @@ class ApprovalTransactionTask(models.Model):
             prepare_dict['description'] = self.approval_instance_id.description or self.approval_stage_id.description
         if 'requester_id' not in prepare_dict:
             prepare_dict['requester_id'] = to_integer(self.approval_instance_id.requester_id) or to_integer(self.approval_stage_id.requester_id)
+        if 'request_date' not in prepare_dict:
+            prepare_dict['request_date'] = self.approval_instance_id.request_date or self.approval_stage_id.request_date
+
+        return prepare_dict
+
+    def prepare_approval_task_dict(self):
+        """Prepare dict untuk create record approval task"""
+        self.ensure_one()
+        prepare_dict = super(ApprovalTransactionTask, self).prepare_approval_task_dict()
+
+        if 'description' not in prepare_dict:
+            prepare_dict['description'] = self.approval_instance_id.description or self.approval_stage_id.description
+        if 'requester_id' not in prepare_dict:
+            prepare_dict['requester_id'] = to_integer(self.approval_instance_id.requester_id) or to_integer(
+                self.approval_stage_id.requester_id)
         if 'request_date' not in prepare_dict:
             prepare_dict['request_date'] = self.approval_instance_id.request_date or self.approval_stage_id.request_date
 

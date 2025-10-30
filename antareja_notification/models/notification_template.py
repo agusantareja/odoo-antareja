@@ -14,6 +14,10 @@ class NotificationTemplate(models.Model):
     template_email = fields.Many2one('mail.template')
     template_wa = fields.Many2one('mail.template')
     template_chatter = fields.Many2one('mail.template')
+    template_comment = fields.Many2one(
+        'mail.template',
+        help='Comment Post'
+    )
 
     def get_test_email(self):
         return self.env['ir.config_parameter'].sudo().get_param('send_message_cron.test_email') or "False"
@@ -24,17 +28,18 @@ class NotificationTemplate(models.Model):
     def get_wa_scope_default(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja_notification.scope_default')
 
-
-    def send_notification_to_users(self,users,res_id):
+    def send_notification_to_users(self,users,res_id,**kwargs):
         if not users or not res_id:
             return
         self.ensure_one()
         for notification_to_user in users:
             notif_log = self.send_notification_to_user(notification_to_user, res_id)
             if notif_log :
+                notif_log['res_id'] = res_id
                 notif_log['receiver_id']=notification_to_user.id
                 notif_log['notification_template_id']=self.id
                 self.env['notification.log'].create(notif_log)
+        self.send_comment_post(res_id,**kwargs)
 
     def send_notification_to_user(self, notification_to_user, res_id):
         notif_log = {}

@@ -93,6 +93,9 @@ class ApprovalStrategyStageMixin(models.AbstractModel):
             self.set_waiting_state()
 
         self.approval_tasks.setup_approval_task()
+        next_approval = self.check_next_approval_task()
+        if next_approval:
+            next_approval.setup_approval_task_manager()
 
     def set_waiting_approval_status(self):
         super().set_waiting_approval_status()
@@ -175,6 +178,7 @@ class ApprovalStrategyStageMixin(models.AbstractModel):
         else:
             next_approval = self.check_next_approval_task()
             if task_approval.id != next_approval.id:
+                next_approval.setup_approval_task_manager()
                 self.notify_user_next_approval_task()
                 if self.approval_instance_id:
                     self.approval_instance_id.check_next_approval_task()

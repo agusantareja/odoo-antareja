@@ -7,12 +7,9 @@
     'website': "http://www.yourcompany.com",
     'category': 'Uncategorized',
     'version': '13.0.1',
-    'depends': ['base', 'mail', 'ahda_dynamic_whatsapp_client'],
+    'depends': ['base', 'mail', 'antareja_notification_whatsapp'],
     # always loaded
     'data': [
-        'data/cron.xml',
-        'views/whatsapp_log_views.xml',
-        'views/notification_template_views.xml',
-        'views/notification_log_views.xml',
+        'data/notification_template_data.xml',
     ],
 }

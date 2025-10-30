@@ -22,12 +22,14 @@ class ApprovalAuditLog(models.Model):
         default=lambda self: self.env.user,
         required=True
     )
+    job_position = fields.Char()
     delegator_id = fields.Many2one(
         'res.users',
         "Delegator",
         default=lambda self: self.env.user,
         help="User who delegated the approval action"
     )
+    delegator_job_position = fields.Char()
     action_type = fields.Selection([
         ('approve', 'Approve'),
         ('reject', 'Reject'),
@@ -36,6 +38,10 @@ class ApprovalAuditLog(models.Model):
         ('proxy_approve', 'Proxy Approve'),
         ('proxy_reject', 'Proxy Reject'),
     ], required=True)
+    requestor_id = fields.Many2one(
+        'res.users',
+        "Requestor Approval",
+    )
     notes = fields.Text(
         'Notes',
         help="Additional notes or comments regarding the action reject"
@@ -56,3 +62,26 @@ class ApprovalAuditLog(models.Model):
         if ignored_keys:
             _logger.warning("Ignored unknown fields in audit log: %s", ignored_keys)
         return self.create([create_dict])[0]
+
+    def get_approval_line_for_document(self,transaction_model_name, transaction_id,limit=100):
+        """Retrieve the approval document based on model name and ID. agar bisa di pakai untuk tanda tangan di dokument"""
+        approval_line = self.browse()
+        candidate = self.search(
+            [('transaction_model_name','=',transaction_model_name),('transaction_id','=',transaction_id)],
+            limit=limit,
+            order='create_date desc'
+        )
+        for  rec in candidate:
+            if rec.action_type in ['reject','behalf_reject','proxy_reject']:
+                # stop on first reject
+                # asusmi saat terjadi reject maka approval di reset ulang
+                break
+            approval_line += rec
+
+        if approval_line:
+            # reverse
+            approval_line = approval_line[::-1]
+        return approval_line
+
+    def notification_requestor(self,**kwargs):
+        raise NotImplementedError("Notification Requestor Not Implementation")
