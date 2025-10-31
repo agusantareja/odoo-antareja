@@ -21,7 +21,7 @@
         <record id="whatsapp_template_notification_approval_task_param_scope" model="whatsapp.template.param">
             <field name="key">scope</field>
             <field name="type">fix</field>
-            <field name="value">ERPCMP</field>
+            <field name="value">APPROVAL</field>
             <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task"/>
         </record>
         <record id="whatsapp_template_notification_approval_task_param_message" model="whatsapp.template.param">
@@ -56,7 +56,7 @@ ${object.internal_url}</field>
         <record id="whatsapp_template_notification_rejection_task_param_scope" model="whatsapp.template.param">
             <field name="key">scope</field>
             <field name="type">fix</field>
-            <field name="value">ERPCMP</field>
+            <field name="value">APPROVAL</field>
             <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task"/>
         </record>
         <record id="whatsapp_template_notification_rejection_task_param_message" model="whatsapp.template.param">
