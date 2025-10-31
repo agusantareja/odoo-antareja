@@ -1,4 +1,6 @@
-from odoo import fields, models, _
+# -*- coding: utf-8 -*-
+
+from odoo import fields, models
 import logging
 import json
 _logger = logging.getLogger(__name__)
@@ -49,6 +51,32 @@ class NotificationTemplate(models.Model):
             return self.env['whatsapp.log'].sudo().create(create_dict)
 
         return None
+
+    def create_new_wa_message(self, phone:str, message:str, ref:str, res_id:int, model:str, scope="LEGACY", partner=None):
+        WhatsappTemplate = self.env['whatsapp.template']
+        phone_formatted = WhatsappTemplate._format_phone_number(phone)
+        if not phone_formatted:
+            if partner:
+                 _logger.warning("Invalid phone number for partner ID %s , name %s , %s", partner.id, partner.name,phone)
+            else:
+                _logger.warning("Invalid phone number: %s", phone)
+            return None
+
+        payload = {
+            'scope': scope,
+            'phone': phone_formatted,
+            'message': message,
+            'ref': ref,
+        }
+        create_dict = {
+            'res_id': res_id,
+            'model': model,
+            'payload': json.dumps(payload),
+            'status': 'pending',
+        }
+        if partner:
+            create_dict['recipient_partner_id'] = partner.id
+        return self.env['whatsapp.log'].sudo().create(create_dict)
 
     def send_notification_to_user_whatsapp(self, notification_to_user, res_id):
         if not notification_to_user or not res_id:
