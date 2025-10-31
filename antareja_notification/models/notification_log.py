@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import fields, models, _
 import logging
 _logger = logging.getLogger(__name__)
@@ -5,6 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class NotificationLog(models.Model):
     _name = "notification.log"
+    _inherit = 'approval.transaction.able.mixin'
     _description = "Notification Template"
     _order = 'id desc'
 
@@ -23,10 +26,42 @@ class NotificationLog(models.Model):
 
     res_id = fields.Integer()
 
-    def send_notification_to_user(self):
-        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user(self.receiver_id,self.res_id)
+    def send(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user(
+            self.receiver_id,self.res_id,
+            transaction_id=self.transaction_id,
+            transaction_model_name=self.transaction_model_name
+        )
         if result:
             self.write(result)
+
+    def send_mail(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_email(
+            self.receiver_id,self.res_id
+        )
+        if result:
+            self.write(result)
+
+    def send_wa(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_wa(
+            self.receiver_id,self.res_id
+        )
+        if result:
+            self.write(result)
+
+    def send_chat(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_chatter(
+            self.receiver_id,self.res_id
+        )
+        if result:
+            self.write(result)
+
+    def send_post_message(self):
+        self.notification_template_id.with_user(self.user_id).send_comment_post(
+            self.receiver_id,self.res_id,
+            transaction_id=self.transaction_id,
+            transaction_model_name=self.transaction_model_name
+        )
 
     def action_show_mail(self):
         self.ensure_one()

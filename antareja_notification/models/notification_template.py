@@ -1,7 +1,11 @@
-from odoo import fields, models, _
+# -*- coding: utf-8 -*-
+
+from odoo import fields, models
 import logging
 _logger = logging.getLogger(__name__)
 
+def have_method(obj, method):
+    return hasattr(obj, method) and callable(getattr(obj, method))
 
 class NotificationTemplate(models.Model):
     _name = "notification.template"
@@ -38,7 +42,10 @@ class NotificationTemplate(models.Model):
                 notif_log['res_id'] = res_id
                 notif_log['receiver_id']=notification_to_user.id
                 notif_log['notification_template_id']=self.id
+                notif_log['transaction_id'] = kwargs.get('transaction_id')
+                notif_log['transaction_model_name'] = kwargs.get('transaction_model_name')
                 self.env['notification.log'].create(notif_log)
+
         self.send_comment_post(res_id,**kwargs)
 
     def send_notification_to_user(self, notification_to_user, res_id):
@@ -112,31 +119,29 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         if self.template_chatter:
-            values = self.template_chatter.sudo().with_context(notification_to_user=notification_to_user).generate_email(res_id)
+            values = self.template_chatter.with_context(notification_to_user=notification_to_user).generate_email(res_id)
             message=values['body_html']
-            partner = notification_to_user.partner_id
-            odoobot_id = self.env['ir.model.data'].xmlid_to_res_id("base.partner_root")
-            MailChannel = self.env['mail.channel']
-            channel = MailChannel.sudo().search([
-                ('channel_partner_ids', '=', partner.id),
-                ('public', '=', 'private'),
-                ('channel_type', '=', 'chat'),
-                ('email_send', '=', False),
-                ('name', '=', 'OdooBot'),
-            ], limit=1)
-            if not channel:
-                channel = MailChannel.with_context(mail_create_nosubscribe=True).sudo().create({
-                    'channel_partner_ids': [(4, partner.id)],
-                    'public': 'private',
-                    'channel_type': 'chat',
-                    'email_send': False,
-                    'name': 'OdooBot'
-                })
-                self._cr.execute("delete from mail_channel_partner where partner_id = %s and channel_id = %s",
-                                 [self.env.user.partner_id.id, channel.id])
-            result = channel.sudo().message_post(body=message, author_id=odoobot_id, message_type="comment",
-                                                 subtype="mail.mt_comment")
-            self.env.user.odoobot_state = 'onboarding_emoji'
-            return result
+            return notification_to_user.send_odoobot_message(message)
 
+        return None
+
+    def send_comment_post(self,res_id,**kwargs):
+        if not  not res_id:
+            return
+        self.ensure_one()
+        if self.template_comment :
+            transaction_id = kwargs.get('transaction_id')
+            transaction_model_name = kwargs.get('transaction_model_name')
+            if transaction_id and transaction_model_name:
+                rec = self.env[transaction_model_name].browse(transaction_id)
+                odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
+                if rec and have_method(rec, 'message_post'):
+                    values = self.template_comment.generate_email(res_id, ['body_html'])
+                    message = values['body_html']
+                    return rec.message_post(
+                        body=message,
+                        author_id=odoobot_id,
+                        message_type="comment",
+                        subtype_xmlid="mail.mt_comment"
+                    )
         return None
