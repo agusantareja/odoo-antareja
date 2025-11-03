@@ -7,7 +7,7 @@
     'description': """Module untuk mengirim notifikasi via email/whatsapp dengan menggunakan template yang sudah 
     disediakan untuk penyederhanaan pengiriman email/whatsapp.
     """,
-    'depends': ['base', 'mail','antareja_base', 'send_message_cron',],
+    'depends': ['base', 'mail','antareja_base',],
     'data': [
         'security/ir.model.access.csv',
         'views/notification_template_views.xml',
