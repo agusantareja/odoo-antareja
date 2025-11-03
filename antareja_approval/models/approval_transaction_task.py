@@ -42,6 +42,7 @@ class ApprovalTransactionTask(models.Model):
         compute='_compute_internal_url',
         help="Internal URL of the transaction."
     )
+    start_amount = fields.Float("Limit/Start Amount")
     @api.depends('transaction_model_name', 'transaction_id')
     def _compute_internal_url(self):
         for rec in self:
@@ -180,3 +181,30 @@ class ApprovalTransactionTask(models.Model):
             prepare_dict['request_date'] = self.approval_instance_id.request_date or self.approval_stage_id.request_date
 
         return prepare_dict
+
+    def get_notification_template_approval_task(self, **kwargs):
+        template = self.approval_stage_id.notification_template_approval_id
+        if template:
+            template_model = template.model
+            if self.transaction_model_name == template_model and self.transaction_id:
+                return template, self.transaction_id
+        template, res_id = super().get_notification_template_approval_task(**kwargs)
+        return template, res_id
+
+    def get_notification_template_approved_task(self, **kwargs):
+        template = self.approval_stage_id.notification_template_approved_id
+        if template:
+            template_model = template.model
+            if self.transaction_model_name == template_model and self.transaction_id:
+                return template,self.transaction_id
+        template, res_id = super().get_notification_template_approved_task(**kwargs)
+        return template, res_id
+
+    def get_notification_template_rejection_task(self,**kwargs):
+        template = self.approval_stage_id.notification_template_rejection_id
+        if template:
+            template_model = template.model
+            if self.transaction_model_name == template_model and self.transaction_id:
+                return self.transaction_id
+        template, res_id = super().get_notification_template_rejection_task(**kwargs)
+        return template, res_id
