@@ -96,23 +96,7 @@ class NotificationTemplate(models.Model):
         return None
 
     def send_notification_to_user_wa(self, notification_to_user, res_id):
-        if not notification_to_user or not res_id:
-            return
-        self.ensure_one()
-        if self.template_wa:
-            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(
-                res_id)
-            message_wa = values['body_html']
-            ref = values['subject']
-            return self.env['send_message.email'].sudo().create({
-                'receiver': notification_to_user.id,
-                'ref': ref,
-                'message': message_wa,
-                'is_send': True,
-                'is_send_wa': False,
-            })
-
-        return None
+        raise NotImplementedError("Method send_notification_to_user_wa belum di implementasikan")
 
     def send_notification_to_user_chatter(self,notification_to_user,res_id):
         if not notification_to_user or not res_id:
