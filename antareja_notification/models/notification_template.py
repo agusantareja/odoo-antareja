@@ -100,7 +100,7 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         if self.template_wa:
-            values = self.template_wa.sudo().with_context(notification_to_user=notification_to_user).generate_email(
+            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(
                 res_id)
             message_wa = values['body_html']
             ref = values['subject']
