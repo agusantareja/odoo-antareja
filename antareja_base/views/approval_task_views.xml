@@ -5,7 +5,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
-                <field name="transaction_ref" />
+<!--                <field name="transaction_ref" />-->
                 <field name="description"/>
                 <field name="date"/>
                 <field name="requester_id"/>

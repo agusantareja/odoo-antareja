@@ -16,6 +16,7 @@ class UserDelegate(models.Model):
         ('draft', 'Draft'),
         ('waiting_approval', 'Waiting Approval'),
         ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
     ], string='Approval Status', default='draft', tracking=True)
 
     move_need_approval = fields.Boolean(compute="_compute_move_need_approval")

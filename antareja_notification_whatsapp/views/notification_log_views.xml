@@ -6,8 +6,9 @@
             <field name="inherit_id" ref="antareja_notification.notification_log_tree"/>
             <field name="arch" type="xml">
                 <tree position="inside">
-                    <field name="whatapp_id" invisible="1"/>
-                    <button name="action_show_whatapp" string="Show Whatapp" type="object" class="oe_highlight" attrs="{'invisible':[('whatapp_id','=',0)]}"/>
+                    <field name="whatsapp_id" optional="hide"/>
+                    <button name="send_whatsapp" string="Send Whatsapp" type="object" class="oe_highlight" attrs="{'invisible':[('whatsapp_id','!=',0)]}"/>
+                    <button name="action_show_whatsapp" string="Show Whatsapp" type="object" class="oe_highlight" attrs="{'invisible':[('whatsapp_id','=',0)]}"/>
                 </tree>
             </field>
         </record>

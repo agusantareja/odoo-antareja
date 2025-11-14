@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
+import logging
 
-_logger = __import__('logging').getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class ApprovalTieredMatrixRule(models.Model):
@@ -25,16 +26,14 @@ class ApprovalTieredMatrixRule(models.Model):
     # setup when configuration
     def get_approval_matrix_rule(self, **kwargs):
         model = kwargs.get('transaction_model_name')
-        scope = kwargs.get('transaction_model_scope')
+        scope = kwargs.get('transaction_model_scope') or False
         transaction_amount = kwargs.get('transaction_amount')
         company_id = kwargs.get('company_id')
         def get_rule(domain):
             return self.search(domain, order='limit_amount', limit=1)
         return (
                 get_rule([('model', '=', model),('limit_amount', '>=', transaction_amount),('scope', '=', scope),('company_id', '=', company_id)]) or
-                get_rule([('model', '=', model),('limit_amount', '>=', transaction_amount),('scope', '=', scope),('company_id', '=', False)]) or
-                get_rule([('model', '=', model), ('limit_amount', '>=', transaction_amount), ('scope', '=', False),('company_id', '=', company_id)]) or
-                get_rule([('model', '=', model), ('limit_amount', '>=', transaction_amount), ('scope', '=', False),('company_id', '=', False)])
+                get_rule([('model', '=', model),('limit_amount', '>=', transaction_amount),('scope', '=', scope),('company_id', '=', False)])
                 )
 
     def get_approval_line(self, **kwargs):
