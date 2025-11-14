@@ -27,10 +27,10 @@
               parent="menu_approval_manager"
               action="action_approval_transaction_stage" sequence="10"
     />
-    <menuitem id="menu_approval_audit_log"
-              name="Approval Audit Log"
+    <menuitem id="menu_approval_transaction_instance"
+              name="Approval Instance"
               parent="menu_approval_manager"
-              action="view_approval_audit_log_action" sequence="20"
+              action="action_approval_transaction_instance" sequence="20"
     />
     <menuitem id="manager_waiting_approval_menu"
               name="Manager Waiting Approval"
