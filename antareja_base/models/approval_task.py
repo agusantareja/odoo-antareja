@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 from odoo.models import BaseModel
 import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class ApprovalTask(models.Model):
     _name = 'approval.task'
-    _inherit = 'approval.transaction.able.mixin'
+    _inherit = 'approval.transaction.view.able.mixin'
     _description = 'This is Approval Task for Approval helper waiting approval'
     _order = 'create_date desc'
     name = fields.Char('Name')
@@ -105,22 +107,32 @@ class ApprovalTask(models.Model):
         return self.env[self.transaction_model_name].browse()
 
     def approval_done(self, **kwargs):
-        self.unlink()
+        if self:
+            records = self
+        else:
+            transaction_id = kwargs.get('transaction_id')
+            transaction_model_name = kwargs.get('transaction_model_name')
+            if transaction_id and transaction_id:
+                records = self.search([('transaction_id', '=', transaction_id),('transaction_model_name', '=', transaction_model_name),])
+            else:
+                return True
+        return records.unlink()
 
     def prepare_data(self,**kwargs):
         data = dict()
+
         def to_list_for_m2m(values):
             if isinstance(values, BaseModel):
                 return values.ids
             elif isinstance(values, list):
                 return values
             return []
-        if 'name' in kwargs:
-            data['name'] = kwargs.get('name')
-        if 'description' in kwargs:
-            data['description'] = kwargs.get('description')
-        if 'date' in kwargs:
-            data['date'] = kwargs.get('date')
+
+        for key in ['name', 'description', 'date', 'view_name','requester_id']:
+            value = kwargs.get(key, None)
+            if value is not None:
+                data[key] = value
+
         if 'user_ids' in kwargs:
             objects = kwargs.get('user_ids')
             if objects:
@@ -160,3 +172,27 @@ class ApprovalTask(models.Model):
 
     def send_notification(self, **kwargs):
         pass
+
+    def action_approval_transaction(self):
+        win_dict = super(ApprovalTask, self).action_approval_transaction()
+        rec = self.ensure_one()
+        if rec.view_name:
+            model = self.env['ir.model'].search([('model', '=', rec.transaction_model_name)], limit=1)
+            if rec.group_ids:
+                query = """
+                        SELECT perm_read
+                        FROM ir_model_access 
+                        WHERE model_id = %s
+                        AND group_id IN (SELECT hid FROM res_groups_implied_rel WHERE gid = %s)
+                    """ % (model.id, rec.group_ids.ids[0])
+                self._cr.execute(query)
+                ress = self._cr.fetchall()
+            else:
+                ress = None
+            if ress and any([x[0] for x in ress]):
+                obj_ir_view = self.env["ir.ui.view"]
+                obj_ir_view_browse = obj_ir_view.search(
+                    [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)])
+                win_dict['view_id'] = obj_ir_view_browse.id
+
+        return win_dict

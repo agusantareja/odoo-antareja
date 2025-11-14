@@ -9,7 +9,8 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
-
+    _description = """ implement untuk instance yang akan akan di tabahkan approval
+    """
     approval_line_for_document = fields.Many2many(
         'approval.audit.log',
         string='Approval Line for Document',
@@ -29,8 +30,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         """
         self.ensure_one()
         approval = self.get_approval_transaction_task()
-        if approval:
-            approval.approval_done(**kwargs)
+        approval and approval.approval_done(**kwargs)
 
         if kwargs.get("skip_create_approval_log"):
             return

@@ -37,7 +37,7 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         for notification_to_user in users:
-            notif_log = self.send_notification_to_user(notification_to_user, res_id)
+            notif_log = self.send_notification_to_user(notification_to_user, res_id,**kwargs)
             if notif_log :
                 notif_log['res_id'] = res_id
                 notif_log['receiver_id']=notification_to_user.id
@@ -48,25 +48,25 @@ class NotificationTemplate(models.Model):
 
         self.send_comment_post(res_id,**kwargs)
 
-    def send_notification_to_user(self, notification_to_user, res_id):
+    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
         notif_log = {}
-        result = self.send_notification_to_user_email(notification_to_user, res_id)
+        result = self.send_notification_to_user_email(notification_to_user, res_id,**kwargs)
         if result:
             notif_log['mail_id'] = result.id
             notif_log['mail_model'] = result._name
 
-        result = self.send_notification_to_user_wa(notification_to_user, res_id)
+        result = self.send_notification_to_user_wa(notification_to_user, res_id,**kwargs)
         if result:
             notif_log['send_message_id'] = result.id
             notif_log['send_message_model'] = result._name
 
-        result = self.send_notification_to_user_chatter(notification_to_user, res_id)
+        result = self.send_notification_to_user_chatter(notification_to_user, res_id,**kwargs)
         if result:
             notif_log['chat_message_id'] = result.id
             notif_log['chat_message_model'] = result._name
         return notif_log
 
-    def send_notification_to_user_email(self, notification_to_user, res_id):
+    def send_notification_to_user_email(self, notification_to_user, res_id,**kwargs):
         if not notification_to_user or not res_id:
             return
 
@@ -95,10 +95,10 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user_wa(self, notification_to_user, res_id):
+    def send_notification_to_user_wa(self, notification_to_user, res_id,**kwargs):
         raise NotImplementedError("Method send_notification_to_user_wa belum di implementasikan")
 
-    def send_notification_to_user_chatter(self,notification_to_user,res_id):
+    def send_notification_to_user_chatter(self,notification_to_user,res_id,**kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()

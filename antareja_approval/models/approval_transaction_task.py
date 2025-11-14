@@ -164,6 +164,8 @@ class ApprovalTransactionTask(models.Model):
             prepare_dict['requester_id'] = to_integer(self.approval_instance_id.requester_id) or to_integer(self.approval_stage_id.requester_id)
         if 'request_date' not in prepare_dict:
             prepare_dict['request_date'] = self.approval_instance_id.request_date or self.approval_stage_id.request_date
+        if 'start_amount' not in prepare_dict:
+            prepare_dict['start_amount'] = self.start_amount
 
         return prepare_dict
 
