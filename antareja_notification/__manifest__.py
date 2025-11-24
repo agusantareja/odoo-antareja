@@ -12,6 +12,7 @@
         'security/ir.model.access.csv',
         'views/notification_template_views.xml',
         'views/notification_log_views.xml',
+        'views/approval_template_views.xml',
         'views/menuitem.xml',
         'views/res_config_settings_views.xml',
     ],
