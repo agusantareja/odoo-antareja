@@ -110,7 +110,7 @@ class AbstractApprovalTask(models.AbstractModel):
         if self.status_approval != APPROVAL_STATUS_NOT_APPROVE:
             raise ValidationError("Transaction is already approved or rejected.")
         if not self.access_approval :
-                raise ValidationError("You are not authorized to approve this transaction.")
+            raise ValidationError("You are not authorized to approve this transaction.")
 
     def _approve_task(self):
         """Approve the transaction"""
