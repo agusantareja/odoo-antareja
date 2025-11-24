@@ -1,14 +1,34 @@
 <odoo>
+    <record id="view_invoice_tree" model="ir.ui.view">
+        <field name="name">account.move</field>
+        <field name="model">account.move</field>
+        <field name="priority" eval="16"/>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="approval_state" widget="badge"
+                       decoration-info="approval_state == 'waiting_approval'"
+                       decoration-success="approval_state == 'approved'"
+                       decoration-danger="approval_state == 'rejected'"
+                       attrs="{'invisible': [('approval_state', 'in', ('draft'))]}" optional="hide"
+                />
+            </field>
+
+        </field>
+    </record>
+
     <record id="view_account_move_form" model="ir.ui.view">
         <field name="name">account.move</field>
         <field name="model">account.move</field>
         <field name="priority" eval="16"/>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-<!--            <xpath expr="//header/field[@name='state']" position="attributes">-->
-<!--                <attribute name="statusbar_visible">draft,waiting_approval,approved,active</attribute>-->
-<!--            </xpath>-->
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="attrs">{'invisible': [('move_need_approval','=',True)]}</attribute>
+            </xpath>
+
             <xpath expr="//header" position="inside">
+                <field name="move_readonly" invisible="1"/>
                 <field name="access_approval" invisible="1"/>
                 <field name="move_need_approval"  invisible="1"/>
                 <field name="state_is_draft" invisible="1"/>
@@ -39,9 +59,13 @@
 <!--                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"-->
 <!--                        attrs="{'invisible': [('move_need_approval','=',False)]}"-->
 <!--                />-->
-                <field name="approval_state" widget="statusbar" statusbar_visible="waiting_approval,approved"
+                <field name="approval_state" widget="statusbar" statusbar_visible="draft,waiting_approval,posted"
                     attrs="{'invisible': [('move_need_approval','=',False)]}"
                 />
+
+            </xpath>
+            <xpath expr="//group[@id='header_right_group']//field[@name='journal_id']" position="attributes">
+                <attribute name="attrs">{'readonly': ['|',('posted_before', '=', True),('move_readonly','=',True)]}</attribute>
             </xpath>
             <notebook  position="inside" >
                 <page string="Approval" attrs="{'invisible': [('move_need_approval','=',False)]}">
@@ -70,20 +94,21 @@
                             <field name="notes"/>
                         </tree>
                     </field>
-                    </page>
+                </page>
                 <page name="approval_config" string="Approval Monitoring" attrs="{'invisible': [('move_need_approval','=',False)]}" groups="base.group_no_one">
+                    <group >
                         <group>
-                            <group>
-                                <field name="approval_instance_id" readonly="1" context="{'create':False,'edit':False}"/>
-                                <field name="approval_stage_id" readonly="1" context="{'create':False,'edit':False}"/>
-                                <field name="next_approval_task_ref" readonly="1" context="{'create':False,'edit':False}"/>
-                            </group>
+                            <field name="approval_instance_id" readonly="1" context="{'create':False,'edit':False}"/>
+                            <field name="approval_stage_id" readonly="1" context="{'create':False,'edit':False}"/>
+                            <field name="next_approval_task_ref" readonly="1" context="{'create':False,'edit':False}"/>
                         </group>
+                    </group>
                     <field name="approval_stage_active" readonly="1"/>
                     <field name="approval_stage_task_active" readonly="1"/>
-                        <field name="approval_audit_log_line" readonly="1" />
-                    </page>
-                </notebook>
+                    <field name="approval_audit_log_line" readonly="1"/>
+                </page>
+            </notebook>
         </field>
     </record>
+
 </odoo>
