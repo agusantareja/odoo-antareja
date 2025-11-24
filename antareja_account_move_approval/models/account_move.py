@@ -4,12 +4,15 @@ from odoo.exceptions import UserError, AccessError
 from odoo.tools import formatLang, float_compare
 
 
-class UserDelegate(models.Model):
+class AccountMove(models.Model):
     _name = 'account.move'
     _inherit = [
         _name,
         'approval.transaction.mixin','mail.template.internal.mixin'
     ]
+    state = fields.Selection(selection_add=[
+        ('waiting_approval', 'Waiting Approval'),
+    ] )
 
     # add state for approva
     approval_state = fields.Selection([
@@ -17,9 +20,11 @@ class UserDelegate(models.Model):
         ('waiting_approval', 'Waiting Approval'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('posted', 'Posted'),
     ], string='Approval Status', default='draft', tracking=True)
 
     move_need_approval = fields.Boolean(compute="_compute_move_need_approval")
+    move_readonly = fields.Boolean(compute="_compute_move_readonly")
 
     @api.depends('journal_id.approval_template_id')
     def _compute_move_need_approval(self):
@@ -98,20 +103,27 @@ class UserDelegate(models.Model):
         self.validate_request_approval()
 
         for rec in self:
-            if rec.state=='draft' and rec.move_need_approval and rec.approval_state=='draft' :
+            if rec.state!='posted' and rec.move_need_approval and rec.approval_state=='draft' :
                 rec.ensure_number_invoice_setup()
                 rec.strategy_button_submit()
+                rec.state='waiting_approval'
 
     def action_approve(self):
         for rec in self:
             rec.approval_state = 'approved'
+            rec.action_post()
 
     def action_post(self):
         # prevent posting if not approved
         for rec in self:
             if rec.move_need_approval and rec.approval_state != 'approved':
                 raise UserError("Bill must be approved before posting.")
-        return super().action_post()
+        # before_post = self.browse()
+        # for record in self.filtered(lambda move: move.state == 'waiting_approval' and move.approval_state == 'approved'):
+        #     # hack before post
+        #     record.state = 'draft'
+        #     before_post |= record
+        return super(AccountMove,self).action_post()
 
     def get_transaction_status(self):
         return self.approval_state or 'draft'
@@ -131,3 +143,33 @@ class UserDelegate(models.Model):
             return f"{self.invoice_sequence_number_next_prefix}/{self.invoice_sequence_number_next}"
         else:
             return self.name
+    def _post(self, soft=True):
+        result= super(AccountMove,self)._post(soft=soft)
+        for record in self.filtered(lambda move: move.state=='posted'):
+            record.approval_state='posted'
+        return result
+
+    @api.depends('date', 'auto_post','approval_state','move_need_approval')
+    def _compute_hide_post_button(self):
+        approval_move = self.browse()
+        for record in self.filtered(lambda move: move.move_need_approval ):
+            if record.state in ['draft','waiting_approval'] and record.approval_state == 'approved':
+                record.hide_post_button = False
+            elif record.approval_state != 'approved':
+                record.hide_post_button = True
+            approval_move |= record
+
+        other_check = self - approval_move
+        super(AccountMove,other_check)._compute_hide_post_button()
+
+    @api.depends('state', 'approval_state', 'move_need_approval')
+    def _compute_move_readonly(self):
+        for record in self:
+            record.move_readonly = record.state != 'draft' or (record.move_need_approval and record.approval_state != 'draft')
+
+    def unregister_approval_task(self,**kwargs):
+        super(AccountMove,self).unregister_approval_task(**kwargs)
+        if self.approval_state == 'approved':
+            self.action_post()
+        elif self.approval_state == 'draft' and self.state!='posted' :
+            self.state='draft'
