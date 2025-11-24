@@ -77,7 +77,7 @@ class AbstractApprovalTransaction(models.AbstractModel):
             self.approval_instance_id.write({"is_completed":True})
         self.approval_instance_id = None
         approval_instance= self.ensure_approval_instance()
-        self.setup_approval_transaction_task()
+        self.register_approval_task()
         return approval_instance
 
     def strategy_button_submit(self):
@@ -146,16 +146,16 @@ class AbstractApprovalTransaction(models.AbstractModel):
     def callback_approval_instance_approved(self, approval_instance):
         self.set_transaction_status(approval_instance.stage_status)
         self.check_next_approval_task()
-        if self.approval_instance_id.is_completed:
-            self.done_approval_transaction_task(skip_create_approval_log=True)
+        if self.approval_instance_id.get_has_approved_condition() or self.approval_instance_id.is_completed:
+            self.unregister_approval_task(skip_create_approval_log=True)
 
 
     def callback_approval_instance_rejected(self, approval_instance):
         self.set_transaction_status(approval_instance.stage_status)
         self.approval_instance_id = None
-        self.done_approval_transaction_task(skip_create_approval_log=True)
+        self.unregister_approval_task(skip_create_approval_log=True)
 
-    def setup_approval_transaction_task(self, **kwargs):
+    def register_approval_task(self, **kwargs):
         kw = dict(kwargs)
         next_approval_task = self.get_next_approval_task()
         if next_approval_task :
@@ -188,7 +188,7 @@ class AbstractApprovalTransaction(models.AbstractModel):
             kw.update({
                 'approval_instance_id': self.approval_instance_id.id
             })
-            approval_transaction_task = super(AbstractApprovalTransaction, self).setup_approval_transaction_task(*kw)
+            approval_transaction_task = super(AbstractApprovalTransaction, self).register_approval_task(*kw)
             _logger.info("next approval task found for transaction id %s -> %s", self.id, approval_transaction_task)
             return approval_transaction_task
         else:
