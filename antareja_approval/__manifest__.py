@@ -2,11 +2,11 @@
     'name': 'Antareja || Approval',
     'version': '13.0.0.0.1',
     'summary': """
-    Approval Workflow and notification
+    Approval Workflow and Notification
     """,
     'category': 'Tools',
     'author': 'ChatGPT + Agus',
-    'depends': ['base', 'mail', 'antareja_notification'],
+    'depends': ['base', 'mail', 'antareja_base', 'antareja_notification'],
     'data': [
         'data/notification_template_data.xml',
         'security/ir.model.access.csv',

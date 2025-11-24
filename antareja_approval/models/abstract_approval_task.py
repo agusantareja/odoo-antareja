@@ -82,14 +82,12 @@ class ApprovalBuUserTask(models.AbstractModel):
     def _approve_task(self):
         """Approve the transaction"""
         self.ensure_one()
-        self.set_approve_state()
         self.date_execution = fields.Datetime.now()
         self.set_user_execution_id()
 
     def _reject_task(self):
         """Reject the transaction"""
         self.ensure_one()
-        self.set_reject_state()
         self.date_execution = fields.Datetime.now()
         self.reason_approval = self.env.context.get('__reject_reason')
         self.set_user_execution_id()
@@ -109,26 +107,22 @@ class AbstractApprovalTask(models.AbstractModel):
     )
 
     def validate_before_approve_or_reject(self):
-        execution_user = self.env.user
-
         if self.status_approval != APPROVAL_STATUS_NOT_APPROVE:
             raise ValidationError("Transaction is already approved or rejected.")
-
-        if self.type_approval == 'user':
-            if self.user_id.id != execution_user.id:
-                raise ValidationError("You are not authorized to approve this transaction.")
-        else:
-            if not execution_user.has_group_id(self.group_id.id):
-                raise ValidationError("You are not authorized to approve this transaction.")
+        if not self.access_approval :
+            raise ValidationError("You are not authorized to approve this transaction.")
 
     def _approve_task(self):
         """Approve the transaction"""
         self.ensure_one()
         self.validate_before_approve_or_reject()
+        self.set_approve_state()
         super(AbstractApprovalTask, self)._approve_task()
+
 
     def _reject_task(self):
         """Reject the transaction"""
         self.ensure_one()
         self.validate_before_approve_or_reject()
-        super(AbstractApprovalTask, self)._reject_task()
+        self.set_reject_state()
+        return super(AbstractApprovalTask, self)._reject_task()

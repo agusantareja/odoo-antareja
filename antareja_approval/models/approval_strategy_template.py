@@ -104,7 +104,7 @@ class ApprovalStrategyTemplateInstance(models.Model):
         # save only field that exist in approval.transaction.instance
         filter_source = {k: v for k, v in source.items() if k in _fields}
 
-        filter_source['approval_template_instance_id'] = self.id
+        filter_source['approval_template_instance_id'] = approval_instance.id
         filter_source['transaction_id'] = transaction_object.id
         filter_source['name'] = transaction_object.name
         if 'company_id' not in filter_source and  transaction_object and 'company_id' in transaction_object._fields:

@@ -32,7 +32,7 @@
                         <field name="active"/>
                         <field name="sequence"/>
                         <field name="transaction_model_name"/>
-                        <field name="transaction_stage_field"/>
+<!--                        <field name="transaction_stage_field"/>-->
                         <field name="stage_strategy_config_name"/>
                         <field name="stage_strategy_config_model_name"/>
                     </group>

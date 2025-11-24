@@ -9,14 +9,17 @@
               action="antareja_base.current_user_waiting_approval_action"
               parent="antareja_approval.menu_approval_transaction" sequence="1"
     />
-    <menuitem id="current_user_approved_menu" name="Approved" action="antareja_base.current_user_approved_action" parent="antareja_approval.menu_approval_transaction" sequence="2" groups="base.group_no_one"/>
+    <menuitem id="current_user_approved_menu" name="Approved"
+              action="antareja_base.current_user_approved_action"
+              parent="antareja_approval.menu_approval_transaction"
+              sequence="2" />
 
 <!--    <menuitem id="menu_approval_transaction_waiting"-->
 <!--              name="Waiting Approvals"-->
 <!--              parent="menu_approval_transaction"-->
 <!--              action="action_my_approval_transaction_instance" sequence="5"/>-->
 
-     <menuitem id="menu_approval_manager" name="Manager Approval"
+    <menuitem id="menu_approval_manager" name="Manager Approval"
               parent="menu_approval_management_root" sequence="10"
     />
     <menuitem id="menu_approval_transaction_stage"
@@ -24,10 +27,10 @@
               parent="menu_approval_manager"
               action="action_approval_transaction_stage" sequence="10"
     />
-    <menuitem id="menu_approval_audit_log"
-              name="Approval Audit Log"
+    <menuitem id="menu_approval_transaction_instance"
+              name="Approval Instance"
               parent="menu_approval_manager"
-              action="view_approval_audit_log_action" sequence="20"
+              action="action_approval_transaction_instance" sequence="20"
     />
     <menuitem id="manager_waiting_approval_menu"
               name="Manager Waiting Approval"
@@ -42,13 +45,19 @@
     />
 
     <!-- MENU -->
-    <menuitem id="menu_approval_strategy_config" name="Template Config"
+    <menuitem id="menu_approval_strategy_config" name="Configuration"
               parent="menu_approval_management_root" sequence="10"/>
 
-    <menuitem id="menu_approval_strategy_template_instance" name="Instance"
+    <menuitem id="menu_approval_strategy_template_instance" name="Template Strategy Instance"
               parent="menu_approval_strategy_config"
               action="action_approval_strategy_template_instance"
               sequence="20"/>
+
+    <menuitem id="menu_approval_template" name="Template Instance"
+              parent="menu_approval_strategy_config"
+              action="antareja_base.action_approval_template"
+              sequence="21"/>
+
 <!--    <menuitem id="menu_approval_strategy_template_stage" name="Stages"-->
 <!--              parent="menu_approval_strategy_config"-->
 <!--              action="action_approval_strategy_template_stage"-->
