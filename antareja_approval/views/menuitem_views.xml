@@ -19,7 +19,7 @@
 <!--              parent="menu_approval_transaction"-->
 <!--              action="action_my_approval_transaction_instance" sequence="5"/>-->
 
-     <menuitem id="menu_approval_manager" name="Manager Approval"
+    <menuitem id="menu_approval_manager" name="Manager Approval"
               parent="menu_approval_management_root" sequence="10"
     />
     <menuitem id="menu_approval_transaction_stage"
@@ -48,10 +48,16 @@
     <menuitem id="menu_approval_strategy_config" name="Configuration"
               parent="menu_approval_management_root" sequence="10"/>
 
-    <menuitem id="menu_approval_strategy_template_instance" name="Template Instance"
+    <menuitem id="menu_approval_strategy_template_instance" name="Template Strategy Instance"
               parent="menu_approval_strategy_config"
               action="action_approval_strategy_template_instance"
               sequence="20"/>
+
+    <menuitem id="menu_approval_template" name="Template Instance"
+              parent="menu_approval_strategy_config"
+              action="antareja_base.action_approval_template"
+              sequence="21"/>
+
 <!--    <menuitem id="menu_approval_strategy_template_stage" name="Stages"-->
 <!--              parent="menu_approval_strategy_config"-->
 <!--              action="action_approval_strategy_template_stage"-->
