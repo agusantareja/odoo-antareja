@@ -17,6 +17,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         compute='_compute_approval_line_for_document',
         help="Approval line untuk di pakai di dokument lembar pengesahan"
     )
+
     def _compute_approval_line_for_document(self):
         for rec in self:
             rec.approval_line_for_document = rec.approval_line_for_document.get_approval_line_for_document(
@@ -25,18 +26,30 @@ class ApprovalTransactionTask(models.AbstractModel):
             )
 
     def done_approval_transaction_task(self, **kwargs):
+        self.unregister_approval_task(**kwargs)
+
+    def unregister_approval_task(self, **kwargs):
         """
         Approval task as done
         """
         self.ensure_one()
-        approval = self.get_approval_transaction_task()
-        approval and approval.approval_done(**kwargs)
-
+        kwargs = dict(kwargs)
+        kwargs.update(
+            transaction_id=self.id,
+            transaction_model_name=self._name,
+        )
+        self.env['approval.task'].approval_done(**kwargs)
         if kwargs.get("skip_create_approval_log"):
             return
         self.create_approval_log(**kwargs)
 
     def setup_approval_transaction_task(self, **kwargs):
+        return self.register_approval_task(**kwargs)
+
+    def register_approval_task(self, **kwargs):
+        return self.register_to_approval_task(**kwargs)
+
+    def register_to_approval_task(self, **kwargs):
         """
         Register to approval task system
         """

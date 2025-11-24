@@ -22,6 +22,8 @@ class ApprovalAuditLog(models.Model):
         default=lambda self: self.env.user,
         required=True
     )
+    # jika approval berdasarkan group
+    group_name = fields.Char()
     job_position = fields.Char()
     delegator_id = fields.Many2one(
         'res.users',
@@ -47,6 +49,17 @@ class ApprovalAuditLog(models.Model):
         help="Additional notes or comments regarding the action reject"
     )
     create_date = fields.Datetime(string='Action Time', readonly=True, default=fields.Datetime.now)
+
+    transaction_display_name = fields.Char(
+        'Name',
+        compute='_compute_transaction_display_name',
+        compute_sudo=True,
+    )
+
+    def _compute_transaction_display_name(self):
+        for rec in self:
+            obj = rec.get_transaction_object()
+            rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name
 
     def get_transaction_object(self):
         if not self.transaction_id or not self.transaction_model_name:

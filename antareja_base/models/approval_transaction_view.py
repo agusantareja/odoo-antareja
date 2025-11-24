@@ -23,7 +23,8 @@ class ApprovalTransactionView(models.AbstractModel):
         if rec.view_name:
             obj_ir_view = self.env["ir.ui.view"]
             obj_ir_view_browse = obj_ir_view.search(
-                [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)]
+                [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)],
+                limit=1
             )
             if obj_ir_view_browse:
                 win_dict['view_id'] = obj_ir_view_browse.id

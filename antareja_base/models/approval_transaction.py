@@ -20,6 +20,14 @@ class ApprovalTransaction(models.AbstractModel):
         store=False,
         copy=False
     )
+    def get_transaction_object(self):
+        if not self.transaction_model_name:
+            return False
+        if not self.transaction_id :
+            return self.env[self.transaction_model_name].browse()
+        """Get the parent document ID if available."""
+        # This method should be overridden in child classes if needed
+        return self.env[self.transaction_model_name].browse(self.transaction_id)
 
     @api.model
     def _selection_transaction_models(self):

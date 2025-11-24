@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, AccessError
 from odoo.models import BaseModel
 import logging
 
@@ -24,10 +24,10 @@ class ApprovalTask(models.Model):
         'Transaction Model Name',
     )
     user_ids = fields.Many2many(
-        'res.users',  'approval_task_users_rel','approval_task_id','user_id',
+        'res.users', 'approval_task_users_rel', 'approval_task_id', 'user_id',
     )
     group_ids = fields.Many2many(
-        'res.groups',  'approval_task_groups_rel','approval_task_id','group_id',
+        'res.groups', 'approval_task_groups_rel', 'approval_task_id', 'group_id',
         help="Groups of users who can approve this task"
     )
     requester_id = fields.Many2one(
@@ -40,6 +40,26 @@ class ApprovalTask(models.Model):
         compute='_compute_user_have_access_to_approval',
         search='search_filter_user_have_access_to_approval',
     )
+    transaction_display_name = fields.Char(
+        'Name',
+        compute='_compute_transaction_display_name',
+        compute_sudo = True,
+    )
+
+    def check_access_rights_and_rule(self,user_and_delegator):
+        rec = self.ensure_one()
+        record = rec.sudo().get_transaction_object()
+        can_access = False
+        for user in user_and_delegator:
+            try:
+                record_check = record.with_user(user)
+                record_check.check_access_rights('read')
+                record_check.check_access_rule('read')
+                return True
+            except AccessError:
+                can_access = False
+
+        return can_access
 
     def _compute_user_have_access_to_approval(self):
         """Hitung apakah user login punya akses approve/reject."""
@@ -53,9 +73,10 @@ class ApprovalTask(models.Model):
         ids = set()
         delegators = self.env.user.get_delegators()
         if delegators:
-            user_and_delegator = delegators | self.env.user
+            user_and_delegator = self.env.user | delegators
             user_filter = f"IN ({', '.join(str(d.id) for d in user_and_delegator)})"
         else:
+            user_and_delegator = self.env.user
             user_filter = f"= {current_uid}"
         # CASE: Multi User (M2M)
         if 'user_ids' in self._fields:
@@ -81,7 +102,11 @@ class ApprovalTask(models.Model):
                """, (current_uid,))
             ids.update(r[0] for r in cr.fetchall())
         if (operator == '=' and value) or (operator == '!=' and not value):
-            return [('id', 'in', list(ids))]
+            if ids and self.env.context.get('__transaction_data_check_access_rights_and_rule'):
+                ids = [rec.id for rec in self.browse(list(ids)) if rec.check_access_rights_and_rule(user_and_delegator)]
+            else:
+                ids = list(ids)
+            return [('id', 'in', ids)]
         else:
             return [('id', 'not in', list(ids))]
 
@@ -89,7 +114,7 @@ class ApprovalTask(models.Model):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
         users = self.env['res.users'].browse()
-        if  self.user_ids:
+        if self.user_ids:
             users |= self.user_ids
 
         if self.group_ids:
@@ -101,7 +126,7 @@ class ApprovalTask(models.Model):
         if not self.transaction_id or not self.transaction_model_name:
             return None
 
-        if self.transaction_id :
+        if self.transaction_id:
             return self.env[self.transaction_model_name].browse(self.transaction_id)
 
         return self.env[self.transaction_model_name].browse()
@@ -118,7 +143,7 @@ class ApprovalTask(models.Model):
                 return True
         return records.unlink()
 
-    def prepare_data(self,**kwargs):
+    def prepare_data(self, **kwargs):
         data = dict()
 
         def to_list_for_m2m(values):
@@ -147,17 +172,17 @@ class ApprovalTask(models.Model):
             data['group_ids'] = []
         return data
 
-    def prepare_create(self,**kwargs):
+    def prepare_create(self, **kwargs):
         return self.prepare_data(**kwargs)
 
-    def prepare_write(self,**kwargs):
+    def prepare_write(self, **kwargs):
         return self.prepare_data(**kwargs)
 
-    def approval_setup(self, transaction_id,transaction_model_name,**kwargs):
+    def approval_setup(self, transaction_id, transaction_model_name, **kwargs):
         approval_task = self.search([
-            ('transaction_id','=',transaction_id),
-            ('transaction_model_name','=',transaction_model_name),
-        ],limit=1)
+            ('transaction_id', '=', transaction_id),
+            ('transaction_model_name', '=', transaction_model_name),
+        ], limit=1)
         if approval_task:
             write_dict = self.prepare_write(**kwargs)
             approval_task.sudo().write(write_dict)
@@ -192,7 +217,14 @@ class ApprovalTask(models.Model):
             if ress and any([x[0] for x in ress]):
                 obj_ir_view = self.env["ir.ui.view"]
                 obj_ir_view_browse = obj_ir_view.search(
-                    [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)])
-                win_dict['view_id'] = obj_ir_view_browse.id
+                    [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)]
+                    ,limit=1)
+                if obj_ir_view_browse:
+                    win_dict['view_id'] = obj_ir_view_browse.id
 
         return win_dict
+
+    def _compute_transaction_display_name(self):
+        for rec in self:
+            obj = rec.get_transaction_object()
+            rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name

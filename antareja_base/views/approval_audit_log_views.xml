@@ -4,7 +4,7 @@
         <field name="model">approval.audit.log</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="transaction_ref" />
+                <field name="transaction_display_name" />
                 <field name="user_id"/>
                 <field name="job_position" optional="hide"/>
                 <field name="delegator_id" optional="hide"/>
