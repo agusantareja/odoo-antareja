@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.addons.test_convert.tests.test_env import record
+from ..tools.utils import have_method
 
-def have_method(obj, method):
-    return hasattr(obj, method) and callable(getattr(obj, method))
+# def have_method(obj, method):
+#     return hasattr(obj, method) and callable(getattr(obj, method))
+
 
 class ApprovalAccessMixin(models.AbstractModel):
     _name = "approval.access.mixin"
@@ -27,9 +30,19 @@ class AbstractApprovalType(models.AbstractModel):
     group_id = fields.Many2one('res.groups', 'Approval By Group')
     user_ids = fields.Many2many('res.users', string='Approval By Users')
     group_ids = fields.Many2many('res.groups', string='Approval By Groups')
+
+    assign_responseible_rule = fields.Selection([
+        ('legacy', 'Legacy'),
+        ('have_one_user', 'Have One User'),
+        ('pikcup', 'Responsible'),
+    ], 'Responsible', default='legacy')
+
+    responseible_user_id = fields.Many2one('res.users', 'Responsible User')
     def get_users(self):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
+        if self.responseible_user_id:
+            return self.responseible_user_id
         users = self.env['res.users']
 
         if self.type_approval == 'user' and hasattr(self, 'user_id') and self.user_id:
@@ -56,9 +69,28 @@ class AbstractApprovalType(models.AbstractModel):
 
         return users
 
+    def get_groups(self):
+        self.ensure_one()
+        groups = self.env['res.groups']
+
+        if self.type_approval == 'group' and hasattr(self, 'group_id') and self.group_id:
+            groups = self.group_id
+        elif self.type_approval == 'multi_group' and hasattr(self, 'group_ids') and self.group_ids:
+            groups = self.group_ids
+        else:
+            # === OPSI FALLBACK ===
+            if hasattr(self, 'group_id') and self.group_id:
+                groups |= self.group_id
+            if hasattr(self, 'group_ids') and self.group_ids:
+                groups |= self.group_ids
+
+        return groups
+
     def prepare_approval_task_dict(self):
         """Prepare dict untuk create record approval task"""
         self.ensure_one()
+        if self.responseible_user_id:
+            return {'user_ids': self.responseible_user_id}
         kw = {}
         users = self.env['res.users'].browse()
         groups = self.env['res.groups'].browse()
@@ -87,6 +119,7 @@ class AbstractApprovalType(models.AbstractModel):
         if groups:
             kw['group_ids'] = groups
         return kw
+
 
 class AbstractApprovalAccess(models.AbstractModel):
     _name = "abstract.approval.access"
@@ -226,33 +259,41 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     _name = "approval.task.line.mixin"
     _description = "Approval Task Line Integration Mixin"
 
+    def get_approval_instance(self):
+        raise NotImplemented
+
+    def get_next_approval_task_line(self,transaction_id=None, transaction_model_name=None):
+        raise NotImplemented
+    def register_approval_task(self, **kwargs):
+        return self.register_to_approval_task(**kwargs)
+
     def register_to_approval_task(self, **kwargs):
         self.ensure_one()
         transaction_object = kwargs.get('transaction_object')
         if transaction_object:
-            if have_method(transaction_object,"setup_approval_transaction_task"):
-                return transaction_object.setup_approval_transaction_task(**kwargs)
+            if not self.env.context.get('skip_from_register_approval_task') and have_method(transaction_object,"register_to_approval_task"):
+                return transaction_object.with_context('skip_from_register_approval_task').register_to_approval_task(**kwargs)
             transaction_id = transaction_object.id
             transaction_model_name = transaction_object._name
         else:
             transaction_id = kwargs.get('transaction_id')
             transaction_model_name = kwargs.get('transaction_model_name')
-        return self.env['approval.task'].approval_setup(self, transaction_id,transaction_model_name,**kwargs)
+        return self.env['approval.task'].approval_setup(self, transaction_id, transaction_model_name, **kwargs)
 
-    def _create_approval_audit_log(self,**kwargs):
+    def _create_approval_audit_log(self, **kwargs):
         self.ensure_one()
         transaction_object = kwargs.get('transaction_object')
         kw = dict(kwargs)
         if transaction_object:
-            if have_method(transaction_object,"create_approval_log"):
+            if have_method(transaction_object, "create_approval_log"):
                 return transaction_object.create_approval_log(**kw)
             kw.update(
                 transaction_id=transaction_object.id,
-                transaction_model_name = transaction_object._name
+                transaction_model_name=transaction_object._name
             )
         return self.env['approval.audit.log'].create_audit_log(**kw)
 
-    def create_approval_audit_log_approved(self,**kwargs):
+    def create_approval_audit_log_approved(self, **kwargs):
         kw = dict(kwargs)
         kw['action_type'] = 'approve'
         return self._create_approval_audit_log(**kw)
@@ -261,3 +302,64 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         kw['action_type'] = 'reject'
         return self._create_approval_audit_log(**kwargs)
+
+    def send_approval_notification(self, **kwargs):
+        pass
+
+    def send_rejected_notification(self, **kwargs):
+        pass
+
+    def send_approved_notification(self, **kwargs):
+        pass
+
+    def action_approve(self):
+        self.approve()
+
+    def action_reject(self, **kwargs):
+        self.reject("No Reason", **kwargs)
+
+    def set_approved_status(self, **kwargs):
+        raise NotImplemented
+
+    def approve(self, **kwargs):
+        self.before_approve(**kwargs)
+        self.set_approved_status(**kwargs)
+        self.after_approve(**kwargs)
+
+    def before_approve(self, **kwargs):
+        rec = self
+        kw = dict(kwargs)
+        kw['approval_task_line'] = rec
+        approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
+        approval_instance and approval_instance.before_approve(kw)
+
+    def after_approve(self, **kwargs):
+        rec = self
+        kw = dict(kwargs)
+        kw['approval_task_line'] = rec
+        approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
+        approval_instance and approval_instance.after_approve(kw)
+
+    def set_rejected_status(self, **kwargs):
+        raise NotImplemented
+
+    def reject(self, reason=None, **kwargs):
+        kw = dict(kwargs)
+        kw['reason'] = reason
+        self.before_approve(**kwargs)
+        self.set_rejected_status(**kwargs)
+        self.after_approve(**kwargs)
+
+    def before_reject(self, **kwargs):
+        rec = self
+        kw = dict(kwargs)
+        kw['approval_task_line'] = rec
+        approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
+        approval_instance and approval_instance.before_reject(kw)
+
+    def after_reject(self, **kwargs):
+        rec = self
+        kw = dict(kwargs)
+        kw['approval_task_line'] = rec
+        approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
+        approval_instance and approval_instance.action_reject(kw)

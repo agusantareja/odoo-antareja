@@ -4,14 +4,18 @@
         <field name="model">approval.task</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="name"/>
+                <field name="document" string="Type"/>
+                <field name="name" string="Name"/>
 <!--                <field name="transaction_ref" />-->
-                <field name="description"/>
+                <field name="description" string="Description"/>
                 <field name="date"/>
                 <field name="requester_id"/>
+                <field name="company_id" optional="hide"/>
+                <field name="url" widget="url" optional="hide"/>
                 <field name="user_ids" widget="many2many_tags" optional="hide"/>
                 <field name="group_ids" widget="many2many_tags" optional="hide"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
+                <button name="send_to_mobile_approval" string="Send to Mobile" type="object" icon="fa-paper-plane text-success" groups="base.group_no_one"/>
             </tree>
         </field>
     </record>
@@ -28,6 +32,6 @@
         <field name="res_model">approval.task</field>
         <field name="view_mode">tree</field>
         <field name="domain">[('user_have_access_to_approval', '=', True)]</field>
-        <field name="context">{'create': 0,'edit': 0,'delete': 0}</field>
+        <field name="context">{'create': 0,'edit': 0,'delete': 0,'__transaction_data_check_access_rights_and_rule': True}</field>
     </record>
 </odoo>
