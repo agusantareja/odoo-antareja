@@ -9,7 +9,7 @@ class NotificationLog(models.Model):
     whatsapp_id = fields.Integer()
     whatsapp_model = fields.Char()
 
-    def action_show_whatapp(self):
+    def action_show_whatsapp(self):
         self.ensure_one()
         if self.whatsapp_model and self.whatsapp_id:
             return {
@@ -18,6 +18,7 @@ class NotificationLog(models.Model):
                 'view_mode': 'form',
                 'res_id': self.whatsapp_id,
             }
+
     def send_whatsapp(self):
         result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_whatsapp(
             self.receiver_id,self.res_id,

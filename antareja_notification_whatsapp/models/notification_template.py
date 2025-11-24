@@ -18,7 +18,7 @@ class NotificationTemplate(models.Model):
         def get_phone_number():
             return self.env['hr.employee'].search([('user_id', '=', notification_to_user.id)], limit=1).mobile_phone
 
-        if self.template_wa:
+        if self.template_wa and kwargs.get('send_notification_whatsapp', True):
             WhatsappTemplate = self.env['whatsapp.template']
             partner = notification_to_user.partner_id
             phone_number = partner.mobile or partner.phone or get_phone_number()
@@ -78,10 +78,10 @@ class NotificationTemplate(models.Model):
             create_dict['recipient_partner_id'] = partner.id
         return self.env['whatsapp.log'].sudo().create(create_dict)
 
-    def send_notification_to_user_whatsapp(self, notification_to_user, res_id):
+    def send_notification_to_user_whatsapp(self, notification_to_user, res_id,**kwargs):
         if not notification_to_user or not res_id:
             return
-        if self.template_whatsapp:
+        if self.template_whatsapp and kwargs.get('send_notification_whatsapp', True):
             return self.template_whatsapp.with_context(notification_to_user=notification_to_user).send_whatsapp(res_id)
 
         return None
