@@ -2,10 +2,13 @@
 
 from odoo import fields, models
 import logging
+
 _logger = logging.getLogger(__name__)
+
 
 def have_method(obj, method):
     return hasattr(obj, method) and callable(getattr(obj, method))
+
 
 class NotificationTemplate(models.Model):
     _name = "notification.template"
@@ -32,46 +35,46 @@ class NotificationTemplate(models.Model):
     def get_wa_scope_default(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja_notification.scope_default')
 
-    def send_notification_to_users(self,users,res_id,**kwargs):
+    def send_notification_to_users(self, users, res_id, **kwargs):
         if not users or not res_id:
             return
         self.ensure_one()
         for notification_to_user in users:
-            notif_log = self.send_notification_to_user(notification_to_user, res_id,**kwargs)
-            if notif_log :
+            notif_log = self.send_notification_to_user(notification_to_user, res_id, **kwargs)
+            if notif_log:
                 notif_log['res_id'] = res_id
-                notif_log['receiver_id']=notification_to_user.id
-                notif_log['notification_template_id']=self.id
+                notif_log['receiver_id'] = notification_to_user.id
+                notif_log['notification_template_id'] = self.id
                 notif_log['transaction_id'] = kwargs.get('transaction_id')
                 notif_log['transaction_model_name'] = kwargs.get('transaction_model_name')
                 self.env['notification.log'].create(notif_log)
 
-        self.send_comment_post(res_id,**kwargs)
+        self.send_comment_post(res_id, **kwargs)
 
-    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
+    def send_notification_to_user(self, notification_to_user, res_id, **kwargs):
         notif_log = {}
-        result = self.send_notification_to_user_email(notification_to_user, res_id,**kwargs)
+        result = self.send_notification_to_user_email(notification_to_user, res_id, **kwargs)
         if result:
             notif_log['mail_id'] = result.id
             notif_log['mail_model'] = result._name
 
-        result = self.send_notification_to_user_wa(notification_to_user, res_id,**kwargs)
+        result = self.send_notification_to_user_wa(notification_to_user, res_id, **kwargs)
         if result:
             notif_log['send_message_id'] = result.id
             notif_log['send_message_model'] = result._name
 
-        result = self.send_notification_to_user_chatter(notification_to_user, res_id,**kwargs)
+        result = self.send_notification_to_user_chatter(notification_to_user, res_id, **kwargs)
         if result:
             notif_log['chat_message_id'] = result.id
             notif_log['chat_message_model'] = result._name
         return notif_log
 
-    def send_notification_to_user_email(self, notification_to_user, res_id,**kwargs):
+    def send_notification_to_user_email(self, notification_to_user, res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
 
         self.ensure_one()
-        if self.template_email:
+        if self.template_email and kwargs.get('send_notification_email', True):
             values = self.template_email.with_context(notification_to_user=notification_to_user).generate_email(res_id)
             values['recipient_ids'] = [(4, pid) for pid in values.get('partner_ids', list())]
             values['attachment_ids'] = [(4, aid) for aid in values.get('attachment_ids', list())]
@@ -95,10 +98,10 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user_wa(self, notification_to_user, res_id,**kwargs):
+    def send_notification_to_user_wa(self, notification_to_user, res_id, **kwargs):
         raise NotImplementedError("Method send_notification_to_user_wa belum di implementasikan")
 
-    def send_notification_to_user_chatter(self,notification_to_user,res_id,**kwargs):
+    def send_notification_to_user_chatter(self, notification_to_user, res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()
@@ -109,11 +112,11 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_comment_post(self,res_id,**kwargs):
-        if not  not res_id:
+    def send_comment_post(self, res_id, **kwargs):
+        if not res_id:
             return
         self.ensure_one()
-        if self.template_comment :
+        if self.template_comment:
             transaction_id = kwargs.get('transaction_id')
             transaction_model_name = kwargs.get('transaction_model_name')
             if transaction_id and transaction_model_name:
