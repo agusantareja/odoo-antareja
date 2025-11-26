@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_firebase_settings,res_config_settings_firebase,model_firebase_config,base.group_system,1,1,1,1
+access_firebase_load_wizard,res_config_settings_firebase_load_wizard,model_firebase_load_wizard,base.group_system,1,1,1,1
+
