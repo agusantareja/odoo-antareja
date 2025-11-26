@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit res.config.settings view -->
+    <record id="res_config_settings_view_form_inherit_cni_api" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.cni.api</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="priority">71</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='settings']//div[@id='emails']" position="after">
+                <div id="antareja_notification_mobile_client">
+                    <h2>Mobile Notification Client</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <div class="content-group">
+                                    <div class="mt16 row">
+                                        <label for="mobile_notification_application_name" string="Application" class="col-3 col-lg-3 o_light_label"/>
+                                        <field name="mobile_notification_application_name" nolabel="1"/>
+                                        <label for="mobile_notification_send_method" string="Method" class="col-3 col-lg-3 o_light_label"/>
+                                        <field name="mobile_notification_send_method" nolabel="1"/>
+                                    </div>
+                                    <div class="mt16 row" attrs="{'invisible': [('mobile_notification_send_method','!=','intra')]}">
+                                        <label for="mobile_notification_endpoint" string="Endpoint" class="col-3 col-lg-3 o_light_label"/>
+                                        <field name="mobile_notification_endpoint" placeholder="Endpoint" nolabel="1"/>
+                                        <label for="mobile_notification_token" string="Token" class="col-3 col-lg-3 o_light_label"/>
+                                        <field name="mobile_notification_token"  placeholder="Token" nolabel="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
