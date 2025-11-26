@@ -31,18 +31,18 @@ class AbstractApprovalType(models.AbstractModel):
     user_ids = fields.Many2many('res.users', string='Approval By Users')
     group_ids = fields.Many2many('res.groups', string='Approval By Groups')
 
-    assign_responseible_rule = fields.Selection([
+    assign_responsible_rule = fields.Selection([
         ('legacy', 'Legacy'),
         ('have_one_user', 'Have One User'),
         ('pikcup', 'Responsible'),
     ], 'Responsible', default='legacy')
 
-    responseible_user_id = fields.Many2one('res.users', 'Responsible User')
+    responsible_user_id = fields.Many2one('res.users', 'Responsible User')
     def get_users(self):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
-        if self.responseible_user_id:
-            return self.responseible_user_id
+        if self.responsible_user_id:
+            return self.responsible_user_id
         users = self.env['res.users']
 
         if self.type_approval == 'user' and hasattr(self, 'user_id') and self.user_id:
@@ -89,8 +89,8 @@ class AbstractApprovalType(models.AbstractModel):
     def prepare_approval_task_dict(self):
         """Prepare dict untuk create record approval task"""
         self.ensure_one()
-        if self.responseible_user_id:
-            return {'user_ids': self.responseible_user_id}
+        if self.responsible_user_id:
+            return {'user_ids': self.responsible_user_id}
         kw = {}
         users = self.env['res.users'].browse()
         groups = self.env['res.groups'].browse()
