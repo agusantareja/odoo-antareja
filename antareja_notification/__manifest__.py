@@ -1,6 +1,6 @@
 {
     'name': 'Antareja || Notification',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.2',
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
@@ -13,6 +13,7 @@
         'views/notification_template_views.xml',
         'views/notification_log_views.xml',
         'views/approval_template_views.xml',
+        'views/notification_mobile_template_views.xml',
         'views/menuitem.xml',
         'views/res_config_settings_views.xml',
     ],
