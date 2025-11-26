@@ -11,7 +11,7 @@ class NotificationTemplate(models.Model):
 
     template_whatsapp = fields.Many2one('whatsapp.template')
 
-    def send_notification_to_user_wa(self, notification_to_user, res_id):
+    def send_notification_to_user_wa(self, notification_to_user, res_id,**kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()
@@ -86,9 +86,10 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user(self, notification_to_user, res_id):
-        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id) or {}
-        result = self.send_notification_to_user_whatsapp(notification_to_user, res_id)
+    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
+        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id,**kwargs) or {}
+        result = self.send_notification_to_user_whatsapp(notification_to_user, res_id,**kwargs)
         if result:
-            notif_log['whatapp_id'] = result.ids[0]
-            notif_log['whatapp_model'] = result._name
+            notif_log['whatsapp_id'] = result.ids[0]
+            notif_log['whatsapp_model'] = result._name
+        return notif_log
