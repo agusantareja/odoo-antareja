@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_firebase_config_form" model="ir.ui.view">
+        <field name="name">firebase.config.form</field>
+        <field name="model">firebase.config</field>
+        <field name="arch" type="xml">
+            <form string="Firebase Configuration">
+                <header>
+                    <button name="%(action_firebase_load_file)d"
+                            string="Load From File"
+                            type="action"
+                            class="btn-primary"/>
+                    <button string="Re Connection"
+                                type="object"
+                                name="action_reconnect_connection"
+                                class="btn-primary"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="last_validation" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="state_connection"/>
+                            <field name="config_type" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="Service" string="Body">
+                            <field name="service_json" widget="text" attrs="{'required': True}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="firebase_config_action" model="ir.actions.act_window">
+        <field name="name">Firebase Config</field>
+        <field name="res_model">firebase.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+
+<!--    &lt;!&ndash; Menu &ndash;&gt;-->
+    <menuitem id="menu_firebase_root" name="Firebase" />
+<!--    <menuitem id="menu_firebase_config" parent="menu_firebase_root"-->
+<!--              name="Configuration" action="firebase_config_action"/>-->
+
+</odoo>
