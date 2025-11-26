@@ -1,0 +1,8 @@
+<odoo>
+
+    <menuitem id="mobile_notification_client_menu"
+              parent="antareja_notification.antareja_notification_parent_menu"
+              action="mobile_notification_client_action"
+              sequence="3"
+    />
+</odoo>
