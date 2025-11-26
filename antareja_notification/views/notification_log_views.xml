@@ -25,9 +25,12 @@
                     <field name="mail_id" optional="hide"/>
                     <field name="send_message_id" optional="hide"/>
                     <field name="chat_message_id" optional="hide"/>
+                    <field name="mobile_message_id" optional="hide"/>
+                    <button name="send" string="Send Notification" type="object" />
                     <button name="action_show_mail" string="Show Mail" type="object" class="oe_highlight" attrs="{'invisible':[('mail_id','=',0)]}"/>
                     <button name="action_show_send_message" string="Show WA" type="object" class="oe_highlight" attrs="{'invisible':[('send_message_id','=',0)]}"/>
-                    <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success"/>
+                    <button name="action_show_chat_message" string="Show Chat" type="object" class="oe_highlight" attrs="{'invisible':[('chat_message_id','=',0)]}"/>
+                    <button name="action_show_mobile_message" string="Show Mobile" type="object" class="oe_highlight" attrs="{'invisible':[('mobile_message_id','=',0)]}"/>
                 </tree>
             </field>
         </record>
@@ -70,7 +73,7 @@
             <field name="name">Notification Log</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">notification.log</field>
-            <field name="view_mode">tree</field>
+            <field name="view_mode">tree,tree</field>
             <field name="domain">[]</field>
         </record>
 

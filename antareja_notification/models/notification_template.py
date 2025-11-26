@@ -25,6 +25,7 @@ class NotificationTemplate(models.Model):
         'mail.template',
         help='Comment Post'
     )
+    template_mobile = fields.Many2one('notification.mobile.template')
 
     def get_test_email(self):
         return self.env['ir.config_parameter'].sudo().get_param('send_message_cron.test_email') or "False"
@@ -67,6 +68,11 @@ class NotificationTemplate(models.Model):
         if result:
             notif_log['chat_message_id'] = result.id
             notif_log['chat_message_model'] = result._name
+
+        result = self.send_notification_to_user_mobile(notification_to_user, res_id, **kwargs)
+        if result:
+            notif_log['mobile_message_id'] = result.id
+            notif_log['mobile_message_model'] = result._name
         return notif_log
 
     def send_notification_to_user_email(self, notification_to_user, res_id, **kwargs):
@@ -99,9 +105,15 @@ class NotificationTemplate(models.Model):
         return None
 
     def send_notification_to_user_wa(self, notification_to_user, res_id, **kwargs):
-        raise NotImplementedError("Method send_notification_to_user_wa belum di implementasikan")
+        if not notification_to_user or not res_id:
+            return
+        self.ensure_one()
+        if self.template_wa:
+            raise NotImplementedError("Method send_notification_to_user_wa belum di implementasikan")
 
-    def send_notification_to_user_chatter(self, notification_to_user, res_id, **kwargs):
+        return None
+
+    def send_notification_to_user_chatter(self,notification_to_user,res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()
@@ -131,4 +143,13 @@ class NotificationTemplate(models.Model):
                         message_type="comment",
                         subtype_xmlid="mail.mt_comment"
                     )
+        return None
+
+    def send_notification_to_user_mobile(self,notification_to_user,res_id, **kwargs):
+        if not notification_to_user or not res_id:
+            return
+        self.ensure_one()
+        if self.template_mobile:
+            return self.template_mobile.with_context(notification_to_user=notification_to_user).send_notification_to_user(notification_to_user,res_id)
+
         return None
