@@ -10,3 +10,5 @@ from . import approval_transaction_task
 from . import approval_template
 from . import approval_instance
 from . import approval_task_line
+from . import approval_instance_able
+

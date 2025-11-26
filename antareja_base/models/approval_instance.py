@@ -192,7 +192,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def configure_approval_task_line(self, **kwargs):
         config_approval_task_line = kwargs
-        if not config_approval_task_line.get('skip_create_approval_line'):
+        if config_approval_task_line.get('skip_create_approval_task_line') or config_approval_task_line.get('skip_create_approval_line'):
             return
         # bila skip create maka saat panggil config instance sudah melakukan crate approval
         approval_line = config_approval_task_line.get('approval_line')
