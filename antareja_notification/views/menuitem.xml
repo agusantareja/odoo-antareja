@@ -9,10 +9,15 @@
               action="notification_template_action"
               sequence="1"
     />
+    <menuitem id="antareja_notification_mobile_template_menu"
+              parent="antareja_notification_parent_menu"
+              action="action_notification_mobile_template"
+              sequence="2"
+    />
     <menuitem id="antareja_notification_log_menu"
               parent="antareja_notification_parent_menu"
               action="notification_log_action"
-              sequence="2"
+              sequence="3"
     />
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, _
+from odoo import fields, models, api, _
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -23,6 +23,9 @@ class NotificationLog(models.Model):
 
     chat_message_id = fields.Integer()
     chat_message_model = fields.Char()
+
+    mobile_message_id = fields.Integer()
+    mobile_message_model = fields.Char()
 
     res_id = fields.Integer()
 
@@ -63,31 +66,32 @@ class NotificationLog(models.Model):
             transaction_model_name=self.transaction_model_name
         )
 
-    def action_show_mail(self):
-        self.ensure_one()
-        if self.mail_model and self.mail_id:
+    @api.model
+    def _show_message(self,model,res_id):
+
+        if model and res_id:
             return {
                 'type': 'ir.actions.act_window',
-                'res_model': self.mail_model,
+                'res_model': model,
                 'view_mode': 'form',
-                'res_id': self.mail_id,
+                'res_id': res_id,
             }
+
+
+    def action_show_mail(self):
+        self.ensure_one()
+        self._show_message(self, self.mail_model and self.mail_id)
+
 
     def action_show_send_message(self):
         self.ensure_one()
-        if self.send_message_model and self.send_message_id:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': self.send_message_model,
-                'view_mode': 'form',
-                'res_id': self.send_message_id,
-            }
+        self._show_message(self, self.send_message_model and self.send_message_id)
+
     def action_show_chat_message(self):
         self.ensure_one()
-        if self.chat_message_model and self.chat_message_id:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': self.chat_message_model,
-                'view_mode': 'form',
-                'res_id': self.chat_message_id,
-            }
+        self._show_message(self, self.chat_message_model and self.chat_message_id)
+
+
+    def action_show_mobile_message(self):
+        self.ensure_one()
+        self._show_message(self, self.mobile_message_model and self.mobile_message_id)

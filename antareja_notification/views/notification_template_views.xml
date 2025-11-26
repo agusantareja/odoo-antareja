@@ -36,6 +36,7 @@
                                 <field name="template_email" />
                                 <field name="template_wa"/>
                                 <field name="template_chatter" />
+                                <field name="template_mobile" />
                             </group>
                         </group>
                         <notebook/>
@@ -57,6 +58,7 @@
                     <field name="template_email" />
                     <field name="template_wa"/>
                     <field name="template_chatter" />
+                    <field name="template_mobile" />
                 </tree>
             </field>
         </record>
