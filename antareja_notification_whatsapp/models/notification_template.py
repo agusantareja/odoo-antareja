@@ -92,3 +92,4 @@ class NotificationTemplate(models.Model):
         if result:
             notif_log['whatsapp_id'] = result.ids[0]
             notif_log['whatsapp_model'] = result._name
+        return notif_log
