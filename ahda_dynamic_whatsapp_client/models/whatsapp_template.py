@@ -163,12 +163,13 @@ class WhatsappTemplate(models.Model):
                         'response_text': response.text,
                     })
                 except requests.RequestException as e:
-                    _logger.error("Failed to send WhatsApp message to %s via template %s: %s", phone, rec.name, e)
-                    log_vals.update({
-                        'status': 'failed',
-                        'failure_reason': str(e),
-                        'response_text': getattr(e.response, 'text', ''),
-                    })
+                    raise ValidationError(_('Connection lost, please try again.'))
+                    # _logger.error("Failed to send WhatsApp message to %s via template %s: %s", phone, rec.name, e)
+                    # log_vals.update({
+                    #     'status': 'failed',
+                    #     'failure_reason': str(e),
+                    #     'response_text': getattr(e.response, 'text', ''),
+                    # })
                 WhatsAppLog.create(log_vals)
 
     @api.model
