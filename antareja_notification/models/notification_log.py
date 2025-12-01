@@ -2,6 +2,7 @@
 
 from odoo import fields, models, api, _
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -54,6 +55,13 @@ class NotificationLog(models.Model):
 
     def send_chat(self):
         result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_chatter(
+            self.receiver_id,self.res_id
+        )
+        if result:
+            self.write(result)
+
+    def send_mobile(self):
+        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_mobile(
             self.receiver_id,self.res_id
         )
         if result:

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from odoo import models,fields,api
 
 
@@ -25,7 +26,28 @@ class InternalUrlMixin(models.AbstractModel):
             return f"{self._description} {self.name}"
         return None
 
-    def _find_menu_id(self, menu_xmlid=None):
+    def _find_action_id(self, action_xmlid=None):
+        if action_xmlid:
+            try:
+                return self.env.ref(action_xmlid).id
+            except ValueError:
+                return None
+        else:
+            action_id = None
+            if hasattr(self, 'get_internal_action_id') and callable(self.get_internal_action_id):
+                action = self.get_internal_action_id()
+                if isinstance(action, str):
+                    try:
+                        action_id = self.env.ref(action).id
+                    except ValueError:
+                        return None
+            else:
+                action= self.env['ir.actions.act_window'].search([('res_model', '=', self._name)], limit=1 )
+                if action:
+                    action_id = action.id
+        return action_id
+
+    def _find_menu_id(self, menu_xmlid=None,action_id=None):
         if menu_xmlid:
             try:
                 return self.env.ref(menu_xmlid).id
@@ -40,13 +62,10 @@ class InternalUrlMixin(models.AbstractModel):
                     except ValueError:
                         return None
             else:
-                action = self.env['ir.actions.act_window'].search(
-                    [('res_model', '=', self._name)], limit=1
-                )
                 menu_id = None
-                if action:
+                if action_id:
                     menu = self.env['ir.ui.menu'].search(
-                        [('action', '=', f'ir.actions.act_window,{action.id}')],
+                        [('action', '=', f'ir.actions.act_window,{action_id}')],
                         limit=1
                     )
                     if menu:
@@ -61,7 +80,7 @@ class InternalUrlMixin(models.AbstractModel):
 
         return menu_id
 
-    def get_internal_url(self, menu_xmlid=None, cids=None, skip_if_no_company=True):
+    def get_internal_url(self, menu_xmlid=None, cids=None, skip_if_no_company=True, action_xmlid=None):
         """
         Generate backend URL untuk record ini.
 
@@ -71,8 +90,8 @@ class InternalUrlMixin(models.AbstractModel):
         """
         self.ensure_one()
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        menu_id = self._find_menu_id(menu_xmlid)
-
+        action_id = self._find_action_id(action_xmlid)
+        menu_id = self._find_menu_id(menu_xmlid,action_id=action_id)
         # Tentukan cids
         if cids is None:
             if 'company_id' in self._fields:
@@ -87,5 +106,5 @@ class InternalUrlMixin(models.AbstractModel):
 
         menu_part = f"&menu_id={menu_id}" if menu_id else ""
         cids_part = f"&cids={cids}" if cids else ""
-
-        return f"{base_url}/web#id={self.id}&model={self._name}&view_type=form{menu_part}{cids_part}"
+        action_path = f"&action={action_id}" if action_id else ""
+        return f"{base_url}/web#id={self.id}&model={self._name}&view_type=form{menu_part}{cids_part}{action_path}"

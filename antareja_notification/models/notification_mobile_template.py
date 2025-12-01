@@ -40,11 +40,11 @@ class NotificationMobileTemplate(models.Model):
     def get_application_name(self):
         return self.env['ir.config_parameter'].get_param('antareja_notification.application_name')
 
-    def send_notification_to_users(self, users, res_id):
+    def send_notification_to_users(self, users, res_id,**kwargs):
         for notification_to_user in users:
             self.with_context(notification_to_user=notification_to_user).send(notification_to_user, res_id)
 
-    def send_notification_to_user(self, notification_to_user, res_id):
+    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
         Template = self.env['mail.template']
         template = self.ensure_one()
         fields = ['title','body','image']
@@ -56,10 +56,16 @@ class NotificationMobileTemplate(models.Model):
             'source_application': self.get_application_name(),
             'source_model': self.model,
             'source_res_id' : res_id,
-            'notification_to_user': notification_to_user.partner_id.email
+            'notification_to_user': notification_to_user.partner_id.email,
         }
+        approval_task_line = kwargs.get('approval_task_line')
+        if approval_task_line:
+            data.update(
+                source_approval_model=approval_task_line._name,
+                source_approval_res_id=approval_task_line.id
+            )
         eval_context = self._get_eval_context()
-        eval_context['record'] = self.env[self.model].browse(res_id)
+        eval_context['object'] = eval_context['record'] = self.env[self.model].browse(res_id)
         eval_context['notification'] = notification
         eval_context['data']=data
         eval_context = self._run_action_code_multi(eval_context)
