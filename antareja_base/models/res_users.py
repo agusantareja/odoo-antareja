@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api, tools
 
+from odoo import models, api, tools
 import logging
 
 _logger = logging.getLogger(__name__)
+
 
 class ResUsers(models.Model):
     _inherit = 'res.users'

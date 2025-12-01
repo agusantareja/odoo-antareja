@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 {
     'name': "Antareja Base",
     'summary': """Antareja Base""",
