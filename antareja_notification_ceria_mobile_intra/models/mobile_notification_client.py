@@ -1,15 +1,15 @@
-import traceback
+# -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
 import json
 import requests
-
-from firebase_admin import messaging
+import traceback
 
 
 class MobileNotificationClient(models.Model):
     _name = "mobile.notification.client"
     _rec_name = 'title'
+    _order = 'id desc'
 
     state = fields.Selection([
         ('accept', 'Accept'),
@@ -102,6 +102,7 @@ class MobileNotificationClient(models.Model):
 
     def cancel(self):
         self.write({'state': 'cancel'})
+
     # -------------------------------------------------------
     # PROCESS ACCEPT DATA
     # -------------------------------------------------------
@@ -157,6 +158,9 @@ class MobileNotificationClient(models.Model):
             {
                 "notification_type": str(self.notification_type),
                 "source_application": str(self.source_application),
+                "source_model": str(self.source_model),
+                "source_res_id": str(self.source_res_id),
+                "request_datetime": fields.Datetime.to_string(self.create_date)
             }
         )
         if self.to_user_id.partner_id.email :
