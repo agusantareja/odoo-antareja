@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+        <record id="approval_instance_id" model="approval.strategy.template.instance">
+            <field name="sequence">10</field>
+            <field name="name">account.move.ecv</field>
+            <field name="transaction_model_name">account.move</field>
+            <field name="description">Account Move ECV</field>
+            <field name="starting_status_approval">waiting_approval</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+config.update({
+    'name': (transaction_object and transaction_object.get_number_invoice() ) or 'Expense Claim Voucher',
+    'description': 'Expense Claim Voucher',
+    'company_id':transaction_object.company_id.id,
+    'requester_id':transaction_object.user_id.id or transaction_object.activity_user_id.id or transaction_object.create_uid.id,
+    'request_date':transaction_object.date,
+})
+result=config
+                ]]></field>
+        </record>
+
+        <record id="stage_account_move_matrix_tiered_ecv" model="approval.strategy.template.stage">
+            <field name="approval_template_instance_id" ref="cmp_account_move_approval_ecv.approval_instance_id"/>
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">account.move</field>
+<!--            <field name="transaction_stage_field">stage_account_move_matrix_tiered_bv_id</field>-->
+            <field name="stage_strategy_name">Expense Claim Voucher Matrix Tiered Approval</field>
+            <field name="stage_strategy_config_name">matrix_tiered</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.matrix_tiered</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+
+config.update({
+    'name': (transaction_object and transaction_object.get_number_invoice() ) or 'Expense Claim Voucher',
+    'description': 'Expense Claim Voucher',
+    'stage_mandatory': True,
+    'transaction_model_scope':'ecv',
+    'transaction_amount':transaction_object.amount_total,
+    'stage_dynamic_approval': False,
+    # Notification configuration
+    # 'notification_template_approval_id': self.env.ref('approval_strategy_employee.approval_mail_template').id,
+    # 'notification_template_rejection_id': None
+})
+result=config
+                ]]></field>
+        </record>
+    </data>
+</odoo>
