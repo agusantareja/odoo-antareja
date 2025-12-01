@@ -88,12 +88,10 @@ class ApprovalInstanceMixin(models.AbstractModel):
             raise UserError("Model Name not set")
         if not transaction_id:
             raise UserError("ID not set")
-        approval_template_id = self.approval_template_id.search_template(
-            transaction=transaction,
-            transaction_model_name=transaction_model_name
-        )
+        approval_template_id = self.approval_template_id.search_template(transaction_model_name=transaction_model_name)
+
         if not approval_template_id:
-            raise UserError("Approval not found")
+            raise UserError("Approval Template not found")
 
         approval_instance = self.get_instance_for_transaction(transaction_model_name, transaction_id) or self.create({
             'approval_template_id': approval_template_id.id,
@@ -123,12 +121,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         return self.env[approval_task_line_model].get_next_approval_task_line(
             transaction_model_name=rec.transaction_model_name,
             transaction_id=rec.transaction_id
-        )
-        # return self.env['cni.approval.transaction'].get_next_approval_transaction(
-        #     transaction_model_name = rec.transaction_model_name,
-        #     transaction_id=rec.transaction_id,
-        #     sts=rec.get_sts_filter(),
-        # )
+        ) or self.env[approval_task_line_model].browse()
 
     def register_approval_task_line(self, **kwargs):
         approval_task_line = kwargs.get('next_approval_task_line') or kwargs.get('approval_task_line') or kwargs.get(
@@ -287,7 +280,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             kw['is_approval_done'] = is_approval_done = False
 
         if not approval_template.notification_approved_id.template_comment:
-            self._mail_message_approve(self.get_rejected_message(**kw))
+            self._mail_message_approve(self.get_approved_message(**kw))
 
         if approval_template.notification_approved_id:
             approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')

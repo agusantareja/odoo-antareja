@@ -43,13 +43,11 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
                 'edit': 0,
             }
         }
-    def ensure_approval_instance(self):
-        rec = self.ensure_one()
-        return rec.approval_instance_id.create_or_get(transaction=rec)
 
     def action_request_approval(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance.clear_approval()
         return approval_instance.request_approval()
 
     def action_approve(self):
@@ -61,11 +59,6 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
         return approval_instance.action_reject()
-
-    def reject_from_popup_reject(self,**kwargs):
-        rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
-        return approval_instance.reject_from_popup_reject(**kwargs)
 
     def action_clear_approval(self):
         rec = self.ensure_one()
@@ -101,4 +94,3 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         self.ensure_one()
         self.env['approval.instance'].create_or_get(self).unregister_approval_transaction_task(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
-
