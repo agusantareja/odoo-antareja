@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
+from odoo import models, fields, api, _
+from odoo.tools.safe_eval import safe_eval
 import json
 import logging
 
-from odoo import models, fields, api, _
-from odoo.tools.safe_eval import safe_eval
-
 _logger = logging.getLogger(__name__)
 
-class WhatsappTemplate(models.Model):
+
+class WhatsAppTemplate(models.Model):
     _inherit = 'whatsapp.template'
     model = fields.Char(related='model_id.model')
 
     def custom_render(self, template_str, context):
         if isinstance(context,dict) and 'user' not in context:
             context = dict(context,user= self.env.user)
-        return super(WhatsappTemplate,self).custom_render(template_str, context)
+        return super(WhatsAppTemplate,self).custom_render(template_str, context)
 
     def send_whatsapp(self, rec_id, force_send=False):
         _logger.info("Sending WhatsApp message using template: %s", self.name)
@@ -56,5 +56,5 @@ class WhatsappTemplate(models.Model):
             result = WhatsAppLog.create(log_vals)
             if force_send:
                 result.send()
-            results |=  result
+            results |= result
         return results
