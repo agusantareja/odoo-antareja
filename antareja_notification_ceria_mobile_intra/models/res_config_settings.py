@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import models, fields
 
 class ResConfigSettings(models.TransientModel):
@@ -15,4 +17,4 @@ class ResConfigSettings(models.TransientModel):
     mobile_notification_token = fields.Char(
         config_parameter='antareja_notification.mobile_notification_token'
     )
-
+    module_antareja_notification_ceria_mobile_local = fields.Boolean("Local Ceria Mobile Notification")
