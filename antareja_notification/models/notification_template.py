@@ -113,7 +113,7 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user_chatter(self,notification_to_user,res_id, **kwargs):
+    def send_notification_to_user_chatter(self, notification_to_user, res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()
@@ -150,6 +150,6 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         if self.template_mobile:
-            return self.template_mobile.with_context(notification_to_user=notification_to_user).send_notification_to_user(notification_to_user,res_id)
+            return self.template_mobile.with_context(notification_to_user=notification_to_user).send_notification_to_user(notification_to_user,res_id,**kwargs)
 
         return None
