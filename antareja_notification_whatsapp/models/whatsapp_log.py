@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from odoo import models, fields, _
 import ast
-import requests
 import json
 import logging
-from odoo import models, fields, _
+import requests
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class WhatsAppLog(models.Model):
         if not api_server:
             self.sudo().write({
                 'status': 'failed',
-                'failure_reason': "No API Service. Please check config Whatapp API Client",
+                'failure_reason': "No API Service. Please check config WhatsApp API Client",
             })
             return
         headers = build_headers()
