@@ -93,4 +93,4 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         """
         self.ensure_one()
         self.env['approval.instance'].create_or_get(self).unregister_approval_transaction_task(**kwargs)
-        super(CniApprovalTransactionTaskAbleMixin, self).unregister_approval_task(**kwargs)
+        super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
