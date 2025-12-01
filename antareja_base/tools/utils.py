@@ -1,4 +1,4 @@
-from odoo import Command
+
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def convert_to_tuple_create(input):
     if isinstance(input, tuple):
         return input
     if isinstance(input, dict):
-        return Command.create(input)
+        return (0, 0, input)
 
 
 def ensure_dict(input):

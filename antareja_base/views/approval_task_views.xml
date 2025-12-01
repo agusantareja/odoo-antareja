@@ -11,6 +11,8 @@
                 <field name="requester_id"/>
                 <field name="user_ids" widget="many2many_tags" optional="hide"/>
                 <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="approval_res_id" optional="hide" groups="base.group_no_one"/>
+                <field name="approval_model" optional="hide" groups="base.group_no_one"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
             </tree>
         </field>

@@ -124,7 +124,6 @@ class ApprovalTemplateMixin(models.AbstractModel):
             'float_compare': float_compare,
             'b64encode': base64.b64encode,
             'b64decode': base64.b64decode,
-            'Command': Command,
             'approval_instance': approval_instance,
             'approval_template': self,
             'transaction_object': transaction_object,
@@ -139,8 +138,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
                 raise ValidationError(msg)
 
     def _run_action_code_multi(self, eval_context):
-        safe_eval(self.code.strip(), eval_context, mode="exec", nocopy=True,
-                  filename=str(self))  # nocopy allows to return 'action'
+        safe_eval(self.code.strip(), eval_context, mode="exec", nocopy=True)  # nocopy allows to return 'action'
         return eval_context.get('response')
 
     # Configurasi tambahan

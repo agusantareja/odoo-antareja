@@ -89,9 +89,16 @@ class AbstractApprovalType(models.AbstractModel):
     def prepare_approval_task_dict(self):
         """Prepare dict untuk create record approval task"""
         self.ensure_one()
+
+        kw = {
+            'approval_task_line': self,
+            'approval_model': self._name,
+            'approval_res_id': self.id
+        }
         if self.responsible_user_id:
-            return {'user_ids': self.responsible_user_id}
-        kw = {}
+            kw['user_ids']= self.responsible_user_id
+            return kw
+
         users = self.env['res.users'].browse()
         groups = self.env['res.groups'].browse()
         if self.type_approval == 'user' and self.user_id:
@@ -118,6 +125,7 @@ class AbstractApprovalType(models.AbstractModel):
             kw['user_ids'] = users
         if groups:
             kw['group_ids'] = groups
+
         return kw
 
 
@@ -264,7 +272,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def get_next_approval_task_line(self,transaction_id=None, transaction_model_name=None):
         raise NotImplemented
+
     def register_approval_task(self, **kwargs):
+
         return self.register_to_approval_task(**kwargs)
 
     def register_to_approval_task(self, **kwargs):
@@ -278,6 +288,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         else:
             transaction_id = kwargs.get('transaction_id')
             transaction_model_name = kwargs.get('transaction_model_name')
+
         return self.env['approval.task'].approval_setup(self, transaction_id, transaction_model_name, **kwargs)
 
     def _create_approval_audit_log(self, **kwargs):

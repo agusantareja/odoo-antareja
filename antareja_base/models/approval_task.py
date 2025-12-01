@@ -3,6 +3,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, AccessError
 from odoo.models import BaseModel
+from ..tools.utils import have_method
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -45,7 +46,12 @@ class ApprovalTask(models.Model):
         compute='_compute_transaction_display_name',
         compute_sudo = True,
     )
-
+    approval_res_id = fields.Integer(
+        'Approval ID'
+    )
+    approval_model = fields.Char(
+        'Approval Model',
+    )
     def check_access_rights_and_rule(self,user_and_delegator):
         rec = self.ensure_one()
         record = rec.sudo().get_transaction_object()
@@ -137,7 +143,7 @@ class ApprovalTask(models.Model):
         else:
             transaction_id = kwargs.get('transaction_id')
             transaction_model_name = kwargs.get('transaction_model_name')
-            if transaction_id and transaction_id:
+            if transaction_model_name and transaction_id:
                 records = self.search([('transaction_id', '=', transaction_id),('transaction_model_name', '=', transaction_model_name),])
             else:
                 return True
@@ -153,7 +159,7 @@ class ApprovalTask(models.Model):
                 return values
             return []
 
-        for key in ['name', 'description', 'date', 'view_name','requester_id']:
+        for key in ['name', 'description', 'date', 'view_name','requester_id','approval_res_id','approval_model']:
             value = kwargs.get(key, None)
             if value is not None:
                 data[key] = value
@@ -170,6 +176,7 @@ class ApprovalTask(models.Model):
                 data['group_ids'] = [(6, 0, to_list_for_m2m(objects))]
         else:
             data['group_ids'] = []
+
         return data
 
     def prepare_create(self, **kwargs):
@@ -199,6 +206,12 @@ class ApprovalTask(models.Model):
         pass
 
     def action_approval_transaction(self):
+        transaction_object = self.get_transaction_object()
+        if transaction_object and have_method(transaction_object,'action_approval_transaction'):
+            win_dict = transaction_object.action_approval_transaction()
+            if win_dict:
+                return win_dict
+
         win_dict = super(ApprovalTask, self).action_approval_transaction()
         rec = self.ensure_one()
         if rec.view_name:

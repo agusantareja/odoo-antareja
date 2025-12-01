@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
@@ -9,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
-    _description = """ implement untuk instance yang akan akan di tabahkan approval
+    _description = """ implement untuk instance yang akan akan di tambahkan approval
     """
     approval_line_for_document = fields.Many2many(
         'approval.audit.log',
