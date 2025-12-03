@@ -166,5 +166,3 @@ class MobileNotificationClient(models.Model):
         if self.to_user_id.partner_id.email :
             data_notif['notification_to_user']= self.to_user_id.partner_id.email
         return data_notif
-
-

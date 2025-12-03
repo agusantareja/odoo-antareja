@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
+        <record id="view_mobile_approval_client_search" model="ir.ui.view">
+            <field name="name">mobile.approval.client.search</field>
+            <field name="model">mobile.approval.client</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
 		<record id="view_mobile_approval_client_tree" model="ir.ui.view">
             <field name="name">mobile.approval.client.tree</field>
             <field name="model">mobile.approval.client</field>
@@ -13,7 +22,7 @@
                     <field name="state" />
                     <button name="action_approval_transaction" string="Show Transaction" type="object" class="oe_highlight"/>
                     <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="outgoing"/>
-                    <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel"/>
+                    <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel,done"/>
                     <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="outgoing"/>
                 </tree>
             </field>
@@ -26,7 +35,7 @@
                 <form string="Mobile Approval" create='false' delete='false'>
                     <header>
                         <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="outgoing"/>
-                        <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel"/>
+                        <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel,done"/>
                         <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="outgoing"/>
                         <button name="action_approval_transaction" string="Show Transaction" type="object" class="oe_highlight"/>
                         <field name="state" widget="statusbar" readonly="1" />
@@ -66,9 +75,10 @@
         </record>
 
         <record id="mobile_approval_client_action" model="ir.actions.act_window">
-            <field name="name">Mobil Approval Client</field>
+            <field name="name">Mobile Approval Client</field>
             <field name="res_model">mobile.approval.client</field>
             <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_mobile_approval_client_search"/>
             <!-- <field name="domain">[('api_type', '=', 'normal_api')]</field> -->
             <field name="context">{ }</field>
         </record>
