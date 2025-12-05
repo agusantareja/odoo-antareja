@@ -15,14 +15,18 @@ class ApprovalTask(models.Model):
     _description = 'This is Approval Task for Approval helper waiting approval'
     _order = 'create_date desc'
     name = fields.Char('Name')
+    document = fields.Char()
     description = fields.Char()
+    url = fields.Char(string="URL")
     date = fields.Datetime(string='Create Time', readonly=True, default=fields.Datetime.now)
-
     transaction_id = fields.Integer(
         'Transaction ID'
     )
     transaction_model_name = fields.Char(
         'Transaction Model Name',
+    )
+    company_id = fields.Many2one(
+        'res.company'
     )
     user_ids = fields.Many2many(
         'res.users', 'approval_task_users_rel', 'approval_task_id', 'user_id',
@@ -159,7 +163,7 @@ class ApprovalTask(models.Model):
                 return values
             return []
 
-        for key in ['name', 'description', 'date', 'view_name','requester_id','approval_res_id','approval_model']:
+        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',  'approval_res_id', 'approval_model']:
             value = kwargs.get(key, None)
             if value is not None:
                 data[key] = value
@@ -180,25 +184,81 @@ class ApprovalTask(models.Model):
         return data
 
     def prepare_create(self, **kwargs):
-        return self.prepare_data(**kwargs)
+        transaction_id = kwargs.get('transaction_id')
+        transaction_model_name = kwargs.get('transaction_model_name')
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(transaction_id)
+        kw = self.prepare_data(**kwargs) or {}
+        if transaction_object:
+            if 'name' not in kw and have_method(transaction_object,'get_internal_number'):
+                kw['name'] = transaction_object.get_internal_number()
+
+            if not kw.get('document') and have_method(transaction_object,'get_internal_document'):
+                kw['document'] = transaction_object.get_internal_document()
+
+            if not kw.get('description') and have_method(transaction_object,'get_internal_description'):
+                kw['description'] = transaction_object.get_internal_description()
+
+            if not kw.get('requester_id')  and have_method(transaction_object, 'get_internal_requester_id'):
+                kw['requester_id'] = transaction_object.get_internal_requester_id()
+
+            if 'url' not in kw and have_method(transaction_object,'get_internal_url'):
+                kw['url'] = transaction_object.get_internal_url()
+
+            if 'company_id' not in kw and getattr(transaction_object, 'company_id'):
+                kw['company_id'] = transaction_object.company_id.id
+
+            if not kw.get('transaction_id'):
+                kw['transaction_id'] = transaction_object.id
+
+            if not kw.get('transaction_model_name'):
+                kw['transaction_model_name'] = transaction_object._name
+        else:
+            raise UserError("No Transaction")
+
+        return kw
 
     def prepare_write(self, **kwargs):
-        return self.prepare_data(**kwargs)
+        transaction_id = kwargs.get('transaction_id')
+        transaction_model_name = kwargs.get('transaction_model_name')
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(transaction_id)
+        kw = self.prepare_data(**kwargs) or {}
+        if self and transaction_object:
+            rec = self.ensure_one()
+            if not rec.name and 'name' not in kw and have_method(transaction_object, 'get_internal_number'):
+                kw['name'] = transaction_object.get_internal_number()
+
+            if not rec.document and not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
+                kw['document'] = transaction_object.get_internal_document()
+
+            if not rec.description and not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
+                kw['description'] = transaction_object.get_internal_description()
+
+            if not rec.requester_id and not kw.get('requester_id')  and have_method(transaction_object, 'get_internal_requester_id'):
+                kw['requester_id'] = transaction_object.get_internal_requester_id()
+
+            if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
+                kw['url'] = transaction_object.get_internal_url()
+
+            if not rec.company_id and 'company_id' not in kw and getattr(transaction_object, 'company_id'):
+                kw['company_id'] = transaction_object.company_id.id
+
+        return kw
 
     def approval_setup(self, transaction_id, transaction_model_name, **kwargs):
         approval_task = self.search([
             ('transaction_id', '=', transaction_id),
             ('transaction_model_name', '=', transaction_model_name),
         ], limit=1)
+        prepare_dict = dict(kwargs)
+        prepare_dict.update(
+            transaction_id=transaction_id,
+            transaction_model_name=transaction_model_name,
+        )
         if approval_task:
-            write_dict = self.prepare_write(**kwargs)
+            write_dict = approval_task.prepare_write(**prepare_dict)
             approval_task.sudo().write(write_dict)
         else:
-            create_dict = self.prepare_create(**kwargs)
-            create_dict.update(dict(
-                transaction_id=transaction_id,
-                transaction_model_name=transaction_model_name,
-            ))
+            create_dict = self.prepare_create(**prepare_dict)
             approval_task = self.sudo().create(create_dict)
         return approval_task
 

@@ -7,3 +7,5 @@ access_approval_template_system_user,CRUD Approval Template,model_approval_templ
 
 access_approval_instance_user,Approval Instance,model_approval_instance,base.group_user,1,1,1,1
 access_approval_task_line_user,Approval Task Line,model_approval_task_line,base.group_user,1,1,1,1
+
+access_application_server_system_user,CRUD Approval Template,model_application_server,base.group_system,1,1,1,1

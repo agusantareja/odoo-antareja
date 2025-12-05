@@ -12,10 +12,7 @@ import inspect
 
 
 def save_call_method(obj, method_name, **kw):
-    if not obj:
-        return None
-
-    if not method_name:
+    if not obj or not method_name or not isinstance(method_name,str):
         return None
 
     if not hasattr(obj, method_name):

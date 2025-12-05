@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.addons.test_convert.tests.test_env import record
-from ..tools.utils import have_method
+from odoo.exceptions import UserError
+from ..tools.utils import have_method, save_call_method
 
 # def have_method(obj, method):
 #     return hasattr(obj, method) and callable(getattr(obj, method))
@@ -267,8 +268,54 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     _name = "approval.task.line.mixin"
     _description = "Approval Task Line Integration Mixin"
 
+    reject_to_method = fields.Selection([
+        ('legacy', "Legacy"),
+        ('to_requestor', "To Requestor"),
+        ('to_previous', "To Previous"),
+        ('to_task_line', "To Task Line"),
+    ], default='legacy', readonly=True)
+
+    def get_reject_to_task_line(self):
+        raise NotImplemented
+
+    def get_approval_start_task(self,start_task):
+        """
+        Get list approval from start_task to this object
+        """
+        end_task = self.ensure_one()
+        approve_task_line_between = self.browse()
+        approval_task_line = self.get_all_approval_task_line()
+        found_start = not start_task
+        for task in approval_task_line:
+            if found_start:
+                if end_task.id == task.id:
+                    break
+                approve_task_line_between |= task
+            elif task.id == start_task.id:
+                found_start = True
+
+        return approve_task_line_between
+
     def get_approval_instance(self):
         raise NotImplemented
+
+    def get_all_approval_task_line(self,transaction_id=None, transaction_model_name=None):
+        if self:
+            transaction_id= self.transaction_id
+            transaction_model_name = self.transaction_model_name
+        if not transaction_model_name  or not transaction_id:
+            raise UserError(" Transaction not set ")
+        return self.search([('transaction_id','=',transaction_id),('transaction_model_name','=',transaction_model_name)])
+
+    def get_previous_approval_task_line(self, transaction_id=None, transaction_model_name=None):
+        end_task = self.ensure_one()
+        previous = self.browse()
+        approval_task_line = self.get_all_approval_task_line()
+        for task in approval_task_line:
+            if end_task.id == task.id:
+                break
+            previous = task
+        return previous
 
     def get_next_approval_task_line(self,transaction_id=None, transaction_model_name=None):
         raise NotImplemented
@@ -279,17 +326,23 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def register_to_approval_task(self, **kwargs):
         self.ensure_one()
-        transaction_object = kwargs.get('transaction_object')
+        if have_method(self, "prepare_approval_task_dict"):
+            kw=self.prepare_approval_task_dict()
+            kw.update(kwargs)
+        else:
+            kw = dict(kwargs)
+
+        transaction_object = kw.get('transaction_object') or save_call_method(self,'get_transaction_object')
         if transaction_object:
             if not self.env.context.get('skip_from_register_approval_task') and have_method(transaction_object,"register_to_approval_task"):
-                return transaction_object.with_context('skip_from_register_approval_task').register_to_approval_task(**kwargs)
+                return transaction_object.with_context(skip_from_register_approval_task=True).register_approval_task(**kw)
             transaction_id = transaction_object.id
             transaction_model_name = transaction_object._name
         else:
-            transaction_id = kwargs.get('transaction_id')
-            transaction_model_name = kwargs.get('transaction_model_name')
+            transaction_id = kw.get('transaction_id')
+            transaction_model_name = kw.get('transaction_model_name')
 
-        return self.env['approval.task'].approval_setup(self, transaction_id, transaction_model_name, **kwargs)
+        return self.env['approval.task'].approval_setup(transaction_id, transaction_model_name, **kw)
 
     def _create_approval_audit_log(self, **kwargs):
         self.ensure_one()
@@ -333,8 +386,11 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         raise NotImplemented
 
     def approve(self, **kwargs):
-        self.before_approve(**kwargs)
-        self.set_approved_status(**kwargs)
+        rec = self
+        kw = dict(kwargs)
+        kw['approval_task_line'] = rec
+        rec.before_approve(**kwargs)
+        rec.set_approved_status(**kwargs)
         self.after_approve(**kwargs)
 
     def before_approve(self, **kwargs):
@@ -348,18 +404,44 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         rec = self
         kw = dict(kwargs)
         kw['approval_task_line'] = rec
+        kw['approval_task_line_next'] = rec.get_next_approval_task_line()
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
         approval_instance and approval_instance.after_approve(kw)
 
     def set_rejected_status(self, **kwargs):
         raise NotImplemented
 
+    def set_waiting_status(self, **kwargs):
+        raise NotImplemented
+
     def reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
         kw['reason'] = reason
         self.before_approve(**kwargs)
-        self.set_rejected_status(**kwargs)
-        self.after_approve(**kwargs)
+        approve_task_line_next = None
+        approve_task_line_between = self.browse()
+        if self.to_task_line == 'to_task_line':
+            approve_task_line_next = self.get_reject_to_task_line()
+            approve_task_line_between = self.get_all_approval_from(approve_task_line_next)
+        elif self.reject_to_method=='to_requestor':
+            approve_task_line_between = self.get_all_approval_from(None)
+        elif self.to_task_line == 'to_previous':
+            approve_task_line_next = self.get_previous_approval_task_line()
+        else:
+            approve_task_line_next = kwargs.get('approve_task_line_next')
+            approve_task_line_between =  kwargs.get('approve_task_line_between')
+
+        kw['approve_task_line_next'] = approve_task_line_next
+        kw['approve_task_task_between'] = approve_task_line_between
+        kw['approve_task_line'] = kw['approve_task_line_reject'] = self
+
+        self.set_rejected_status(**kw)
+        self.after_approve(**kw)
+
+        if approve_task_line_next:
+            approve_task_line_next.set_waiting_status(**kw)
+        if approve_task_line_between:
+            approve_task_line_between.set_waiting_status(**kw)
 
     def before_reject(self, **kwargs):
         rec = self

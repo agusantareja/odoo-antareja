@@ -73,8 +73,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     def get_next_approval_task_line(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
-        return approval_instance and approval_instance.get_next_approval_task_line() or self.env[
-            'cni.approval.transaction'].browse()
+        return approval_instance and approval_instance.get_next_approval_task_line()
 
     def get_users_approval_notification(self, **kwargs):
         return self.get_next_approval_task_line().get_users_approval_notification(**kwargs)
@@ -92,5 +91,5 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         Approval task as done
         """
         self.ensure_one()
-        self.env['approval.instance'].create_or_get(self).unregister_approval_transaction_task(**kwargs)
+        self.env['approval.instance'].create_or_get(self).unregister_approval_task_line(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
