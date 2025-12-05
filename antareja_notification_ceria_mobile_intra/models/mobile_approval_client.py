@@ -56,7 +56,10 @@ class MobileApprovalClient(models.Model):
                 return values
             return []
 
-        for key in ['name', 'request_type', 'transaction_model_name', 'transaction_id','approval_name','approval_document','approval_task_line_model_name', 'approval_task_line_id','url']:
+        for key in ['name', 'request_type',
+                    'number','document','originator_name', 'url',
+                    'transaction_model_name', 'transaction_id',
+                    'approval_task_line_model_name', 'approval_task_line_id']:
             value = kwargs.get(key, None)
             if value is not None:
                 data[key] = value
@@ -85,22 +88,23 @@ class MobileApprovalClient(models.Model):
 
     def send(self):
         self.ensure_one()
-        payload = {}
+        payload = None
         try:
-            payload = self.prepare_send_data()
-            url,headers = self.get_endpoint_approval()
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            payload_dict = self.prepare_send_data()
+            payload = json.dumps(payload_dict)
+            url, headers = self.get_endpoint_approval()
+            response = requests.post(url, data=payload, headers=headers)
             response.raise_for_status()
             self.write({
                 'response': response.text,
-                'payload':json.dumps(payload),
+                'payload': payload,
                 'state': 'done'
             })
             return True
-        except Exception :
+        except Exception:
             stack = traceback.format_exc()
             self.write({
-                'payload': json.dumps(payload),
+                'payload': payload,
                 'state': 'error',
                 'errors_message': stack,
                 'last_error': fields.Datetime.now(),
@@ -125,12 +129,12 @@ class MobileApprovalClient(models.Model):
         data_notif = {k: str(v) for k, v in data.items()}
         data_notif.update(
             {
-                "request_type": str(self.request_type),
+                "request_type": self.request_type,
                 "source_application": self.get_application_name(),
                 "source_model": self.transaction_model_name or "",
-                "source_res_id": str(self.transaction_id),
+                "source_res_id": self.transaction_id,
                 "source_approval_model": self.approval_task_line_model_name or "",
-                "source_approval_res_id": str(self.approval_task_line_id),
+                "source_approval_res_id": self.approval_task_line_id,
                 "source_number": self.number,
                 "source_document": self.document,
                 "source_originator_name": self.originator_name,
