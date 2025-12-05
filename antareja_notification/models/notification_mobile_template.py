@@ -5,6 +5,9 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools import *
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 import logging
+
+from odoo.addons.antareja_base.tools.utils import save_call_method
+
 _logger = logging.getLogger(__name__)
 
 def have_method(obj, method):
@@ -38,7 +41,7 @@ class NotificationMobileTemplate(models.Model):
     )
 
     def get_application_name(self):
-        return self.env['ir.config_parameter'].get_param('antareja_notification.application_name')
+        return self.env['ir.config_parameter'].get_param('antareja.application_name')
 
     def send_notification_to_users(self, users, res_id,**kwargs):
         for notification_to_user in users:
@@ -65,13 +68,18 @@ class NotificationMobileTemplate(models.Model):
                 source_approval_res_id=approval_task_line.id
             )
         eval_context = self._get_eval_context()
-        eval_context['object'] = eval_context['record'] = self.env[self.model].browse(res_id)
+        transaction_object = self.env[self.model].sudo().browse(res_id)
+        eval_context['object'] = eval_context['record'] = transaction_object
         eval_context['notification'] = notification
+
         eval_context['data']=data
         eval_context = self._run_action_code_multi(eval_context)
+        data = eval_context.get('data')
+        if 'url' not in data and not data.get('url'):
+            data['source_url'] = save_call_method(transaction_object,'get_internal_url') or None
         payload = {
             'notification': eval_context.get('notification'),
-            'data':eval_context.get('data')
+            'data':data
         }
         return self.send_notification(payload)
 

@@ -133,16 +133,21 @@ class NotificationTemplate(models.Model):
             transaction_model_name = kwargs.get('transaction_model_name')
             if transaction_id and transaction_model_name:
                 rec = self.env[transaction_model_name].browse(transaction_id)
-                odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
                 if rec and have_method(rec, 'message_post'):
                     values = self.template_comment.generate_email(res_id, ['body_html'])
                     message = values['body_html']
-                    return rec.message_post(
+                    odoobot_id = self.env['ir.model.data'].xmlid_to_res_id("base.partner_root")
+                    #odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
+                    return rec.sudo().message_post(
                         body=message,
-                        author_id=odoobot_id,
-                        message_type="comment",
-                        subtype_xmlid="mail.mt_comment"
+                        author_id=odoobot_id
                     )
+                    # return rec.message_post(
+                    #     body=message,
+                    #     author_id=odoobot_id,
+                    #     message_type="comment",
+                    #     subtype_xmlid="mail.mt_comment"
+                    # )
         return None
 
     def send_notification_to_user_mobile(self,notification_to_user,res_id, **kwargs):

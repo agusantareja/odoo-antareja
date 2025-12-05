@@ -37,6 +37,11 @@ class ApprovalTask(models.Model):
 
         return res_id,model_name
 
+    def get_users_for_notification(self,**kwargs):
+        self.ensure_one()
+        users = self.get_users().get_users_for_notification(company=self.company_id)
+        return users
+
     def send_notification(self, **kwargs):
         self.ensure_one()
         notification_approval = kwargs.get("notification_approval")
@@ -49,6 +54,5 @@ class ApprovalTask(models.Model):
         if notification_approval:
             res_id,model_name = self.get_res_id_for_notification(notification_approval, **kwargs)
             if res_id :
-                company = self.env.company
-                users = self.get_users().get_users_for_notification(company=company)
+                users = self.get_users_for_notification(**kwargs)
                 notification_approval.send_notification_to_users(users,res_id)
