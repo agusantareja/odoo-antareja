@@ -10,48 +10,37 @@
             </xpath>
             <xpath expr="//header" position="inside">
                 <field name="access_approval" invisible="1"/>
-                <field name="state_is_draft" invisible="1"/>
-                <button name="action_approve_transaction"
+<!--                <field name="state_is_draft" invisible="1"/>-->
+                <button name="action_approve"
                         string="Approve"
                         type="object" class="oe_highlight"
                         attrs="{'invisible': [('access_approval','=',False)]}"
                 />
-                <button name="action_reject_transaction"
+                <button name="action_reject"
                         string="Reject"
                         type="object" class="oe_highlight"
                         attrs="{'invisible': ['|',('access_approval','=',False),('state', '=', 'draft')]}"
                 />
-                <button name="strategy_button_submit"
-                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"/>
-                <button name="setup_approval_stage"
-                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"/>
-                <button name="check_next_approval_task"
-                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"/>
+<!--                <button name="strategy_button_submit"-->
+<!--                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
+<!--                <button name="setup_approval_stage"-->
+<!--                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
+<!--                <button name="check_next_approval_task"-->
+<!--                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"/>-->
             </xpath>
-            <xpath expr="//field[@name='end_date']" position="after">
-                <field name="request_date" readonly="1"/>
-            </xpath>
-            <xpath expr="//form//sheet" position="inside">
-                <notebook id="approval_form">
-                    <page name="approval_config" string="Approval Config">
-                        <field name="approval_stage_active" readonly="1"/>
-                        <field name="approval_stage_task_active" readonly="1"/>
-                    </page>
+<!--            <xpath expr="//field[@name='end_date']" position="after">-->
+<!--                <field name="request_date" readonly="1"/>-->
+<!--            </xpath>-->
+            <notebook position="inside">
                     <page string="Approval Task" >
-                        <group>
-                            <group>
-                                <field name="approval_instance_id" readonly="1" context="{'create':False,'edit':False}"/>
-                                <field name="approval_stage_id" readonly="1" context="{'create':False,'edit':False}"/>
-                                <field name="next_approval_task_ref" readonly="1" context="{'create':False,'edit':False}"/>
-                            </group>
-                        </group>
-                        <field name="approval_stage_task_line" readonly="1" />
+                        <field name="approval_task_line" readonly="1" >
+                            <tree>
+                                <field name="user_id" />
+                            </tree>
+                        </field>
                     </page>
-                    <page string="Audit Trail">
-                        <field name="approval_audit_log_line" readonly="1" />
-                    </page>
-                </notebook>
-            </xpath>
+            </notebook>
+
         </field>
     </record>
 </odoo>
