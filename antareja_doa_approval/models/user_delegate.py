@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from odoo.addons.antareja_approval.tools.exception import ShowWizardFormError
+from odoo.exceptions import UserError
 
 
 class UserDelegate(models.Model):
     _name = 'user.delegate'
     _inherit = [
         _name,
-        'approval.transaction.mixin','mail.template.internal.mixin'
+        'approval.instance.able.mixin','mail.template.internal.mixin'
     ]
 
     # add state for approval
@@ -16,28 +16,28 @@ class UserDelegate(models.Model):
         ('waiting_approval', 'Waiting Approval'),
         ('approved', 'Approved'),
     ])
-    request_date = fields.Date(
-        default=fields.Date.context_today,
-    )
-    # Konvension name
-    # stage_{strategy}_id
-    # stage_hr_employee_id = fields.Many2one(
-    #     'approval.transaction.stage',
-    #     string='Stage',
-    #     help="Stage HR Employee configuration for approval process"
+    # request_date = fields.Date(
+    #     default=fields.Date.context_today,
     # )
+    approval_task_line = fields.One2many(related='approval_instance_id.approval_task_line')
 
-    def get_requester_id(self):
-        """ Return the ID of the delegator user. """
+    def get_internal_description(self):
+        return self.note
+
+    def get_internal_requester_id(self):
         self.ensure_one()
         return self.delegator_id.id
 
-    def action_button_submit(self):
-        self.ensure_one()
-        try:
-            return self.strategy_button_submit()
-        except ShowWizardFormError as e:
-            return e.get_action_form()
+    def create_approval_task_line(self,approval_instance=None,**kwargs):
+        transaction_id = self.id
+        transaction_model_name = self._name
+        users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id,self.company_id)
+        approval_task_line=[{'type_approval':'user','user_id':user.id,'transaction_id': transaction_id, 'transaction_model_name': transaction_model_name,'status_approval':'waiting','approval_instance_id':approval_instance.id} for user in users]
+        if not self.env['approval.task.line'].create(approval_task_line):
+            raise UserError("No employee")
 
-    def get_prepared_state(self):
-        return ['approved'] + super(UserDelegate,self).get_prepared_state()
+    def action_button_submit(self):
+        return self.action_request_approval()
+
+    def event_approval_start(self):
+        self.write({'state':'waiting_approval'})
