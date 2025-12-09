@@ -19,7 +19,8 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         compute="compute_approval_instance_id"
     )
     access_approval = fields.Boolean(
-        compute="compute_access_approval"
+        compute="compute_access_approval",
+        search="search_filter_access_approval",
     )
     flag_reject = fields.Boolean()
     note_reject = fields.Text()
@@ -27,6 +28,11 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     def compute_access_approval(self):
         for rec in self:
             rec.access_approval = rec.approval_instance_id.access_approval
+
+    def search_filter_access_approval(self, operator, value):
+        datas = self.search([])
+        ids= [data.id for data in datas if data.access_approval]
+        return [('id','in',ids)]
 
     def action_ensure_approval_instance(self):
         rec = self.ensure_one()

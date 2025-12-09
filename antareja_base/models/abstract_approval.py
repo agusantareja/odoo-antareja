@@ -379,8 +379,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def action_approve(self):
         self.approve()
 
-    def action_reject(self, **kwargs):
-        self.reject("No Reason", **kwargs)
+    def action_reject(self):
+        self.reject(reason="No Reason")
 
     def set_approved_status(self, **kwargs):
         raise NotImplemented
@@ -398,15 +398,17 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         kw['approval_task_line'] = rec
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
-        approval_instance and approval_instance.before_approve(kw)
+        approval_instance and approval_instance.before_approve(**kw)
 
     def after_approve(self, **kwargs):
         rec = self
         kw = dict(kwargs)
+        approval_task_line_next = rec.get_next_approval_task_line()
         kw['approval_task_line'] = rec
-        kw['approval_task_line_next'] = rec.get_next_approval_task_line()
+        kw['approval_task_line_next'] =  approval_task_line_next
+        kw['is_approval_done'] = not approval_task_line_next
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
-        approval_instance and approval_instance.after_approve(kw)
+        approval_instance and approval_instance.after_approve(**kw)
 
     def set_rejected_status(self, **kwargs):
         raise NotImplemented
@@ -417,42 +419,45 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
         kw['reason'] = reason
-        self.before_approve(**kwargs)
+        self.before_reject(**kwargs)
+        is_approval_done = False
         approve_task_line_next = None
         approve_task_line_between = self.browse()
-        if self.to_task_line == 'to_task_line':
+        if self.reject_to_method == 'to_task_line':
             approve_task_line_next = self.get_reject_to_task_line()
-            approve_task_line_between = self.get_all_approval_from(approve_task_line_next)
-        elif self.reject_to_method=='to_requestor':
-            approve_task_line_between = self.get_all_approval_from(None)
-        elif self.to_task_line == 'to_previous':
+            approve_task_line_between = self.get_approval_start_task(approve_task_line_next)
+        elif self.reject_to_method == 'to_requestor':
+            is_approval_done = True
+            approve_task_line_between = self.get_approval_start_task(None)
+        elif self.reject_to_method == 'to_previous':
             approve_task_line_next = self.get_previous_approval_task_line()
         else:
             approve_task_line_next = kwargs.get('approve_task_line_next')
             approve_task_line_between =  kwargs.get('approve_task_line_between')
-
-        kw['approve_task_line_next'] = approve_task_line_next
+        kwargs.get('is_approval_done')
+        if is_approval_done:
+            kw['is_approval_done'] = True
+        else:
+            kw['approve_task_line_next'] = approve_task_line_next
         kw['approve_task_task_between'] = approve_task_line_between
         kw['approve_task_line'] = kw['approve_task_line_reject'] = self
-
         self.set_rejected_status(**kw)
-        self.after_approve(**kw)
-
-        if approve_task_line_next:
+        self.after_reject(**kw)
+        if not is_approval_done and approve_task_line_next:
             approve_task_line_next.set_waiting_status(**kw)
-        if approve_task_line_between:
-            approve_task_line_between.set_waiting_status(**kw)
+            if approve_task_line_between:
+                approve_task_line_between.set_waiting_status(**kw)
 
     def before_reject(self, **kwargs):
         rec = self
         kw = dict(kwargs)
         kw['approval_task_line'] = rec
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
-        approval_instance and approval_instance.before_reject(kw)
+        approval_instance and approval_instance.before_reject(**kw)
 
     def after_reject(self, **kwargs):
         rec = self
         kw = dict(kwargs)
         kw['approval_task_line'] = rec
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
-        approval_instance and approval_instance.action_reject(kw)
+        approval_instance and approval_instance.after_reject(**kw)

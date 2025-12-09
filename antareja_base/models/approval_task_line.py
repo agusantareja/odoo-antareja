@@ -16,7 +16,7 @@ class ApprovalTaskLine(models.Model):
                 'approval.transaction.view.able.mixin'
                 ]
     _description = 'This is Approval Task Line for Approval helper waiting approval'
-    _order = 'create_date desc'
+    _order = 'id'
     approval_instance_id = fields.Many2one('approval.instance')
     requester_id = fields.Many2one(
         'res.users', 'Requester',
@@ -24,6 +24,48 @@ class ApprovalTaskLine(models.Model):
         help="User who requested the approval."
     )
     reject_to_method = fields.Selection(default='to_requestor')
+    user_execution_id = fields.Many2one(
+        'res.users',
+        'User Execution',
+        help="User who executed approval (Approve/Reject)the transaction"
+    )
+    date_execution = fields.Datetime('Date Execution')
+    reject_reason = fields.Text('Reject Reason')
+
+    def approve(self, **kwargs):
+        self.ensure_one()
+        if not self.access_approval:
+            raise UserError("User not allow to approve")
+        super(ApprovalTaskLine,self).approve(**kwargs)
+
+    def set_approved_status(self, **kwargs):
+        self.ensure_one()
+        if not self.access_approval:
+            raise UserError("User not allow to approve")
+
+        self.write({
+            'user_execution_id': self.env.uid,
+            'date_execution': fields.Datetime.now(),
+            'status_approval': 'approved',
+        })
+
+    def reject(self,reason=None, **kwargs):
+        if not self.access_approval:
+            raise UserError("User not allow to reject")
+        super(ApprovalTaskLine,self).reject(reason=reason, **kwargs)
+
+    def set_rejected_status(self, **kwargs):
+        self.write({
+            'user_execution_id':self.env.uid,
+            'date_execution': fields.Datetime.now(),
+            'status_approval': 'rejected',
+            'reject_reason': kwargs.get('reject_reason') or kwargs.get('reason') or self.env.context.get('__reject_reason')
+        })
+
+    def set_waiting_status(self, **kwargs):
+        self.write({
+            'status_approval': 'waiting_approval'
+        })
 
     def get_next_approval_task_line(self,transaction_id = None, transaction_model_name = None):
         transaction_id = transaction_id or self.transaction_id
@@ -31,7 +73,8 @@ class ApprovalTaskLine(models.Model):
         next_approval_task_line= self.sudo().search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name), ('status_approval', 'in', ['draft','waiting','waiting_approval'])],order='id asc', limit=1)
 
         if next_approval_task_line and next_approval_task_line.status_approval!='waiting_approval':
-            next_approval_task_line.write({
-                'status_approval':'waiting_approval'
-            })
+            next_approval_task_line.set_waiting_status()
         return next_approval_task_line
+
+    def get_approval_instance(self):
+        return self.approval_instance_id

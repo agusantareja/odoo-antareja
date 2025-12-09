@@ -239,9 +239,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
     def action_approve(self):
         self.approve()
 
-    def action_reject(self, **kw):
+    def action_reject(self):
         check_approval = self.get_next_approval_task_line()
-        return check_approval.action_reject(**kw)
+        return check_approval.action_reject()
 
     def action_cancel(self):
         pass
