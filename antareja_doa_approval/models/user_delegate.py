@@ -28,11 +28,21 @@ class UserDelegate(models.Model):
         self.ensure_one()
         return self.delegator_id.id
 
+    def get_internal_menu_id(self):
+        return "antareja_doa_approval.menu_to_approve_user_delegate"
+
     def create_approval_task_line(self,approval_instance=None,**kwargs):
         transaction_id = self.id
         transaction_model_name = self._name
         users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id,self.company_id)
-        approval_task_line=[{'type_approval':'user','user_id':user.id,'transaction_id': transaction_id, 'transaction_model_name': transaction_model_name,'status_approval':'waiting','approval_instance_id':approval_instance.id} for user in users]
+        approval_task_line=[{
+            'type_approval':'user',
+            'user_id':user.id,
+            'transaction_id': transaction_id,
+            'transaction_model_name': transaction_model_name,
+            'status_approval':'waiting_approval',
+            'approval_instance_id':approval_instance.id
+        } for user in users ]
         if not self.env['approval.task.line'].create(approval_task_line):
             raise UserError("No employee")
 
