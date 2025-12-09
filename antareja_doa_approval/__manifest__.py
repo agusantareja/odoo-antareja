@@ -22,6 +22,7 @@
     # always loaded
     'data': [
         'data/approval_template_data.xml',
-        'views/user_delegate_views.xml'
+        'views/user_delegate_views.xml',
+        'views/menuitem_views.xml',
     ],
 }
