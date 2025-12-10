@@ -1,10 +1,10 @@
 <odoo>
-    <record id="view_config_settings_form_wa" model="ir.ui.view">
+    <record id="view_config_settings_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.wa</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="antareja_base.view_config_settings_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@class='settings']//div[@id='emails']" position="after">
+            <xpath expr="//div[@id='antareja_base']" position="after">
                 <div id="antareja_notification">
                     <h2>Email Notification</h2>
                     <div class="row mt16 o_settings_container" id="antareja_notification_email">
