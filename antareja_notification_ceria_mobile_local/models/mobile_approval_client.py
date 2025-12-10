@@ -13,7 +13,7 @@ class MobileApprovalClient(models.Model):
     _inherit = "mobile.approval.client"
 
     def create_request(self, **kwargs):
-        self_context = self.with_context(default_state='done')
+        self_context = self.with_context(default_state='done',default_source_local=True,ceria_mobile_local=True)
         record = super(MobileApprovalClient,self_context).create_request(**kwargs)
         record.send()
         return record
@@ -27,7 +27,7 @@ class MobileApprovalClient(models.Model):
         try:
             payload_dict = self.prepare_send_data()
             payload = json.dumps(payload_dict)
-            result= self.env["ceria.mobile.approval"].api_create_request(**payload_dict)
+            result= self.env["ceria.mobile.approval"].with_context(ceria_mobile_local=True).api_create_request(**payload_dict)
             self.write({
                 'response': json.dumps(result),
                 'payload':payload,
