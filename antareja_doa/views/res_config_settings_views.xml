@@ -3,11 +3,10 @@
     <record id="res_config_settings_view_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.microsoft.calendar</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="antareja_base.view_config_settings_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="DoA" id="antareja_doa" string="DoA"
-                     data-key="antareja_doa" groups="base.group_erp_manager">
+            <xpath expr="//div[@id='antareja_base']" position="after">
+                <div id="antareja_doa" groups="base.group_erp_manager">
                     <h2>DoA</h2>
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box" id="antareja_doa_notif_enabled_setting">
