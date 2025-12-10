@@ -12,4 +12,4 @@ class NotificationMobileTemplate(models.Model):
     _inherit = "notification.mobile.template"
 
     def get_mobile_notification_client(self):
-        return self.env['ceria.mobile.notification']
+        return self.env['ceria.mobile.notification'].with_context(ceria_mobile_local=True)
