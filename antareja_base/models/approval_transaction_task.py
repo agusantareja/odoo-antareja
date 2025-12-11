@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
 
 import logging
 
@@ -12,6 +11,7 @@ class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
     _description = """ implement untuk instance yang akan akan di tambahkan approval
     """
+
     approval_line_for_document = fields.Many2many(
         'approval.audit.log',
         string='Approval Line for Document',
@@ -198,3 +198,19 @@ class ApprovalTransactionTask(models.AbstractModel):
         self.env['approval.task'].search(
             [('transaction_model_name', '=', model_name), ('transaction_id', 'in', list_ids)]).unlink()
         return result
+
+    @api.model
+    def action_reject(self):
+        return {
+            'name': 'Reject Message',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'popup.reject.message.wizard',
+            'target': 'new',
+        }
+
+    def reject_from_popup_reject(self,**kwargs):
+        raise NotImplemented
+
+    def get_next_approval_task_line(self):
+        raise NotImplemented

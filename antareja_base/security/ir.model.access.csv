@@ -9,3 +9,8 @@ access_approval_instance_user,Approval Instance,model_approval_instance,base.gro
 access_approval_task_line_user,Approval Task Line,model_approval_task_line,base.group_user,1,1,1,1
 
 access_application_server_system_user,CRUD Approval Template,model_application_server,base.group_system,1,1,1,1
+
+
+
+access_api_call_retry,approval.task.audit.log,model_api_call_retry,base.group_user,1,1,1,1
+access_api_call_log,approval.audit.log,model_api_call_log,base.group_user,1,0,1,0

@@ -78,3 +78,18 @@ class ApprovalTaskLine(models.Model):
 
     def get_approval_instance(self):
         return self.approval_instance_id
+
+
+    @api.model
+    def action_reject(self):
+        return {
+            'name': 'Reject Message',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'popup.reject.message.wizard',
+            'target': 'new',
+        }
+
+
+    def reject_from_popup_reject(self, **kwargs):
+        raise NotImplemented

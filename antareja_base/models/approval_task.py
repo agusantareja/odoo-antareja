@@ -301,3 +301,6 @@ class ApprovalTask(models.Model):
         for rec in self:
             obj = rec.get_transaction_object()
             rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name
+
+    def send_to_mobile_approval(self):
+        pass

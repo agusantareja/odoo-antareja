@@ -11,6 +11,16 @@
                         <h2>Approval and Notification</h2>
                         <div class="row mt16 o_settings_container">
                             <div class="col-xs-12 col-md-6 o_setting_box" >
+                                <div class="o_setting_right_pane" >
+                                    <div class="content-group">
+                                        <div class="mt16 row">
+                                            <label for="antareja_application_name" string="Application" class="col-3 col-lg-3 o_light_label"/>
+                                            <field name="antareja_application_name" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" >
                                 <div class="o_setting_left_pane">
                                     <field name="module_antareja_notification"/>
                                 </div>
@@ -62,6 +72,11 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div id="antareja_mobile_token">
+                        <h2>Mobile Token</h2>
+                        <div class="row mt16 o_settings_container">
                             <div class="col-xs-12 col-md-6 o_setting_box" >
                                 <div class="o_setting_left_pane">
                                     <field name="module_antareja_mobile_token"/>
@@ -75,7 +90,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-md-6 o_setting_box" >
+                        </div>
+                    </div>
+                    <div id="antareja_notification_mobile_client">
+                        <h2>Mobile Notification Client</h2>
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="module_antareja_notification_ceria_mobile_intra" >
                                 <div class="o_setting_left_pane">
                                     <field name="module_antareja_notification_ceria_mobile_intra"/>
                                 </div>
@@ -90,7 +110,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="antareja_ceria_mobile_addons">
                         <h2>Ceria Mobile Addons</h2>
                         <div class="row mt16 o_settings_container">
