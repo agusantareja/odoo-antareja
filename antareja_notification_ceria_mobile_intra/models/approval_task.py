@@ -86,4 +86,3 @@ class ApprovalTask(models.Model):
                     approval_task_line_id=approval_task.approval_res_id,
                     user_ids=user_unregisters
                 )
-        return None
