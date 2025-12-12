@@ -5,7 +5,7 @@ from odoo import models, fields
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
     mobile_notification_application_name = fields.Char(default='intra',
-        config_parameter='antareja_notification.application_name',
+        config_parameter='antareja.application_name',
     )
 
     # mobile_notification_send_method = fields.Selection(
