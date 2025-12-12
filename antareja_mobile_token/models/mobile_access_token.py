@@ -40,7 +40,7 @@ class MobileAccessToken(models.Model):
                 'user_id': user_id,
                 'token': oauthlib_common.generate_token(),
             }
-            value = int(self.env['ir.config_parameter'].sudo().get_param('antareja_mobile_token.expires_in'))
+            value = int(self.env['ir.config_parameter'].sudo().get_param('antareja_mobile_token.expires_in')) or (60*60*24)
             if value:
                 expires = datetime.now() + timedelta(seconds=value)
                 vals['expires'] = expires.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
