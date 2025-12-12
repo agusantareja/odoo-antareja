@@ -44,7 +44,7 @@ class MobileApprovalClient(models.Model):
     response = fields.Text()
 
     def get_application_name(self):
-        return self.env['ir.config_parameter'].get_param('antareja_notification.application_name')
+        return self.env['ir.config_parameter'].get_param('antareja.application_name')
 
     def create_request(self, **kwargs):
         data = {}
