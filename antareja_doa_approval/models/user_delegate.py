@@ -5,10 +5,7 @@ from odoo.exceptions import UserError
 
 class UserDelegate(models.Model):
     _name = 'user.delegate'
-    _inherit = [
-        _name,
-        'approval.instance.able.mixin','mail.template.internal.mixin'
-    ]
+    _inherit = [_name,'approval.instance.able.mixin']
 
     # add state for approval
     state = fields.Selection(selection_add=[
