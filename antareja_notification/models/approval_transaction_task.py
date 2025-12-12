@@ -13,14 +13,24 @@ def have_method(obj, method):
 class ApprovalTransactionTask(models.AbstractModel):
     _inherit = "approval.transaction.task.able.mixin"
 
+    notification_to_user_id = fields.Many2one(
+        'res.users', string='Notification to User',
+        compute="_compute_notification_to_user_id",
+        help="User who will receive the notification.",
+    )
 
-    def register_to_approval_task(self, **kwargs):
+    @api.depends_context('notification_to_user')
+    def _compute_notification_to_user_id(self):
+        for rec in self:
+            rec.notification_to_user_id = self.env.context.get('notification_to_user', False)
 
-        rec=self.ensure_one()
-        kw = dict(kwargs)
-
-        if 'description' not in kw and have_method(rec,'get_internal_description'):
-            kw['description'] = rec.get_internal_description()
-
-        return super(ApprovalTransactionTask,self).register_to_approval_task(**kw)
+    # def register_to_approval_task(self, **kwargs):
+    #
+    #     rec=self.ensure_one()
+    #     kw = dict(kwargs)
+    #
+    #     if 'description' not in kw and have_method(rec,'get_internal_description'):
+    #         kw['description'] = rec.get_internal_description()
+    #
+    #     return super(ApprovalTransactionTask,self).register_to_approval_task(**kw)
 
