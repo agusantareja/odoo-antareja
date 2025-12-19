@@ -89,4 +89,7 @@ class ApplicationServerAuth(models.Model):
         ('rest-token', 'Rest Token'),
     ], default='rest-token')
 
+    config_param_param = fields.Char()
 
+    def rest_endpoint_url(self):
+        return self.application_server_id.endpoint

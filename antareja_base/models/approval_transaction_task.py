@@ -4,6 +4,8 @@ from odoo import models, fields, api
 
 import logging
 
+from ..tools.utils import have_method
+
 _logger = logging.getLogger(__name__)
 
 
@@ -29,7 +31,7 @@ class ApprovalTransactionTask(models.AbstractModel):
     def done_approval_transaction_task(self, **kwargs):
         self.unregister_approval_task(**kwargs)
 
-    def unregister_approval_task(self, **kwargs):
+    def unregister_approval_task(self,skip_create_approval_log=True, **kwargs):
         """
         Approval task as done
         """
@@ -40,9 +42,8 @@ class ApprovalTransactionTask(models.AbstractModel):
             transaction_model_name=self._name,
         )
         self.env['approval.task'].approval_done(**kwargs)
-        if kwargs.get("skip_create_approval_log"):
-            return
-        self.create_approval_log(**kwargs)
+        if not skip_create_approval_log:
+            self.create_approval_log(**kwargs)
 
     def setup_approval_transaction_task(self, **kwargs):
         return self.register_approval_task(**kwargs)
@@ -209,8 +210,22 @@ class ApprovalTransactionTask(models.AbstractModel):
             'target': 'new',
         }
 
+    def write(self, vals):
+        # handling bila keluar approval
+        if have_method(self,'is_status_waiting_approval'):
+            in_waiting_approval = [res.id for res in self if res.is_status_waiting_approval()]
+        else:
+            in_waiting_approval= []
+        result = super(ApprovalTransactionTask,self).write(vals)
+        if in_waiting_approval:
+            for rec in self:
+                if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
+                    rec.unregister_approval_task(skip_create_approval_log=True)
+        return result
+
     def reject_from_popup_reject(self,**kwargs):
         raise NotImplemented
 
     def get_next_approval_task_line(self):
         raise NotImplemented
+
