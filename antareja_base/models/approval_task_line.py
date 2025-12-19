@@ -32,27 +32,16 @@ class ApprovalTaskLine(models.Model):
     date_execution = fields.Datetime('Date Execution')
     reject_reason = fields.Text('Reject Reason')
 
-    def approve(self, **kwargs):
-        self.ensure_one()
-        if not self.access_approval:
-            raise UserError("User not allow to approve")
-        super(ApprovalTaskLine,self).approve(**kwargs)
 
     def set_approved_status(self, **kwargs):
         self.ensure_one()
-        if not self.access_approval:
-            raise UserError("User not allow to approve")
-
         self.write({
             'user_execution_id': self.env.uid,
             'date_execution': fields.Datetime.now(),
             'status_approval': 'approved',
         })
 
-    def reject(self,reason=None, **kwargs):
-        if not self.access_approval:
-            raise UserError("User not allow to reject")
-        super(ApprovalTaskLine,self).reject(reason=reason, **kwargs)
+
 
     def set_rejected_status(self, **kwargs):
         self.write({
@@ -89,7 +78,3 @@ class ApprovalTaskLine(models.Model):
             'res_model': 'popup.reject.message.wizard',
             'target': 'new',
         }
-
-
-    def reject_from_popup_reject(self, **kwargs):
-        raise NotImplemented

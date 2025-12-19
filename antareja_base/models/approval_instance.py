@@ -26,11 +26,12 @@ class ApprovalInstanceMixin(models.AbstractModel):
         store=False
     )
 
+    @api.depends_context('uid')
     def _compute_access_rights(self):
         """Hitung apakah user login punya akses approve/reject."""
         for rec in self:
             approval_task_line = rec.get_next_approval_task_line()
-            access_approval = approval_task_line.access_approval
+            access_approval = approval_task_line and approval_task_line.access_approval
             is_status_waiting_approval = rec.is_status_waiting_approval()
             rec.access_approval = is_status_waiting_approval and access_approval
 
@@ -39,8 +40,11 @@ class ApprovalInstanceMixin(models.AbstractModel):
         for rec in self.sudo():
             trx_object = rec.get_transaction_object()
             if trx_object:
-                status = rec.get_transaction_status(trx_object)
-                name = f"{trx_object.display_name}-{rec.model_id.display_name}-{status}"
+                if rec.approval_template_id:
+                    status = rec.get_transaction_status(trx_object)
+                    name = f"{trx_object.display_name}-{rec.model_id.display_name}-{status}"
+                else:
+                    name = f"{trx_object.display_name}-{rec.model_id.display_name}"
             else:
                 name = f"-{rec.model_id.display_name}-"
             res.append((rec.id, name))
@@ -48,7 +52,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def get_state_waiting_approvals(self):
         rec = self.ensure_approval_template()
-        return rec.approval_template_id.get_state_waiting_approvals()
+        return self.approval_template_id and rec.approval_template_id.get_state_waiting_approvals()
 
     def get_state_field(self):
         rec = self.ensure_approval_template()
@@ -56,23 +60,25 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def get_state_reject(self):
         rec = self.ensure_approval_template()
-        return rec.approval_template_id.get_state_reject()
+        return self.approval_template_id and rec.approval_template_id.get_state_reject()
 
     def get_state_approved(self):
         rec = self.ensure_approval_template()
-        return rec.approval_template_id.get_state_approved()
+        return self.approval_template_id and rec.approval_template_id.get_state_approved()
 
     def get_transaction_status(self, transaction=None):
         rec = self.ensure_approval_template()
         transaction = transaction or rec.get_transaction_object()
-        return self.approval_template_id.get_transaction_status(transaction)
+        return self.approval_template_id and self.approval_template_id.get_transaction_status(transaction)
 
     def is_status_waiting_approval(self):
         rec = self.ensure_approval_template()
         transaction = rec.get_transaction_object()
-        return self.approval_template_id.is_status_waiting_approval(transaction)
+        return self.approval_template_id and self.approval_template_id.is_status_waiting_approval(transaction)
 
     def ensure_approval_template(self):
+        if not self:
+            return self
         record = self.ensure_one()
         if not record.approval_template_id:
             record.approval_template_id = record.approval_template_id.search_template(
@@ -121,16 +127,40 @@ class ApprovalInstanceMixin(models.AbstractModel):
     def get_next_approval_task_line(self):
         rec = self.ensure_approval_template()
         approval_task_line_model = rec.approval_template_id.approval_task_line_model
+        if not approval_task_line_model:
+            return None
+
         return self.env[approval_task_line_model].get_next_approval_task_line(
             transaction_model_name=rec.transaction_model_name,
             transaction_id=rec.transaction_id
-        ) or self.env[approval_task_line_model].browse()
+        )
+
+    def check_approval_task_status(self):
+        # chek bila status mmasih didalam approval maka register ulang
+        # bila satus sudah tidak dalam approval bisa di clear
+        self.ensure_approval_template()
+        transaction_object = self.get_transaction_object()
+        if not transaction_object or not self.approval_template_id:
+            self.env['approval.task'].search([('approval_instance_id','=',self.id)]).approval_done()
+            self.unlink()
+            return
+
+        if self.is_status_waiting_approval():
+            self.register_approval_task_line(skip_send_notification=True)
+        else:
+            self.unregister_approval_task_line()
+
 
     def register_approval_task_line(self, **kwargs):
-        approval_task_line = kwargs.get('next_approval_task_line') or kwargs.get('approval_task_line') or kwargs.get(
-            'next_approval_transaction') or kwargs.get('approval_transaction') or self.get_next_approval_task_line()
+        approval_task_line = (kwargs.get('approval_task_line_next') or kwargs.get('next_approval_task_line')
+                              or kwargs.get('next_approval_transaction') or kwargs.get('approval_transaction')
+                              or kwargs.get('approval_task_line') or self.get_next_approval_task_line())
         if approval_task_line:
-            rec = self
+            if self.env.context.get('___register_approval_task_line'):
+                return approval_task_line
+            rec = self.with_context(___register_approval_task_line=True)
+            if rec.approval_template_id.notification_approval_id and 'notification_approval_id' not in kwargs:
+                kwargs['notification_approval_id'] = rec.approval_template_id.notification_approval_id.id
             kwargs['approval_instance'] = rec
             kwargs['transaction_model_name'] = rec.transaction_model_name,
             kwargs['transaction_id']=rec.transaction_id
@@ -148,7 +178,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         )
 
     def get_notification_approval(self):
-        raise NotImplemented
+        return None
 
     def get_users_approval_notification(self, **kwargs):
         users = kwargs.get("users")
@@ -182,13 +212,14 @@ class ApprovalInstanceMixin(models.AbstractModel):
             approval_instance=approval_instance,
             approval_template=approval_template,
             approval_task_line=approval_task_line,
-            next_approval_task_line=approval_task_line
+            approval_task_line_next=approval_task_line,
+            next_approval_task_line=approval_task_line,
         )
-        approval_task_line.send_approval_notification(
-            approval_template=approval_template,
-            approval_instance=approval_instance,
-            notification_template=approval_template.notification_approval_id
-        )
+        # approval_task_line.send_approval_notification(
+        #     approval_template=approval_template,
+        #     approval_instance=approval_instance,
+        #     notification_template=approval_template.notification_approval_id
+        # )
 
     def configure_approval_task_line(self, **kwargs):
         config_approval_task_line = kwargs
@@ -214,7 +245,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             approval_template = config_approval_task_line.get('approval_template') or self.approval_template_id
             model = approval_template.approval_task_line_model
             approval_task_line = approval_line
-
+        self.clear_approval()
         self.env[model].create(ensure_list_create(approval_task_line))
 
     def get_transaction_currency(self, transaction_object):
@@ -237,7 +268,8 @@ class ApprovalInstanceMixin(models.AbstractModel):
         self.register_approval_task_line()
 
     def action_approve(self):
-        self.approve()
+        check_approval = self.get_next_approval_task_line()
+        check_approval.action_approve()
 
     def action_reject(self):
         check_approval = self.get_next_approval_task_line()
@@ -277,6 +309,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         notification_template = approval_template.notification_approved_id
 
         kw = dict(kwargs)
+        kw['skip_send_notification'] = True
         kw['approval_instance'] = approval_instance
         kw['approval_template'] = approval_template
         kw['notification_template'] = notification_template
@@ -302,10 +335,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
         else:
             kw['is_approval_done'] = is_approval_done = False
 
-        if not approval_template.notification_approved_id.template_comment:
-            self._mail_message_approve(self.get_approved_message(**kw))
-
         if approval_template.notification_approved_id:
+            if not approval_template.notification_approved_id.template_comment:
+                self._mail_message_approve(self.get_approved_message(**kw))
             approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
             approval_task_line.send_approved_notification(
                 approval_template=approval_template,
@@ -314,12 +346,12 @@ class ApprovalInstanceMixin(models.AbstractModel):
             )
 
         if not is_approval_done:
-            approval_task_line = approval_instance.register_approval_task_line(**kw)
-            approval_task_line.send_approval_notification(
-                approval_template=approval_template,
-                approval_instance=approval_instance,
-                notification_template=approval_template.notification_approval_id
-            )
+            approval_instance.register_approval_task_line(**kw)
+            # approval_task_line.send_approval_notification(
+            #     approval_template=approval_template,
+            #     approval_instance=approval_instance,
+            #     notification_template=approval_template.notification_approval_id
+            # )
 
         return self
 

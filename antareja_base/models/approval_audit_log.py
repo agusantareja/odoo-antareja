@@ -17,6 +17,11 @@ class ApprovalAuditLog(models.Model):
     _order = 'create_date desc'
 
     name = fields.Char('Name')
+    document = fields.Char()
+    description = fields.Char()
+    company_id = fields.Many2one(
+        'res.company'
+    )
     user_id = fields.Many2one(
         'res.users',
         "User",
@@ -71,8 +76,34 @@ class ApprovalAuditLog(models.Model):
 
     def create_audit_log(self, **kwargs):
         _field = self._fields
-        create_dict = {key: value for key, value in kwargs.items() if key in _field}
-        ignored_keys = [key for key in kwargs if key not in _field]
+        transaction_model_name = kwargs.get('transaction_object')
+        transaction_id = kwargs.get('transaction_id')
+        transaction_object = kwargs.get('transaction_object') or (transaction_model_name and transaction_id and self.env[transaction_model_name].sudo().browse(transaction_id))
+        kw = dict(kwargs)
+        if transaction_object:
+            if 'name' not in kw and have_method(transaction_object, 'get_internal_number'):
+                kw['name'] = transaction_object.get_internal_number()
+
+            if not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
+                kw['document'] = transaction_object.get_internal_document()
+
+            if not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
+                kw['description'] = transaction_object.get_internal_description()
+
+            if not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
+                kw['requester_id'] = transaction_object.get_internal_requester_id()
+
+            if 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
+                kw['company_id'] = transaction_object.company_id.id
+
+            if not kw.get('transaction_id'):
+                kw['transaction_id'] = transaction_object.id
+
+            if not kw.get('transaction_model_name'):
+                kw['transaction_model_name'] = transaction_object._name
+
+        create_dict = {key: value for key, value in kw.items() if key in _field}
+        ignored_keys = [key for key in kw if key not in _field]
         if ignored_keys:
             _logger.warning("Ignored unknown fields in audit log: %s", ignored_keys)
         return self.create([create_dict])[0]

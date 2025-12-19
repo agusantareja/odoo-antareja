@@ -17,10 +17,17 @@ class AppCallReTryMixin(models.AbstractModel):
     _name = "api.call.retry.able.mixin"
 
     api_call_retry_ids= fields.Many2many('api.call.retry',compute='compute_api_call_retry_ids')
+    api_call_need_retry= fields.Boolean(compute='compute_api_call_retry_ids')
 
     def compute_api_call_retry_ids(self):
         for rec in self:
-            rec.api_call_retry_ids = self.api_call_retry_ids.search([[('res_model','=',self._name),('res_id','=',rec.id),('state','!=','done')]])
+            api_call_retry_ids = self.api_call_retry_ids.search(
+                [('res_model', '=', self._name), ('res_id', '=', rec.id), ('state', '!=', 'done')])
+            rec.api_call_retry_ids = api_call_retry_ids
+            rec.api_call_need_retry = api_call_retry_ids
+
+    def need_retry_method(self,res_method,error_message=None,**kwargs):
+        return self.env['api.call.retry'].need_retry(self._name, self.id, res_method, error_message=error_message)
 
 class AppCallReTry(models.Model):
     _name = 'api.call.retry'
@@ -46,6 +53,9 @@ class AppCallReTry(models.Model):
         """Get the parent document ID if available."""
         # This method should be overridden in child classes if needed
         return self.env[self.res_model].browse(self.res_id)
+
+    def mark_retry(self):
+        self.write({'state':'retry'})
 
     def retry(self):
         res = self.ensure_one()

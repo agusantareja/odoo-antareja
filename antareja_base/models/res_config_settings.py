@@ -4,10 +4,7 @@ from odoo import models, fields
 
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
-    antareja_application_name = fields.Char(
-        default='intra',
-        config_parameter='antareja.application_name',
-    )
+    antareja_application_name = fields.Char(config_parameter='antareja.application_name')
     module_antareja_notification = fields.Boolean("Notification")
     module_antareja_notification_whatsapp = fields.Boolean("Notification Whatsapp")
     module_antareja_whatsapp_migration = fields.Boolean("WhatsApp Migration")

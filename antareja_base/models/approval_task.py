@@ -38,6 +38,7 @@ class ApprovalTask(models.Model):
     requester_id = fields.Many2one(
         'res.users', 'Requester',
         default=lambda self: self.env.user,
+        ondelete='set null',
         help="User who requested the approval."
     )
     user_have_access_to_approval = fields.Boolean(
@@ -56,9 +57,15 @@ class ApprovalTask(models.Model):
     approval_model = fields.Char(
         'Approval Model',
     )
+    approval_instance_id = fields.Many2one(
+        'approval.instance',
+        ondelete='set null',
+    )
     def check_access_rights_and_rule(self,user_and_delegator):
         rec = self.ensure_one()
         record = rec.sudo().get_transaction_object()
+        if not record:
+            return False
         can_access = False
         for user in user_and_delegator:
             try:
@@ -163,7 +170,7 @@ class ApprovalTask(models.Model):
                 return values
             return []
 
-        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',  'approval_res_id', 'approval_model']:
+        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',  'approval_res_id', 'approval_model','approval_instance_id']:
             value = kwargs.get(key, None)
             if value is not None:
                 data[key] = value
@@ -180,7 +187,9 @@ class ApprovalTask(models.Model):
                 data['group_ids'] = [(6, 0, to_list_for_m2m(objects))]
         else:
             data['group_ids'] = []
-
+        if 'approval_instance_id' not in data:
+            approval_instance=kwargs.get('approval_instance',0)
+            approval_instance and data.update(approval_instance_id=int(approval_instance))
         return data
 
     def prepare_create(self, **kwargs):
@@ -204,7 +213,7 @@ class ApprovalTask(models.Model):
             if 'url' not in kw and have_method(transaction_object,'get_internal_url'):
                 kw['url'] = transaction_object.get_internal_url()
 
-            if 'company_id' not in kw and getattr(transaction_object, 'company_id'):
+            if 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
                 kw['company_id'] = transaction_object.company_id.id
 
             if not kw.get('transaction_id'):
@@ -239,8 +248,13 @@ class ApprovalTask(models.Model):
             if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
                 kw['url'] = transaction_object.get_internal_url()
 
-            if not rec.company_id and 'company_id' not in kw and getattr(transaction_object, 'company_id'):
+            if not rec.company_id and 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
                 kw['company_id'] = transaction_object.company_id.id
+
+        if not kw.get('user_ids'):
+            kw['user_ids'] = [(5, 0, 0)]
+        if not kw.get('group_ids'):
+            kw['group_ids'] = [(5, 0, 0)]
 
         return kw
 
@@ -260,10 +274,9 @@ class ApprovalTask(models.Model):
         else:
             create_dict = self.prepare_create(**prepare_dict)
             approval_task = self.sudo().create(create_dict)
+        if not kwargs.get('skip_send_notification'):
+            approval_task.send_notification(**kwargs)
         return approval_task
-
-    def send_notification(self, **kwargs):
-        pass
 
     def action_approval_transaction(self):
         transaction_object = self.get_transaction_object()
@@ -304,3 +317,18 @@ class ApprovalTask(models.Model):
 
     def send_to_mobile_approval(self):
         pass
+
+    def send_notification(self, **kwargs):
+        pass
+
+    def check_approval_task_status(self):
+        self.ensure_one()
+        if self.approval_instance_id:
+            self.approval_instance_id.check_approval_task_status()
+        else:
+            transaction_object = self.get_transaction_object()
+            if transaction_object:
+                if have_method(transaction_object,'check_approval_task_status'):
+                    transaction_object.check_approval_task_status()
+            else:
+                self.approval_done()

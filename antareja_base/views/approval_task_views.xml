@@ -12,12 +12,15 @@
                 <field name="requester_id"/>
                 <field name="company_id" optional="hide"/>
                 <field name="url" widget="url" optional="hide"/>
-                <field name="user_ids" widget="many2many_tags" optional="hide"/>
-                <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="user_ids" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
+                <field name="group_ids" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
                 <field name="approval_res_id" optional="hide" groups="base.group_no_one"/>
                 <field name="approval_model" optional="hide" groups="base.group_no_one"/>
+                <field name="approval_instance_id" optional="hide" groups="base.group_no_one"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
-                <button name="send_to_mobile_approval" string="Send to Mobile" type="object" icon="fa-paper-plane text-success" groups="base.group_no_one"/>
+                <button name="send_to_mobile_approval" string="Send to Mobile" type="object" icon="fa-solid fa-mobile" groups="base.group_no_one"/>
+                <button name="send_notification" string="Send Notification" type="object" icon="fa-solid fa-envelope text-success" groups="base.group_no_one"/>
+                <button name="check_approval_task_status" string="Check Approval Task" type="object" icon="fa-solid fa-list-check text-success" groups="base.group_no_one"/>
             </tree>
         </field>
     </record>

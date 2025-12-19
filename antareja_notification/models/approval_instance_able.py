@@ -14,3 +14,5 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     _name = 'approval.instance.able.mixin'
     _inherit = [_name, "mail.template.internal.mixin"]
 
+    def get_notification_approval(self):
+        return self.approval_template_id.notification_approval_id
