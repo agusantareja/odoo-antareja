@@ -19,8 +19,9 @@ class ApprovalTask(models.Model):
     def prepare_data(self, **kwargs):
         data = super(ApprovalTask, self).prepare_data(**kwargs)
         notification_approval = kwargs.get("notification_approval_id")
-        if notification_approval:
+        if notification_approval :
             data['notification_approval_id'] = notification_approval
+
         return data
 
     def get_res_id_for_notification(self,notification_approval, **kwargs):

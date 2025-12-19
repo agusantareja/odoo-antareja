@@ -43,11 +43,13 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
                 'edit': 0,
             }
         }
+    def ensure_approval_instance(self):
+        rec = self.ensure_one()
+        return rec.approval_instance_id.create_or_get(transaction=rec)
 
     def action_request_approval(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
-        approval_instance.clear_approval()
         return approval_instance.request_approval()
 
     def action_approve(self):

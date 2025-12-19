@@ -16,3 +16,7 @@ class ApplicationServer(models.Model):
     name = fields.Char('Name')
     description = fields.Char()
     endpoint = fields.Char()
+
+    config_param_param= fields.Char()
+    #config_param = self.env['ir.config_parameter']
+    #         base_cerindo = config_param.get_param('erp.cerindocorp.id')

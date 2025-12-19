@@ -77,7 +77,7 @@
             <field name="name">Notification Log</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">notification.log</field>
-            <field name="view_mode">tree,from</field>
+            <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
         </record>
 
