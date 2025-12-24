@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ocr</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="eg_meeting_management.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='minute_meeting']" position="inside">
+                    <h2>Minute OCR PDF to Text</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="attachment_api_ocr_endpoint_url" string="OCR Endpoint"/>
+                                <field name="attachment_api_ocr_endpoint_url" nolabel="1"/>
+                                <div class="text-muted">
+                                    Url OCR endpoint, for example: https://api.ocr.space/parse/image
+                                </div>
+                            </div>
+                        </div>
+                        <field name="is_module_queue_job_installed" invisible="1"/>
+                        <div class="col-12 col-lg-6 o_setting_box" args="{'invisible': [('is_module_queue_job_installed', '=', False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="module_antareja_minute_ocr_queue" />
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="module_antareja_minute_ocr_queue" />
+                                <div class="text-muted">
+                                    Install Antareja Minute OCR Queue module to enable queue job function and chanel for OCR PDF attachments.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
