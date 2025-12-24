@@ -1,0 +1,24 @@
+<odoo>
+    <record id="view_employee_form_inherit_snipe" model="ir.ui.view">
+        <field name="name">hr.employee.form.snipe.asset</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="IT Assets">
+                    <field name="snipe_hardware_ids">
+                        <tree class="tree_no_open">
+                            <field name="image_128" widget="image" string="Image"/>
+                            <field name="serial"/>
+                            <field name="category"/>
+                            <field name="model"/>
+                            <field name="location"/>
+                            <field name="image_url" widget="url" optional="hide"/>
+                            <field name="image_id" optional="hide"/>
+                        </tree>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
