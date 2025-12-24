@@ -10,7 +10,7 @@
     'website': "http://www.yourcompany.com",
     'category': 'API',
     'version': '13.0.0.0.0',
-    'depends': ['base','web'],
+    'depends': ['base','web','antareja_base',],
     # always loaded
     'data': [
         'security/ir.model.access.csv',
