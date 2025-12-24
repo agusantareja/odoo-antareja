@@ -9,3 +9,8 @@ class ResConfigSettings(models.TransientModel):
         "Expired in (sec)",
         config_parameter='antareja_mobile_token.expires_in',
     )
+
+    antareja_mobile_token_jwt_secret = fields.Integer(
+        "Jwt Secret",
+        config_parameter='jwt.secret',
+    )
