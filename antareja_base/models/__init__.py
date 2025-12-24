@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import res_users
+from . import ir_config_parameter
 from . import application_server
 from . import application_server_auth
 from . import application_server_path

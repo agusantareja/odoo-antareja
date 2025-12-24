@@ -69,12 +69,4 @@ class ApprovalTaskLine(models.Model):
         return self.approval_instance_id
 
 
-    @api.model
-    def action_reject(self):
-        return {
-            'name': 'Reject Message',
-            'type': 'ir.actions.act_window',
-            'view_mode': 'form',
-            'res_model': 'popup.reject.message.wizard',
-            'target': 'new',
-        }
+

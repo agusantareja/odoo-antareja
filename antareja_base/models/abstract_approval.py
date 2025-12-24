@@ -422,8 +422,17 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         rec = self.ensure_one()
         rec.do_approve()
 
+    # def action_reject(self):
+    #     self.do_reject(reason="No Reason")
+    @api.model
     def action_reject(self):
-        self.do_reject(reason="No Reason")
+        return {
+            'name': 'Reject Message',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'popup.reject.message.wizard',
+            'target': 'new',
+        }
 
     def do_approve(self, **kwargs):
         rec = self.ensure_one()
@@ -433,7 +442,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw['approval_task_line'] = rec
         rec.before_approve(**kw)
         rec.set_approved_status(**kw)
-        self.after_approve(**kw)
+        rec.after_approve(**kw)
 
     def before_approve(self, **kwargs):
         rec = self
@@ -466,18 +475,19 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         is_approval_done = False
         approval_task_line_next = None
         approval_task_line_between = self.browse()
-        if self.reject_to_method == 'to_task_line':
-            approval_task_line_next = self.get_reject_to_task_line()
-            approval_task_line_between = self.get_approval_start_task(approval_task_line_next)
-        elif self.reject_to_method == 'to_requestor':
+        if self.reject_to_method == 'to_requestor':
             is_approval_done = True
             approval_task_line_between = self.get_approval_start_task(None)
-        elif self.reject_to_method == 'to_previous':
-            approval_task_line_next = self.get_previous_approval_task_line()
         else:
-            approval_task_line_next = kwargs.get('approval_task_line_next')
-            approval_task_line_between =  kwargs.get('approve_task_line_between')
-        kwargs.get('is_approval_done')
+            if self.reject_to_method == 'to_task_line':
+                approval_task_line_next = self.get_reject_to_task_line()
+                approval_task_line_between = self.get_approval_start_task(approval_task_line_next)
+            elif self.reject_to_method == 'to_previous':
+                approval_task_line_next = self.get_previous_approval_task_line()
+            else:
+                approval_task_line_next = kwargs.get('approval_task_line_next')
+                approval_task_line_between =  kwargs.get('approve_task_line_between') or self.get_approval_start_task(approval_task_line_next)
+            is_approval_done = not approval_task_line_next
         if is_approval_done:
             kw['is_approval_done'] = True
         else:
@@ -506,4 +516,4 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         approval_instance and approval_instance.after_reject(**kw)
 
     def reject_from_popup_reject(self, **kwargs):
-        self.do_reject(**kwargs)
+        return self.do_reject(**kwargs)

@@ -22,17 +22,6 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, (bytes, bytearray)):
             return obj.decode("utf-8")
         return json.JSONEncoder.default(self, obj)
-
-class ApplicationServerAuthOdooRCP(models.AbstractModel):
-    _name = 'application.server.auth.odoo.rcp.mixin'
-
-    # odoo rcp
-    odoo_server_db = fields.Char()
-    odoo_server_uid = fields.Integer(readonly=True)
-    odoo_username = fields.Char()
-    odoo_password = fields.Char()
-
-
 class ApplicationServerAuthRestToken(models.AbstractModel):
     _name = 'application.server.auth.rest.token.mixin'
 
@@ -55,7 +44,6 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
 
         return headers
 
-
     def rest_params(self, params):
         return params
 
@@ -76,9 +64,95 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         return requests.post(url, params=params, headers=headers, **kwargs)
 
 
+class ApplicationServerAuthOdooRCP(models.AbstractModel):
+    _name = 'application.server.auth.odoo.rcp.mixin'
+
+    # odoo rcp
+    odoo_server_db = fields.Char()
+    odoo_server_uid = fields.Integer()
+    odoo_username = fields.Char()
+    odoo_password = fields.Char()
+
+    @api.model
+    def get_db_name_path(self):
+        return '/api/integration/db_name'
+
+    @api.model
+    def get_jsonrpc_path(self):
+        return '/jsonrpc'
+
+    def rest_get_db_name(self):
+        try:
+            response = self.rest_get(self.get_db_name_path())
+            response.raise_for_status()
+            json_result = response.json()
+            return json_result.get('db_name')
+        except Exception:
+            raise
+
+    def get_db_name(self):
+        return self.odoo_server_db or self.rest_get_db_name()
+
+    def jsonrpc_authenticate(self):
+        uid = self.odoo_server_uid
+        db = self.get_db_name()
+        username = self.odoo_username
+        password = self.odoo_password
+        if not uid:
+            # 1. Authenticate
+            auth_payload = {
+                "jsonrpc": "2.0",
+                "method": "call",
+                "params": {
+                    "service": "common",
+                    "method": "authenticate",
+                    "args": [db, username, password, {}]
+                },
+                "id": 1,
+            }
+            res = self.rest_get(self.get_jsonrpc_path(),json=auth_payload).json()
+            uid = res.get("result")
+
+        return db, uid, password
+
+    def jsonrpc_call(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        if not db or not uid or not password:
+            db, uid, password = self.jsonrpc_authenticate()
+        args = [
+            db,
+            uid,
+            password,
+            model,
+            method,
+            args,
+            kw
+        ]
+        obj_payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": args,
+            },
+            "id": 2,
+        }
+        try:
+            response = self.rest_post(self.get_jsonrpc_path(), json=obj_payload)
+            response.raise_for_status()
+            json_data = response.json()
+            if "error" in json_data:
+                raise Exception(f"Odoo Error: {json_data['error']}")
+            return json_data.get("result")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Network Error: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Unexpected Error: {str(e)}")
+
+
 class ApplicationServerAuth(models.Model):
     _name = 'application.server.auth'
-    _inherit = ['application.server.auth.odoo.rcp.mixin','application.server.auth.rest.token.mixin']
+    _inherit = ['application.server.auth.rest.token.mixin','application.server.auth.odoo.rcp.mixin','ir.config_parameter.able.mixin']
 
     active = fields.Boolean(default=True)
     name = fields.Char()
@@ -89,7 +163,8 @@ class ApplicationServerAuth(models.Model):
         ('rest-token', 'Rest Token'),
     ], default='rest-token')
 
-    config_param_param = fields.Char()
+    def get_rest_token(self):
+        return self.get_value_config_param(value_without_config_param=self.rest_token)
 
     def rest_endpoint_url(self):
         return self.application_server_id.endpoint

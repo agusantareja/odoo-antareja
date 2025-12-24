@@ -322,13 +322,17 @@ class ApprovalTask(models.Model):
         pass
 
     def check_approval_task_status(self):
-        self.ensure_one()
-        if self.approval_instance_id:
-            self.approval_instance_id.check_approval_task_status()
+        if not self:
+            return
+        rec = self.ensure_one()
+        if rec.approval_instance_id:
+            rec.approval_instance_id.check_approval_task_status()
+        elif not rec.transaction_model_name or not rec.transaction_id:
+            rec.unlink()
         else:
-            transaction_object = self.get_transaction_object()
+            transaction_object = rec.get_transaction_object()
             if transaction_object:
                 if have_method(transaction_object,'check_approval_task_status'):
                     transaction_object.check_approval_task_status()
             else:
-                self.approval_done()
+                rec.approval_done()

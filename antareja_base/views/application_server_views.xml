@@ -36,12 +36,23 @@
                     </div>
                     <group>
                         <group>
-                            <field name="description"/>
                             <field name="endpoint"/>
                         </group>
-
+                        <group>
+                            <field name="config_param_name"/>
+                        </group>
                     </group>
-                    <notebook />
+                    <notebook >
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Auth Method">
+                            <field name="application_server_auth_ids"/>
+                        </page>
+                        <page string="Auth Path">
+                            <field name="application_server_auth_ids"/>
+                        </page>
+                    </notebook>
                     <footer/>
                 </sheet>
             </form>
@@ -57,7 +68,7 @@
 
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                approval transactions here.
+                Application Server here.
             </p>
         </field>
     </record>
