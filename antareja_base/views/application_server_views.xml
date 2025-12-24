@@ -27,21 +27,39 @@
         <field name="model">application.server</field>
         <field name="arch" type="xml">
             <form string="Application Server">
-                <header/>
+                <header>
+                    <field name="active" invisible="1"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" placeholder="Name . . ." readonly="1"/>
+                            <field name="name" placeholder="Name . . ."/>
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="description"/>
-                            <field name="endpoint"/>
+                            <field name="endpoint" string="Endpoint" attrs="{'invisible':[('config_param_name','!=','')]}"/>
+                            <field name="endpoint_value" string="Endpoint" attrs="{'invisible':[('config_param_name','=','')]}"/>
                         </group>
-
+                        <group>
+                            <field name="config_param_name"/>
+                            <button string="Edit" type="object" name="open_config_parameter" attrs="{'invisible':[('config_param_name','!=','')]}"/>
+                        </group>
                     </group>
-                    <notebook />
+                    <notebook >
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Auth Methods">
+                            <field name="application_server_auth_ids" context="{'edit_from_parent':True, 'default_application_server_id':parent.id}">
+                                <tree>
+                                    <field name="application_server_id" invisible="1" />
+                                    <field name="name" string="Name"/>
+                                    <field name="auth_type"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                     <footer/>
                 </sheet>
             </form>
@@ -54,10 +72,9 @@
         <field name="res_model">application.server</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_application_server_search"/>
-
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                approval transactions here.
+                Application Server here.
             </p>
         </field>
     </record>

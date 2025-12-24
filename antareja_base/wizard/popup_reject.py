@@ -132,11 +132,11 @@ class PopupRejectMessageWizard(models.TransientModel):
         #         'reject_reason': self.name,
         #     })
 
-        self.env['mail.message'].sudo().create({
-            'model'         : context.get('active_model'),
-            'res_id'        : context.get('active_id'),
-            'message_type'  : 'comment',
-            'author_id'     : self.env.user.partner_id.id,
-            'date'          : datetime.now(),
-            'body'          : message,
-        })
+        # self.env['mail.message'].sudo().create({
+        #     'model'         : context.get('active_model'),
+        #     'res_id'        : context.get('active_id'),
+        #     'message_type'  : 'comment',
+        #     'author_id'     : self.env.user.partner_id.id,
+        #     'date'          : datetime.now(),
+        #     'body'          : message,
+        # })

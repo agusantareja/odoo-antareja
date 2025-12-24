@@ -10,7 +10,7 @@ class ApprovalTransactionView(models.AbstractModel):
     view_name = fields.Char()
 
     def action_approval_transaction(self):
-        if not self or not self.transaction_model_name or not self.transaction_id:
+        if not self:
             raise UserError("No Approval")
 
         rec = self.ensure_one()
