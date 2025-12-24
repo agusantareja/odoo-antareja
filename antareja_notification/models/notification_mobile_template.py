@@ -41,7 +41,7 @@ class NotificationMobileTemplate(models.Model):
     )
 
     def get_application_name(self):
-        return self.env['ir.config_parameter'].get_param('antareja_notification.application_name')
+        return self.env['ir.config_parameter'].get_param('antareja.application_name')
 
     def send_notification_to_users(self, users, res_id,**kwargs):
         for notification_to_user in users:
