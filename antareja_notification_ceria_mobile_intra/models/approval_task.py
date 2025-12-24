@@ -64,7 +64,7 @@ class ApprovalTask(models.Model):
             transaction_id=approval_task.transaction_id,
             approval_task_line_model_name=approval_task.approval_model,
             approval_task_line_id=approval_task.approval_res_id,
-            user_ids=approval_task.get_users()
+            user_ids=approval_task.get_users_for_notification()
         )
         return approval_task
 
