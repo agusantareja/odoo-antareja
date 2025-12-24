@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_snipe_hardware_user,snipe.hardware user,model_snipe_hardware,base.group_user,1,1,1,0
+access_snipe_user,snipe.user,model_snipe_user,base.group_user,1,1,1,0
+access_snipe_image,snipe.image,model_snipe_image,base.group_user,1,1,1,0
