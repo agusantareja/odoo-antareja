@@ -12,7 +12,11 @@ def have_method(obj, method):
 class ApprovalAuditLog(models.Model):
     _inherit = 'approval.audit.log'
 
-    notification_template_id = fields.Many2one("notification.template")
+    notification_template_id = fields.Many2one(
+        "notification.template",
+        string='Notification',
+        ondelete='set null',
+    )
     notification_res_id = fields.Integer()
 
     def notification_requestor(self,**kwargs):
