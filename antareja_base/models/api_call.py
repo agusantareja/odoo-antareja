@@ -43,7 +43,7 @@ class AppCallReTry(models.Model):
     res_method= fields.Char()
     error_message = fields.Text()
     last_call = fields.Datetime(default=fields.Datetime.now)
-    next_call = fields.Datetime()
+    next_call = fields.Datetime(default=lambda self: fields.Datetime.now() + timedelta(hours=1))
 
     def get_object(self):
         if not self.res_model:

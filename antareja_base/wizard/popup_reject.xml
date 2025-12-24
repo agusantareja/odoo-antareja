@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="popup_reject_message" model="ir.ui.view">
-        <field name="name">popup.reject.message</field>
-        <field name="model">popup.reject.message</field>
+        <field name="name">popup.reject.message.wizard</field>
+        <field name="model">popup.reject.message.wizard</field>
         <field name="arch" type="xml">
             <form string="Message">
                 <group>

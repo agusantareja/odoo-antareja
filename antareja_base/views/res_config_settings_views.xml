@@ -2,11 +2,13 @@
     <record id="view_config_settings_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.wa</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="approval_notif" id="antareja_base_addons" string="Approval Notif"
+                <div id="antareja_base_addons" class="app_settings_block"
+                     data-string="approval_notif" string="Application Addons"
                      data-key="antareja_base_addons" groups="base.group_erp_manager">
+
                     <div id="antareja_base">
                         <h2>Application</h2>
                         <div class="row mt16 o_settings_container">
@@ -20,8 +22,24 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-xs-12 col-md-6 o_setting_box" >
+                                <div class="o_setting_left_pane">
+                                    <field name="module_antareja_integration"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <div class="content-group">
+                                        <label for="module_antareja_integration"/>
+                                        <div class="text-muted">
+                                            Application Integration
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+
                     <div id="antareja_notification">
                         <h2>Notification</h2>
                         <div class="row mt16 o_settings_container">
@@ -38,34 +56,51 @@
                                     </div>
                                 </div>
                             </div>
+
+                        </div>
+                    </div>
+
+                    <div id="antareja_approval">
+                        <h2>Task Approval</h2>
+                        <div class="row mt16 o_settings_container">
                             <div class="col-xs-12 col-md-6 o_setting_box" >
                                 <div class="o_setting_left_pane">
-                                    <field name="module_antareja_notification_whatsapp"/>
+                                    <field name="module_antareja_approval_manager"/>
                                 </div>
-                                <div class="o_setting_right_pane">
+                                <div class="o_setting_right_pane" >
                                     <div class="content-group">
-                                        <label for="module_antareja_notification_whatsapp"/>
+                                        <label for="module_antareja_approval_manager"/>
                                         <div class="text-muted">
-                                            Notification Whatsapp
+                                            Approval Manager
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                        </div>
+                    </div>
+
+                    <div id="antareja_integration" groups="base.group_erp_manager"/>
+
+                    <div id="antareja_token" groups="base.group_erp_manager">
+                        <h2>JWT Token</h2>
+                        <div class="row mt16 o_settings_container">
                             <div class="col-xs-12 col-md-6 o_setting_box" >
                                 <div class="o_setting_left_pane">
-                                    <field name="module_antareja_whatsapp_migration"/>
+                                    <field name="module_antareja_token"/>
                                 </div>
                                 <div class="o_setting_right_pane">
                                     <div class="content-group">
-                                        <label for="module_antareja_whatsapp_migration"/>
-                                        <div class="text-muted">
-                                            Whatsapp Migration
+                                        <label for="module_antareja_token"/>
+                                        <div class="text-muted" id="antareja_token_description">
+                                            Token Auth
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <div id="antareja_doa" groups="base.group_erp_manager">
                         <h2>DoA</h2>
                         <div class="row mt16 o_settings_container">
@@ -84,24 +119,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="antareja_mobile_token">
-                        <h2>Mobile Token</h2>
-                        <div class="row mt16 o_settings_container">
-                            <div class="col-xs-12 col-md-6 o_setting_box" >
-                                <div class="o_setting_left_pane">
-                                    <field name="module_antareja_mobile_token"/>
-                                </div>
-                                <div class="o_setting_right_pane">
-                                    <div class="content-group">
-                                        <label for="module_antareja_mobile_token"/>
-                                        <div class="text-muted" id="antareja_mobile_token_description">
-                                            Mobile Token Auth
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     <div id="antareja_notification_mobile_client">
                         <h2>Mobile Notification Client</h2>
                         <div class="row mt16 o_settings_container">
@@ -120,50 +138,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="antareja_ceria_mobile_addons">
-                        <h2>Ceria Mobile Addons</h2>
-                        <div class="row mt16 o_settings_container">
-                            <div class="col-xs-12 col-md-6 o_setting_box" >
-                                <div class="o_setting_left_pane">
-                                    <field name="module_ceria_mobile_notification"/>
-                                </div>
-                                <div class="o_setting_right_pane">
-                                    <div class="content-group">
-                                        <label for="module_ceria_mobile_notification"/>
-                                        <div class="text-muted">
-                                            Ceria Mobile Mobile Notification and Approval Server
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-6 o_setting_box" >
-                                <div class="o_setting_left_pane">
-                                    <field name="module_ceria_mobile_notification_token"/>
-                                </div>
-                                <div class="o_setting_right_pane">
-                                    <div class="content-group">
-                                        <label for="module_ceria_mobile_notification_token"/>
-                                        <div class="text-muted">
-                                            Ceria Mobile Token
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-6 o_setting_box" >
-                                <div class="o_setting_left_pane">
-                                    <field name="module_ceria_mobile_notification_test"/>
-                                </div>
-                                <div class="o_setting_right_pane">
-                                    <div class="content-group">
-                                        <label for="module_ceria_mobile_notification_test"/>
-                                        <div class="text-muted">
-                                            Ceria Mobile Firebase Test Config
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </xpath>
         </field>
