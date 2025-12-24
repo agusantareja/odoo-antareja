@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.cron" id="attachment_extracted_text_cron">
+        <field name="name">Attachment Extracted Text Cron (Minutes of Meeting)</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="True" />
+        <field name="user_id" ref="base.user_root"/>
+        <field name="model_id" ref="eg_meeting_management.model_minute_meeting" />
+        <field name="nextcall" eval="(DateTime.now() - timedelta(hours=8)).strftime('%Y-%m-%d %H:05:00')"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_ocr_pdf_attachments()</field>
+    </record>
+    <data noupdate="1">
+
+    </data>
+</odoo>

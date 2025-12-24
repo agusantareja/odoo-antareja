@@ -1,0 +1,22 @@
+<odoo>
+
+    <record id="minute_meeting_form_view" model="ir.ui.view">
+        <field name="name">minute.meeting.form.view</field>
+        <field name="model">minute.meeting</field>
+        <field name="inherit_id" ref="eg_meeting_management.minute_meeting_form_view"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="action_ocr_pdf_attachments" string="Attachment to Text" groups="base.group_erp_manager" type="object" class="oe_highlight"  context="{'__force_extracted':True}" attrs="{'invisible': [('attachment_extracted_status','=','in_progress')]}"/>
+            </header>
+            <notebook position="inside">
+                <page string="Discussion Notes and Attachment Extracted Text" groups="base.group_erp_manager">
+                    <group>
+                        <field name="attachment_extracted_status" readonly="1"/>
+                    </group>
+                    <field name="attachment_extracted_text" widget="text" options="{'no_create': True}" readonly="1"/>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>
