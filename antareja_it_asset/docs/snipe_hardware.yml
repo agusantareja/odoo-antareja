@@ -1,0 +1,206 @@
+openapi: 3.0.3
+info:
+  title: Snipe-IT API porxy dari intra
+  description: API porxy dari intra
+  version: "1.0.0"
+servers:
+  - url: http://10.184.0.17:10199/snipeit/
+    description: Intra snipeit
+  - url: https://localhost:8013/snipeit/
+    description: Snipe-IT Server
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: token
+      description: Gunakan format `YOUR_API_KEY`
+  schemas:
+    EmployeeBasic:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nama user di Snipe-IT
+          example: Nirwan Suparwan
+        email:
+          type: string
+          format: email
+          description: Email user di Snipe-IT
+          example: nirwan@ceria.com
+        username:
+          type: string
+          description: Username user di Snipe-IT
+          example: nirwan
+        employee_num:
+          type: string
+          description: Nomor induk pegawai
+          example: "11180"
+        employee_id:
+          type: integer
+          description: ID pegawai di sistem HR (Odoo)
+          example: 2103
+        employee_name:
+          type: string
+          description: Nama pegawai di sistem HR (Odoo)
+          example: NIRWAN SUPARWAN
+        image_url:
+          type: string
+          description: image url dari sistem HR (Odoo)
+          example: http://dddd/ddd/
+        job_position:
+          type: string
+          description: job position dari sistem HR (Odoo)
+          example: Cost Control
+        department:
+          type: string
+          description: department dari sistem HR (Odoo)
+          example: Department Sekuriti
+        point_allocation:
+          type: string
+          description: point_allocation dari sistem HR (Odoo)
+          example: Department point_allocation
+    Employee:
+      allOf:
+        - $ref: '#/components/schemas/EmployeeBasic'
+        - type: object
+          properties:
+            hardware_list:
+              type: array
+              description: Daftar perangkat yang dimiliki pegawai
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID perangkat di Snipe-IT
+                    example: 125763
+                  name:
+                    type: string
+                    description: Nama perangkat
+                    example: ""
+                  serial:
+                    type: string
+                    description: Nomor seri perangkat
+                    example: D8BBY93
+                  model:
+                    type: string
+                    description: Model perangkat
+                    example: Latitude 3410 - i5
+
+    Hardware:
+      type: object
+      properties:
+        name:
+          type: string
+          example: MacBook Pro 16
+        serial:
+          type: string
+          example: C02Z1234ML7H
+        model:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 7
+            name:
+              type: string
+              example: MacBook Pro
+        assigned_to:
+          $ref: '#/components/schemas/EmployeeBasic'
+        last_checkout:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date-time
+              example: 2025-08-08T09:00:00Z
+        location:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            name:
+              type: string
+              example: Jakarta HQ
+        image:
+          type: string
+          example: https://your-snipeit-domain/uploads/hardware/123.jpg
+
+paths:
+  /hardware:
+    get:
+      summary: Get list of hardware assets
+      tags:
+        - Hardware
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: employee_num
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 1231
+        - name: serial
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 123232
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: int
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: int
+
+      responses:
+        '200':
+          description: List of hardware assets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 120
+                  rows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Hardware'
+        '401':
+          description: Unauthorized (Invalid API key)
+        '500':
+          description: Server error
+  /employee/hardware/{nip}:
+    get:
+      summary: Get hardware by ID
+      tags:
+        - Employee
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: nip
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 123
+      responses:
+        '200':
+          description: Employee details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+        '401':
+          description: Unauthorized
