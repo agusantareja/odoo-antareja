@@ -16,6 +16,11 @@
               parent="menu_approval_user"
               sequence="2"
     />
+    <menuitem id="current_user_request_approval_menu" name="Request Approval"
+              action="antareja_base.current_user_request_approval_action"
+              parent="menu_approval_user"
+              sequence="2"
+    />
 
     <!-- Manager -->
     <menuitem id="main_management_manager" name="Manager Approval"
