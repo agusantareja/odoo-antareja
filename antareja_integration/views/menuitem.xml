@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="integration_parent_menu"
+                  name="Application Integration"
+                  parent="base.menu_custom"
+                  sequence="20"
+    />
+    <menuitem id="integration_application_server"
+              parent="integration_parent_menu"
+              action="antareja_base.action_application_server"
+              sequence="10"
+    />
+    <menuitem id="integration_api_call_retry"
+              parent="integration_parent_menu"
+              action="antareja_base.view_api_call_retry_action"
+              sequence="100"
+    />
+</odoo>
+
