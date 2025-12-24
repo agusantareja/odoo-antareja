@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+  <!-- Widget -->
+  <data>
+    <template id="hello_widget_content" inherit_id="xf_dashboard.hello_widget_content">
+      <xpath expr="//div[hasclass('xf_dashboard_item')]/div[last()]" position="inside">
+        <span class="col-6 col-sm-3 col-lg-6 col-xl-3 mb-2 text-center border-top">
+          <b>IT Asset</b>
+        </span>
+        <span class="col-6 col-sm-3 col-lg-6 col-xl-3 mb-2 text-center border-top" style="background-color:#ebf9ff">
+            <t t-esc="data['asset_it']"/></span>
+      </xpath>
+    </template>
+  </data>
+
+
+  
+</odoo>
