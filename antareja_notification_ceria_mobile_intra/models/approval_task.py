@@ -36,9 +36,10 @@ class ApprovalTask(models.Model):
         ], limit=1)
         users = self.env['res.users'].browse()
         if approval_task:
-            users = approval_task.get_users()
+            users = approval_task.get_users_for_notification()
         approval_task = super(ApprovalTask,self).approval_setup(transaction_id, transaction_model_name, **kwargs)
-        user_unregisters = users - approval_task.get_users()
+        user_registers = approval_task.get_users_for_notification()
+        user_unregisters = users - user_registers
         if user_unregisters:
             self.env["mobile.approval.client"].create_request(
                 name=approval_task.name or approval_task.description or approval_task.display_name,
@@ -64,7 +65,7 @@ class ApprovalTask(models.Model):
             transaction_id=approval_task.transaction_id,
             approval_task_line_model_name=approval_task.approval_model,
             approval_task_line_id=approval_task.approval_res_id,
-            user_ids=approval_task.get_users_for_notification()
+            user_ids=user_registers
         )
         return approval_task
 
