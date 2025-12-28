@@ -4,8 +4,14 @@
     'name': "Antareja Base",
     'summary': """Antareja Base""",
     'description': """
-        This module adds a feature for Delegation of Authority (DOA).
-        It allows users to delegate authority form access.
+        ANTAREJA
+        
+        Application
+        Notification
+        Task Approval
+        integRation
+        Jwt
+        Authority
     """,
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
@@ -18,6 +24,8 @@
         'security/ir.model.access.csv',
         'views/api_call_retry_views.xml',
         'views/application_server_views.xml',
+        'views/application_server_auth_views.xml',
+        'views/application_server_path_views.xml',
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',
         'views/approval_template_views.xml',

@@ -14,6 +14,7 @@ from ..tools.utils import save_call_method
 
 _logger = logging.getLogger(__name__)
 
+
 class IrConfigParameterSync(models.AbstractModel):
     _name = "ir.config_parameter.able.mixin"
 
@@ -30,42 +31,10 @@ class IrConfigParameterSync(models.AbstractModel):
             'res_id': param.id,
             'view_mode': 'form',
         }
-    # 
-    # def set_value_from_config_parameter(self,config_param_name,config_param_value):
-    #     records=self.sudo().search([('config_param_name','=',config_param_name)])
-    #     records.write({
-    #         'config_param_value':config_param_value
-    #     })
 
-    def get_value_config_param(self, config_param_name=None,value_without_config_param=None):
+    def get_value_config_param(self, config_param_name=None, value_without_config_param=None):
         config_param_name = config_param_name or self and self.config_param_name
         if config_param_name:
             return self.env['ir.config_parameter'].sudo().get_param(config_param_name) or None
         else:
             return value_without_config_param
-
-# class IrConfigParameter(models.Model):
-#     _inherit = 'ir.config_parameter'
-# 
-#     # def create(self, vals_list):
-#     #     return super(IrConfigParameterSync, self).create(vals_list)
-# 
-#     def sync_data(self):
-#         for rec in self:
-#             for model_name in self.env:
-#                 model = self.env[model_name]
-#                 if have_method(model,'set_value_from_config_parameter'):
-#                     model.set_value_config(rec.key,rec.value)
-#                 
-# 
-#     @api.model_create_multi
-#     def create(self, vals_list):
-#         records= super(IrConfigParameter, self).create(vals_list)
-#         records.sync_data()
-#         return records
-# 
-#     def write(self, vals):
-# 
-#         result= super(IrConfigParameter, self).write(vals)
-#         self.sync_data()
-#         return result
