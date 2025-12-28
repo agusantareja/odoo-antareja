@@ -22,3 +22,7 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='antareja_notification.scope_default',
         default="False"
     )
+    module_antareja_notification_whatsapp = fields.Boolean("Notification Whatsapp")
+    module_antareja_whatsapp_migration = fields.Boolean("WhatsApp Migration")
+    module_auth_admin_sso = fields.Boolean()
+    module_antareja_notification_admin_user = fields.Boolean("Ignore Admin User on Notification")
