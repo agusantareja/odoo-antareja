@@ -315,7 +315,20 @@ class ApprovalTask(models.Model):
             obj = rec.get_transaction_object()
             rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name
 
-    def send_to_mobile_approval(self):
+    def get_users_for_notification(self,**kwargs):
+        record = self.ensure_one()
+        users = record.get_users().get_users_for_notification(company=self.company_id)
+        return users
+
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        return record.get_users().get_users_for_approval(company=self.company_id)
+
+    def get_users_for_mobile_approval(self, **kwargs):
+        record = self.ensure_one()
+        return record.get_users().get_users_for_approval(company=self.company_id)
+
+    def send_to_mobile_approval(self, **kwargs):
         pass
 
     def send_notification(self, **kwargs):

@@ -28,13 +28,35 @@ class ResUsers(models.Model):
         return self._has_group_id(group_id)
 
     def get_users_for_notification(self,company=None):
-        if company and self:
-            user_have_company = self.browse()
+        if not self:
+            return
+        if self.env.context.get("__user_with_delegator_notification"):
+            return self
+        if company:
+            result = self.browse()
             for user in self:
                 if company.id in user.company_ids.ids:
-                    user_have_company |= user
-            return user_have_company
-        return self
+                    result |= user
+        else:
+            result = self
+        result = result | result.get_delegatee()
+        return result.with_context(__user_with_delegator_notification=True)
+
+    def get_users_for_approval(self,company=None):
+        if not self:
+            return
+        if self.env.context.get("__user_with_delegator_approval"):
+            return self
+        if company:
+            result = self.browse()
+            for user in self:
+                if company.id in user.company_ids.ids:
+                    result |= user
+            result |= self
+        else:
+            result = self
+        result = result | result.get_delegatee()
+        return result.with_context(__user_with_delegator_approval=True)
 
     def has_delegate_group_ext_id(self, group_ext_id):
         group_id = self.env.ref(group_ext_id).id
@@ -46,6 +68,9 @@ class ResUsers(models.Model):
         metode ini akan di override di modul antareja_doa
         """
         return False
+
+    def get_delegatee(self, company_id=None):
+        return self.browse()
 
     def get_delegators(self):
         """
