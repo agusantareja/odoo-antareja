@@ -16,7 +16,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'Security & Access Rights',
-    'version': '13.0.0.0.2',
+    'version': '13.0.0.0.3',
     # any module necessary for this one to work correctly
     'depends': ['base','base_setup', 'mail'],
     # always loaded
