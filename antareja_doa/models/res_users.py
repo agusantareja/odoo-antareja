@@ -109,3 +109,15 @@ class ResUsers(models.Model):
         if uid and uid != self._uid:
             uid = self._uid
         return self.env['user.delegate'].get_delegations_user_group_for_proxy(uid)
+
+    def get_delegator(self):
+        users = self.browse()
+        for user in self:
+            users |= self.env['user.delegate'].get_delegator(user)
+
+    def get_delegatee(self, company_id=None):
+        #get orang yang di berikan delegasi olerh user ini
+        users = self.browse()
+        for user in self:
+            users |= self.env['user.delegate'].get_delegatee(user, company_id=company_id)
+        return users
