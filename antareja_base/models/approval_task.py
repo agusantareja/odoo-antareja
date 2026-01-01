@@ -49,7 +49,7 @@ class ApprovalTask(models.Model):
     transaction_display_name = fields.Char(
         'Name',
         compute='_compute_transaction_display_name',
-        compute_sudo = True,
+        compute_sudo=True,
     )
     approval_res_id = fields.Integer(
         'Approval ID'
@@ -61,7 +61,8 @@ class ApprovalTask(models.Model):
         'approval.instance',
         ondelete='set null',
     )
-    def check_access_rights_and_rule(self,user_and_delegator):
+
+    def check_access_rights_and_rule(self, user_and_delegator):
         rec = self.ensure_one()
         record = rec.sudo().get_transaction_object()
         if not record:
@@ -82,7 +83,7 @@ class ApprovalTask(models.Model):
         """Hitung apakah user login punya akses approve/reject."""
         current_user = self.env.user
         for rec in self:
-            rec.user_have_access_to_approval = current_user.id in rec.get_users().ids
+            rec.user_have_access_to_approval = current_user.id in rec.get_users_for_approval().ids
 
     def search_filter_user_have_access_to_approval(self, operator, value):
         current_uid = self.env.user.id
@@ -155,7 +156,8 @@ class ApprovalTask(models.Model):
             transaction_id = kwargs.get('transaction_id')
             transaction_model_name = kwargs.get('transaction_model_name')
             if transaction_model_name and transaction_id:
-                records = self.search([('transaction_id', '=', transaction_id),('transaction_model_name', '=', transaction_model_name),])
+                records = self.search([('transaction_id', '=', transaction_id),
+                                       ('transaction_model_name', '=', transaction_model_name), ])
             else:
                 return True
         return records.unlink()
@@ -170,7 +172,8 @@ class ApprovalTask(models.Model):
                 return values
             return []
 
-        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',  'approval_res_id', 'approval_model','approval_instance_id']:
+        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',
+                    'approval_res_id', 'approval_model', 'approval_instance_id']:
             value = kwargs.get(key, None)
             if value is not None:
                 data[key] = value
@@ -188,29 +191,30 @@ class ApprovalTask(models.Model):
         else:
             data['group_ids'] = []
         if 'approval_instance_id' not in data:
-            approval_instance=kwargs.get('approval_instance',0)
+            approval_instance = kwargs.get('approval_instance', 0)
             approval_instance and data.update(approval_instance_id=int(approval_instance))
         return data
 
     def prepare_create(self, **kwargs):
         transaction_id = kwargs.get('transaction_id')
         transaction_model_name = kwargs.get('transaction_model_name')
-        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(transaction_id)
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(
+            transaction_id)
         kw = self.prepare_data(**kwargs) or {}
         if transaction_object:
-            if 'name' not in kw and have_method(transaction_object,'get_internal_number'):
+            if 'name' not in kw and have_method(transaction_object, 'get_internal_number'):
                 kw['name'] = transaction_object.get_internal_number()
 
-            if not kw.get('document') and have_method(transaction_object,'get_internal_document'):
+            if not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
                 kw['document'] = transaction_object.get_internal_document()
 
-            if not kw.get('description') and have_method(transaction_object,'get_internal_description'):
+            if not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
                 kw['description'] = transaction_object.get_internal_description()
 
-            if not kw.get('requester_id')  and have_method(transaction_object, 'get_internal_requester_id'):
+            if not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
                 kw['requester_id'] = transaction_object.get_internal_requester_id()
 
-            if 'url' not in kw and have_method(transaction_object,'get_internal_url'):
+            if 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
                 kw['url'] = transaction_object.get_internal_url()
 
             if 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
@@ -229,7 +233,8 @@ class ApprovalTask(models.Model):
     def prepare_write(self, **kwargs):
         transaction_id = kwargs.get('transaction_id')
         transaction_model_name = kwargs.get('transaction_model_name')
-        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(transaction_id)
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(
+            transaction_id)
         kw = self.prepare_data(**kwargs) or {}
         if self and transaction_object:
             rec = self.ensure_one()
@@ -242,7 +247,7 @@ class ApprovalTask(models.Model):
             if not rec.description and not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
                 kw['description'] = transaction_object.get_internal_description()
 
-            if not rec.requester_id and not kw.get('requester_id')  and have_method(transaction_object, 'get_internal_requester_id'):
+            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
                 kw['requester_id'] = transaction_object.get_internal_requester_id()
 
             if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
@@ -280,7 +285,7 @@ class ApprovalTask(models.Model):
 
     def action_approval_transaction(self):
         transaction_object = self.get_transaction_object()
-        if transaction_object and have_method(transaction_object,'action_approval_transaction'):
+        if transaction_object and have_method(transaction_object, 'action_approval_transaction'):
             win_dict = transaction_object.action_approval_transaction()
             if win_dict:
                 return win_dict
@@ -304,7 +309,7 @@ class ApprovalTask(models.Model):
                 obj_ir_view = self.env["ir.ui.view"]
                 obj_ir_view_browse = obj_ir_view.search(
                     [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)]
-                    ,limit=1)
+                    , limit=1)
                 if obj_ir_view_browse:
                     win_dict['view_id'] = obj_ir_view_browse.id
 
@@ -315,18 +320,25 @@ class ApprovalTask(models.Model):
             obj = rec.get_transaction_object()
             rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name
 
-    def get_users_for_notification(self,**kwargs):
+    def get_users_for_notification(self, **kwargs):
         record = self.ensure_one()
-        users = record.get_users().get_users_for_notification(company=self.company_id)
-        return users
+        users = kwargs.get('users')
+        if users:
+            return users.get_users_for_notification(company=self.company_id)
+        else:
+            return record.get_users().get_users_for_notification(company=self.company_id)
 
     def get_users_for_approval(self, **kwargs):
         record = self.ensure_one()
-        return record.get_users().get_users_for_approval(company=self.company_id)
+        users = kwargs.get('users')
+        if users:
+            return users.get_users_for_approval(company=record.company_id)
+        else:
+            return record.get_users().get_users_for_approval(company=record.company_id)
 
     def get_users_for_mobile_approval(self, **kwargs):
         record = self.ensure_one()
-        return record.get_users().get_users_for_approval(company=self.company_id)
+        return record.get_users_for_approval(**kwargs)
 
     def send_to_mobile_approval(self, **kwargs):
         pass
@@ -345,7 +357,7 @@ class ApprovalTask(models.Model):
         else:
             transaction_object = rec.get_transaction_object()
             if transaction_object:
-                if have_method(transaction_object,'check_approval_task_status'):
+                if have_method(transaction_object, 'check_approval_task_status'):
                     transaction_object.check_approval_task_status()
             else:
                 rec.approval_done()

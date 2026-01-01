@@ -27,10 +27,10 @@ class ResUsers(models.Model):
 
         return self._has_group_id(group_id)
 
-    def get_users_for_notification(self,company=None):
+    def get_users_for_notification(self, company=None):
         if not self:
             return
-        if self.env.context.get("__user_with_delegator_notification"):
+        if self.env.context.get("__user_with_delegatee_notification"):
             return self
         if company:
             result = self.browse()
@@ -39,13 +39,13 @@ class ResUsers(models.Model):
                     result |= user
         else:
             result = self
-        result = result | result.get_delegatee()
-        return result.with_context(__user_with_delegator_notification=True)
+        result = result.get_notification_users(company=company)
+        return result.with_context(__user_with_delegatee_notification=True)
 
-    def get_users_for_approval(self,company=None):
+    def get_users_for_approval(self, company=None):
         if not self:
             return
-        if self.env.context.get("__user_with_delegator_approval"):
+        if self.env.context.get("__user_with_delegatee_approval"):
             return self
         if company:
             result = self.browse()
@@ -55,8 +55,9 @@ class ResUsers(models.Model):
             result |= self
         else:
             result = self
+        # Tambahkan delegatee user
         result = result | result.get_delegatee()
-        return result.with_context(__user_with_delegator_approval=True)
+        return result.with_context(__user_with_delegatee_approval=True)
 
     def has_delegate_group_ext_id(self, group_ext_id):
         group_id = self.env.ref(group_ext_id).id
@@ -69,10 +70,19 @@ class ResUsers(models.Model):
         """
         return False
 
+    def get_notification_users(self, company_id=None):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
+        return self
+
     def get_delegatee(self, company_id=None):
+        """
+        metode ini akan di override di modul antareja_doa
+        """
         return self.browse()
 
-    def get_delegators(self):
+    def get_delegators(self, company_id=None):
         """
         metode ini akan di override di modul antareja_doa
         """

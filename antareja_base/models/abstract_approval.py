@@ -4,6 +4,7 @@ from odoo.addons.test_convert.tests.test_env import record
 from odoo.exceptions import UserError
 from ..tools.utils import have_method, save_call_method
 
+
 # def have_method(obj, method):
 #     return hasattr(obj, method) and callable(getattr(obj, method))
 
@@ -31,7 +32,7 @@ class AbstractApprovalType(models.AbstractModel):
     group_id = fields.Many2one('res.groups', 'Approval By Group')
     user_ids = fields.Many2many('res.users', string='Approval By Users')
     group_ids = fields.Many2many('res.groups', string='Approval By Groups')
-
+    company_id = fields.Many2one('res.company', 'Company')
     assign_responsible_rule = fields.Selection([
         ('legacy', 'Legacy'),
         ('have_one_user', 'Have One User'),
@@ -39,6 +40,7 @@ class AbstractApprovalType(models.AbstractModel):
     ], 'Responsible', default='legacy')
 
     responsible_user_id = fields.Many2one('res.users', 'Responsible User')
+
     def get_users(self):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
@@ -97,7 +99,7 @@ class AbstractApprovalType(models.AbstractModel):
             'approval_res_id': self.id
         }
         if self.responsible_user_id:
-            kw['user_ids']= self.responsible_user_id
+            kw['user_ids'] = self.responsible_user_id
             return kw
 
         users = self.env['res.users'].browse()
@@ -129,6 +131,14 @@ class AbstractApprovalType(models.AbstractModel):
 
         return kw
 
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users')
+        if users:
+            return users.get_users_for_approval(company=record.company_id)
+        else:
+            return record.get_users().get_users_for_approval(company=record.company_id)
+
 
 class AbstractApprovalAccess(models.AbstractModel):
     _name = "abstract.approval.access"
@@ -146,7 +156,7 @@ class AbstractApprovalAccess(models.AbstractModel):
         """Hitung apakah user login punya akses approve/reject."""
         current_user = self.env.user
         for rec in self:
-            rec.access_approval = current_user in rec.get_users()
+            rec.access_approval = current_user in rec.get_users_for_approval()
 
     def get_approval_domain(self):
         current_uid = self.env.user.id
@@ -249,7 +259,7 @@ class AbstractApprovalStatus(models.AbstractModel):
     )
 
     def domain_waiting_status(self):
-        return [('status_approval','in',[APPROVAL_STATUS_NOT_APPROVE,'waiting','draft'])]
+        return [('status_approval', 'in', [APPROVAL_STATUS_NOT_APPROVE, 'waiting', 'draft'])]
 
     def set_waiting_state(self):
         self.status_approval = 'waiting'
@@ -287,7 +297,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def get_reject_to_task_line(self):
         raise NotImplemented
 
-    def get_approval_start_task(self,start_task):
+    def get_approval_start_task(self, start_task):
         """
         Get list approval from start_task to this object
         """
@@ -306,19 +316,22 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return approve_task_line_between
 
     def get_approval_instance(self):
-        if self :
+        if self:
             transaction_model_name = self[0].transaction_model_name
             transaction_id = self[0].transaction_id
-            return self.env['approval.instance'].search([('transaction_id','=',transaction_id),('transaction_model_name','=',transaction_model_name)],limit=1)
+            return self.env['approval.instance'].search(
+                [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
+                limit=1)
         return self.env['approval.instance'].browse()
 
-    def get_all_approval_task_line(self,transaction_id=None, transaction_model_name=None):
+    def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if self:
-            transaction_id= self.transaction_id
+            transaction_id = self.transaction_id
             transaction_model_name = self.transaction_model_name
-        if not transaction_model_name  or not transaction_id:
+        if not transaction_model_name or not transaction_id:
             raise UserError(" Transaction not set ")
-        return self.search([('transaction_id','=',transaction_id),('transaction_model_name','=',transaction_model_name)])
+        return self.search(
+            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)])
 
     def get_previous_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         end_task = self.ensure_one()
@@ -330,14 +343,14 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             previous = task
         return previous
 
-    def get_next_approval_task_line(self,transaction_id=None, transaction_model_name=None):
+    def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if not transaction_id or not transaction_model_name:
             if self:
                 transaction_model_name = transaction_model_name or self[0].transaction_model_name
                 transaction_id = transaction_id or self[0].transaction_id
             else:
                 return self.browse()
-        domain = [('transaction_id', '=', transaction_id),('transaction_model_name', '=', transaction_model_name)]
+        domain = [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)]
         if have_method(self, "domain_waiting_status"):
             domain.extend(self.domain_waiting_status() or [])
         result = self.search(domain, limit=1)
@@ -351,14 +364,14 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def register_to_approval_task(self, **kwargs):
         self.ensure_one()
         if have_method(self, "prepare_approval_task_dict"):
-            kw=self.prepare_approval_task_dict()
+            kw = self.prepare_approval_task_dict()
             kw.update(kwargs)
         else:
             kw = dict(kwargs)
 
-        transaction_object = kw.get('transaction_object') or save_call_method(self,'get_transaction_object')
+        transaction_object = kw.get('transaction_object') or save_call_method(self, 'get_transaction_object')
         if transaction_object:
-            if have_method(transaction_object,'prepare_approval_task_dict'):
+            if have_method(transaction_object, 'prepare_approval_task_dict'):
                 update = save_call_method(transaction_object, 'prepare_approval_task_dict', **kw)
                 update and kw.update(update)
             kw['transaction_id'] = transaction_object.id
@@ -456,15 +469,15 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         approval_task_line_next = rec.get_next_approval_task_line()
         kw['approval_task_line'] = rec
-        kw['approval_task_line_next'] =  approval_task_line_next
+        kw['approval_task_line_next'] = approval_task_line_next
         kw['is_approval_done'] = not approval_task_line_next
         approval_instance = kwargs.get('approval_instance') or rec.get_approval_instance()
         if approval_instance:
             approval_instance.after_approve(**kw)
         else:
             transaction_object = kw.get('transaction_object') or rec.get_transaction_object()
-            if have_method(transaction_object,'event_after_approve'):
-                save_call_method(transaction_object,'event_after_approve')
+            if have_method(transaction_object, 'event_after_approve'):
+                save_call_method(transaction_object, 'event_after_approve')
 
     def do_reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
@@ -486,7 +499,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 approval_task_line_next = self.get_previous_approval_task_line()
             else:
                 approval_task_line_next = kwargs.get('approval_task_line_next')
-                approval_task_line_between =  kwargs.get('approve_task_line_between') or self.get_approval_start_task(approval_task_line_next)
+                approval_task_line_between = kwargs.get('approve_task_line_between') or self.get_approval_start_task(
+                    approval_task_line_next)
             is_approval_done = not approval_task_line_next
         if is_approval_done:
             kw['is_approval_done'] = True

@@ -17,7 +17,7 @@
     'category': 'Uncategorized',
     'version': '13.0.1',
 
-    'depends': ['base', 'mail','antareja_base', 'hr', 'antareja_doa', 'antareja_hr_employee_approver'],
+    'depends': ['base', 'mail', 'antareja_base', 'antareja_doa', 'antareja_approval_hr_employee_hierarchy'],
 
     # always loaded
     'data': [

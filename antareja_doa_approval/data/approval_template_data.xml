@@ -23,7 +23,7 @@ response['transaction_requester']=transaction_object.delegator_id or user
 <!--            <field name="invoke_validate_request_approval">validate_request_approval</field>-->
             <field name="invoke_approval_start">event_approval_start</field>
 <!--            <field name="invoke_after_approve">event_after_approve</field>-->
-<!--            <field name="invoke_approval_done">event_approval_done</field>-->
+            <field name="invoke_approval_done">event_approval_done</field>
         </record>
     </data>
 </odoo>
