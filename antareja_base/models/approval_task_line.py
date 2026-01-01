@@ -32,7 +32,6 @@ class ApprovalTaskLine(models.Model):
     date_execution = fields.Datetime('Date Execution')
     reject_reason = fields.Text('Reject Reason')
 
-
     def set_approved_status(self, **kwargs):
         self.ensure_one()
         self.write({
@@ -41,14 +40,13 @@ class ApprovalTaskLine(models.Model):
             'status_approval': 'approved',
         })
 
-
-
     def set_rejected_status(self, **kwargs):
         self.write({
-            'user_execution_id':self.env.uid,
+            'user_execution_id': self.env.uid,
             'date_execution': fields.Datetime.now(),
             'status_approval': 'rejected',
-            'reject_reason': kwargs.get('reject_reason') or kwargs.get('reason') or self.env.context.get('__reject_reason')
+            'reject_reason': kwargs.get('reject_reason') or kwargs.get('reason') or self.env.context.get(
+                '__reject_reason')
         })
 
     def set_waiting_status(self, **kwargs):
@@ -56,17 +54,16 @@ class ApprovalTaskLine(models.Model):
             'status_approval': 'waiting_approval'
         })
 
-    def get_next_approval_task_line(self,transaction_id = None, transaction_model_name = None):
+    def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         transaction_id = transaction_id or self.transaction_id
         transaction_model_name = transaction_model_name or self.transaction_model_name
-        next_approval_task_line= self.sudo().search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name), ('status_approval', 'in', ['draft','waiting','waiting_approval'])],order='id asc', limit=1)
+        next_approval_task_line = self.sudo().search(
+            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name),
+             ('status_approval', 'in', ['draft', 'waiting', 'waiting_approval'])], order='id asc', limit=1)
 
-        if next_approval_task_line and next_approval_task_line.status_approval!='waiting_approval':
+        if next_approval_task_line and next_approval_task_line.status_approval != 'waiting_approval':
             next_approval_task_line.set_waiting_status()
         return next_approval_task_line
 
     def get_approval_instance(self):
         return self.approval_instance_id
-
-
-
