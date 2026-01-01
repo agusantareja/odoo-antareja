@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- External Data Sync Model Configuration for user.delegate active sync-->
+    <record model="application.server.auth" id="application_server_auth">
+        <field name="name">application.server.auth.user.delegate.sync</field>
+<!--        <field name="external_model">user.delegate</field>-->
+<!--        <field name="external_app_name">intra.cerindocorp.id</field>-->
+<!--        <field name="external_domain">[('state','in',['prepared','active','cancelled','expired'])]</field>-->
+<!--        <field name="next_sync_datetime" eval="DateTime.now().strftime('%Y-%m-%d %H:05:00')"/>-->
+    </record>
+
+<!--    <record model="external.data.mapping" id="user_delegate_data_exclude_field_mapping">-->
+<!--        <field name="name">user.delegate exclude fields</field>-->
+<!--        <field name="internal_model">user.delegate</field>-->
+<!--        <field name="internal_field">delegator_group_ids,proxy_id</field>-->
+<!--        <field name="mapping_strategy">field</field>-->
+<!--        <field name="constant_value_type">model_exclude_field</field>-->
+<!--    </record>-->
+
+<!--    <record model="external.data.mapping" id="user_delegate_data_mapping">-->
+<!--        <field name="name">user.delegate</field>-->
+<!--        <field name="internal_model">user.delegate</field>-->
+<!--        <field name="mapping_strategy">model</field>-->
+<!--        <field name="constant_value_type">create_able_from_external</field>-->
+<!--    </record>-->
+
+</odoo>

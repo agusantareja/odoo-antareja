@@ -1,0 +1,15 @@
+<odoo>
+    <record id="view_config_settings_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="antareja_base.view_config_settings_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//label[@for='module_antareja_approval_hr_employee_hierarchy']/.." position="inside">
+                <div class="mt16 row">
+                    <label for="antareja_hr_employee_approver_max_level_approver" class="col-3 col-lg-3 o_light_label"/>
+                    <field name="antareja_hr_employee_approver_max_level_approver" class="oe_inline"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

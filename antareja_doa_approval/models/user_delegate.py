@@ -5,7 +5,7 @@ from odoo.exceptions import UserError
 
 class UserDelegate(models.Model):
     _name = 'user.delegate'
-    _inherit = [_name,'approval.instance.able.mixin']
+    _inherit = [_name, 'approval.instance.able.mixin']
 
     # add state for approval
     state = fields.Selection(selection_add=[
@@ -28,18 +28,18 @@ class UserDelegate(models.Model):
     def get_internal_menu_id(self):
         return "antareja_doa_approval.menu_to_approve_user_delegate"
 
-    def create_approval_task_line(self,approval_instance=None,**kwargs):
+    def create_approval_task_line(self, approval_instance=None, **kwargs):
         transaction_id = self.id
         transaction_model_name = self._name
-        users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id,self.company_id)
-        approval_task_line=[{
-            'type_approval':'user',
-            'user_id':user.id,
+        users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id, self.company_id)
+        approval_task_line = [{
+            'type_approval': 'user',
+            'user_id': user.id,
             'transaction_id': transaction_id,
             'transaction_model_name': transaction_model_name,
-            'status_approval':'waiting_approval',
-            'approval_instance_id':approval_instance.id
-        } for user in users ]
+            'status_approval': 'waiting_approval',
+            'approval_instance_id': approval_instance.id
+        } for user in users]
         if not self.env['approval.task.line'].create(approval_task_line):
             raise UserError("No employee")
 
@@ -47,4 +47,11 @@ class UserDelegate(models.Model):
         return self.action_request_approval()
 
     def event_approval_start(self):
-        self.write({'state':'waiting_approval'})
+        self.write({'state': 'waiting_approval'})
+
+    def event_approval_done(self, is_approved=False):
+        if is_approved:
+            self._set_prepared_state()
+
+    def get_prepared_state(self):
+        return super(UserDelegate, self).get_prepared_state() + ['approved']

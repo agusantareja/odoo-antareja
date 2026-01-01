@@ -68,10 +68,10 @@ class ResUsers(models.Model):
 
         base_groups_access = super(ResUsers, self).has_group(group_ext_id)
         # Always return True for base.group_user
-        if base_groups_access or group_ext_id is None or group_ext_id in ['base.group_user', 'base.group_system', 'base.group_erp_manager',
-                            'base.user_root', 'base.user_admin']:
+        if base_groups_access or group_ext_id is None or group_ext_id in ['base.group_user', 'base.group_system',
+                                                                          'base.group_erp_manager',
+                                                                          'base.user_root', 'base.user_admin']:
             return base_groups_access
-
 
         base_groups_access = self.has_delegate_group_ext_id(group_ext_id)
         if base_groups_access:
@@ -82,7 +82,7 @@ class ResUsers(models.Model):
         return base_groups_access
 
     def has_group_id(self, group_id, with_delegate=True):
-        return super(ResUsers,self).has_group_id(group_id) or (with_delegate and self.has_delegate_group_id(group_id))
+        return super(ResUsers, self).has_group_id(group_id) or (with_delegate and self.has_delegate_group_id(group_id))
 
     def has_delegate_group_id(self, group_id: int):
         """
@@ -100,7 +100,6 @@ class ResUsers(models.Model):
         """
         Get all delegations user group for this proxy user.
         :return: {
-
             'user_ids': [user_id1, user_id2, ...],
             'group_ids': [group_id1, group_id2, ...]
             }
@@ -110,14 +109,23 @@ class ResUsers(models.Model):
             uid = self._uid
         return self.env['user.delegate'].get_delegations_user_group_for_proxy(uid)
 
-    def get_delegator(self):
-        users = self.browse()
-        for user in self:
-            users |= self.env['user.delegate'].get_delegator(user)
+    def get_notification_users(self, company_id=None):
+        if self:
+            notification_users_ids = self.env['user.delegate'].get_notification_user_ids(self.ids, company_id=company_id)
+            if notification_users_ids:
+                return self.browse(notification_users_ids)
+        return self.browse()
+
+    def get_delegators(self, company_id=None):
+        if self:
+            delegator_ids = self.env['user.delegate'].get_all_delegator(self.ids, company_id=company_id)
+            if delegator_ids:
+                return self.browse(delegator_ids)
+        return self.browse()
 
     def get_delegatee(self, company_id=None):
-        #get orang yang di berikan delegasi olerh user ini
-        users = self.browse()
-        for user in self:
-            users |= self.env['user.delegate'].get_delegatee(user, company_id=company_id)
-        return users
+        if self:
+            delegatee_ids = self.env['user.delegate'].get_all_delegatee(self.ids, company_id=company_id)
+            if delegatee_ids:
+                return self.browse(delegatee_ids)
+        return self.browse()

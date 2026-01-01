@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="notif_mobile_reset_password" model="ir.config_parameter">
+            <field name="key">notif_mobile_reset_password</field>
+            <field name="value">Pasword berhasil di rubah. Silahkan kembali ke ceria mobile dan login dengan akses yang baru</field>
+        </record>
+
+    </data>
+</odoo>

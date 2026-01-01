@@ -1,7 +1,7 @@
 <odoo>
 
     <menuitem id="menu_approval_matrix_tiered_rule" name="Tiered Rule"
-              parent="antareja_approval.menu_approval_strategy_config"
+              parent="antareja_approval_manager.main_management_configuration"
               action="action_approval_matrix_tiered_rule"
               sequence="20"/>
 

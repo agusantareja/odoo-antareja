@@ -21,12 +21,11 @@
     'depends': [
         'base',
         'antareja_base',
+        'amr_data_sync',
     ],
     # always loaded
     'data': [
-        'data/cron.xml',
         'views/application_server_auth_views.xml',
-        'views/menuitem.xml',
     ],
 
 }

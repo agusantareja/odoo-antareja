@@ -12,7 +12,7 @@
                     <div class="o_setting_right_pane">
                         <div class="content-group">
                             <label for="module_antareja_notification_whatsapp"/>
-                            <div class="text-muted">
+                            <div class="text-muted" id="antareja_notification_whatsapp_description">
                                 Notification Whatsapp
                             </div>
                             <div class="mt16 row">
