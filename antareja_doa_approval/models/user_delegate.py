@@ -32,15 +32,18 @@ class UserDelegate(models.Model):
         transaction_id = self.id
         transaction_model_name = self._name
         users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id, self.company_id)
-        approval_task_line = [{
-            'type_approval': 'user',
-            'user_id': user.id,
-            'transaction_id': transaction_id,
-            'transaction_model_name': transaction_model_name,
-            'status_approval': 'waiting_approval',
-            'approval_instance_id': approval_instance.id
-        } for user in users]
-        if not self.env['approval.task.line'].create(approval_task_line):
+        if users:
+            approval_task_line = [{"user_id": user.id, "type_approval": "user"} for user in users]
+        else:
+            # Default to admin user if no approver found
+            approval_task_line = [{"group_id": self.env.ref('base.group_erp_manager').id, "type_approval": "group"}]
+
+        if not self.env['approval.task.line'].with_context(
+                default_transaction_id=transaction_id,
+                default_transaction_model_name=transaction_model_name,
+                default_status_approval='waiting_approval',
+                default_approval_instance_id=approval_instance.id
+        ).create(approval_task_line):
             raise UserError("No employee")
 
     def action_button_submit(self):
