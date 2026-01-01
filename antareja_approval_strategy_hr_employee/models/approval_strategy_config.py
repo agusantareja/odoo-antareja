@@ -10,16 +10,7 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
-class HrEmployee(models.Model):
-    _inherit = "hr.employee"
-
-    approver_id = fields.Many2one(
-        'hr.employee',
-        string='Approver'
-    )
-
-
-_strategy_config_name = "hr_employee_doa"
+_strategy_config_name = "hr_employee"
 _transaction_stage_field = 'stage_' + _strategy_config_name + '_id'
 
 
@@ -48,6 +39,7 @@ class ApprovalStrategyConfigStage(models.TransientModel):
         if not source:
             source = {}
         requester_id = source.get("requester_id") or self.env.context.get('default_requester_id')
+        users = self.env["hr.employee"].get_users_approval_employee(requester_id)
         employees = self.env["hr.employee"].search([('user_id', '=', requester_id)])
         max_level_approver = source.get(
             'max_level_approver',
@@ -60,15 +52,15 @@ class ApprovalStrategyConfigStage(models.TransientModel):
                 if emp.user_id:
                     user_ids.append(emp.user_id.id)
 
-        if user_ids:
-            source['approval_tasks'] = [(0, 0,{"user_id": user_id,"type_approval": "user"}) for user_id in user_ids]
+        if users:
+            source['approval_tasks'] = [(0, 0, {"user_id": user.id,"type_approval": "user"}) for user in users]
         else:
             source['approval_tasks'] = \
                 [(0, 0,
                   {
                       "group_id": self.env.ref('base.group_erp_manager').id,  # Default to admin user if no approver found
                       "type_approval": "group"
-                  }) ]
+                  })]
             #raise self.raise_error(source, message="No approver found for the HR employee.", )
 
         # Create a new stage
