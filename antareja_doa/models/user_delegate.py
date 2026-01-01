@@ -36,6 +36,13 @@ class UserDelegate(models.Model):
         ('cancelled', 'Cancelled'),
         ('expired', 'Expired'),
     ], string='State', default='draft', tracking=True)
+
+    notification_option = fields.Selection(
+        [('send_to_delegatee_only', 'Send to Delegatee only'),
+         ('send_to_both', 'Send to both delegator and proxy')],
+        default='send_to_both'
+    )
+
     delegator_id = fields.Many2one(
         'res.users', string='Delegator', required=True, tracking=True, default=lambda self: self.env.user)
     delegator_group_ids = fields.Many2many(
@@ -55,7 +62,7 @@ class UserDelegate(models.Model):
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
 
-    proxy_id = fields.Many2one('res.users', string='Delegatee (Acting On Behalf)',tracking=True, )
+    proxy_id = fields.Many2one('res.users', string='Delegatee (Acting On Behalf)', tracking=True, )
     delegatee_id = fields.Many2one(
         'res.users',
         string='Delegatee',
@@ -83,6 +90,10 @@ class UserDelegate(models.Model):
         self.ensure_set_number()
         if self.state in ['cancelled', 'expired']:
             return
+        else:
+            self.ensure_state()
+
+    def ensure_state(self):
         today = date.today()
         if self.start_date <= today <= self.end_date:
             self.state = 'active'
@@ -128,19 +139,9 @@ class UserDelegate(models.Model):
         """
         Cron job to update the state of delegations based on current date.
         """
-        today = date.today()
         delegations = self.search([('state', 'in', self.get_prepared_state())])
         for delegation in delegations:
-            if delegation.state == 'prepared':
-                continue
-
-            if delegation.start_date > today:
-                delegation.state = 'prepared'
-            elif delegation.end_date < today:
-                delegation.state = 'expired'
-            else:
-                delegation.state = 'active'
-
+            delegation.ensure_state()
             delegation.ensure_set_number()
 
     @api.constrains('delegator_id', 'proxy_id')
@@ -187,7 +188,10 @@ class UserDelegate(models.Model):
             ])
 
         if proxy_id:
-            domain.append(('proxy_id', '=', proxy_id))
+            if isinstance(proxy_id, list):
+                domain.append(('proxy_id', 'in', proxy_id))
+            else:
+                domain.append(('proxy_id', '=', proxy_id))
 
         if user_id and group_id:
             raise ValidationError("You cannot filter by both user_id and group_id at the same time.")
@@ -195,7 +199,10 @@ class UserDelegate(models.Model):
         if user_ids:
             domain.append(('delegator_id', 'in', user_ids))
         elif user_id:
-            domain.append(('delegator_id', '=', user_id))
+            if isinstance(user_id, list):
+                domain.append(('delegator_id', 'in', user_id))
+            else:
+                domain.append(('delegator_id', '=', user_id))
 
         if group_id:
             # group = self.env['res.groups'].browse(group_id)
@@ -433,4 +440,77 @@ class UserDelegate(models.Model):
         delegations = self.get_all_delegations_for_proxy(user_ids=user_ids, company_id=company_id)
         return list(
             set(d.proxy_id.id for d in delegations) - set(user_ids)
+        )
+
+    def get_all_delegations(self, delegatee_id=None, delegator_id=None, group_id=None, company_id=None, limit=None):
+        """
+        Ambil delegasi aktif untuk proxy tertentu.
+        Jika group_id diberikan, hanya delegator yang termasuk dalam grup tersebut.
+        """
+        today = date.today()
+        domain = [
+            ('start_date', '<=', today),
+            ('end_date', '>=', today),
+            ('state', '=', 'active'),
+            ('active', '=', True),
+        ]
+        if company_id:
+            domain.extend([
+                ('delegator_id.company_ids', '=', int(company_id)),
+                ('delegatee_id.company_ids', '=', int(company_id))
+            ])
+
+        if delegatee_id:
+            if isinstance(delegatee_id, list):
+                domain.append(('delegatee_id', 'in', delegatee_id))
+            else:
+                domain.append(('delegatee_id', '=', delegatee_id))
+
+        if delegator_id:
+            if isinstance(delegator_id, list):
+                domain.append(('delegator_id', 'in', delegator_id))
+            else:
+                domain.append(('delegator_id', '=', delegator_id))
+
+        if group_id:
+            if isinstance(group_id, list):
+                domain.append(('group_id', 'in', group_id))
+            else:
+                domain.append(('group_id', '=', group_id))
+
+        return self.search(domain, limit=limit, order='start_date desc')
+
+    def get_notification_user_ids(self, delegator_ids, company_id=None):
+        delegations = self.get_all_delegations(delegator_id=delegator_ids, company_id=company_id)
+        result = []
+        exclude_user_delegate = []
+        for delegation in delegations:
+            result.append(delegation.delegatee_id.id)
+            if delegation.notification_option == 'send_to_delegatee_only':
+                exclude_user_delegate.append(delegation.delegator_id.id)
+            else:
+                result.append(delegation.delegator_id.id)
+        result.extend(set(delegator_ids) - set(exclude_user_delegate))
+        return list(set(result))
+
+    def get_all_delegatee(self, delegator_ids, company_id=None):
+        """
+        get delegatee_ids for this delegator_ids
+        """
+        if not delegator_ids:
+            return []
+        delegations = self.get_all_delegations(delegator_id=delegator_ids, company_id=company_id)
+        return list(
+            set(d.delegatee_id.id for d in delegations) - set(delegator_ids)
+        )
+
+    def get_all_delegator(self, delegatee_ids, company_id=None):
+        """
+        get delegator for this delegatee_ids
+        """
+        if not delegatee_ids:
+            return []
+        delegations = self.get_all_delegations(delegatee_id=delegatee_ids, company_id=company_id)
+        return list(
+            set(d.delegator_id.id for d in delegations) - set(delegatee_ids)
         )

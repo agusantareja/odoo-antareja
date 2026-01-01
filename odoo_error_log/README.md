@@ -1,0 +1,1 @@
+You can catch Odoo's RPC exceptions

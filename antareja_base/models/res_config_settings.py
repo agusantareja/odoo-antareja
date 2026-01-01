@@ -14,7 +14,7 @@ class ResConfigSettings(models.TransientModel):
     module_antareja_whatsapp_migration = fields.Boolean("WhatsApp Migration")
 
     module_antareja_approval_manager = fields.Boolean("Approval Manager")
-
+    module_antareja_approval_hr_employee_hierarchy = fields.Boolean("Employee Approval Hierarchy")
     module_antareja_token = fields.Boolean("JWT Token")
 
     module_antareja_doa = fields.Boolean("Delegation of Authority (DoA)")

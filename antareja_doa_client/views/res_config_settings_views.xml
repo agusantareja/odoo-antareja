@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.doa</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="antareja_doa.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@id='antareja_doa_client_enabled_setting']" position="inside">
+                <div class="o_setting_right_pane" name="antareja_doa_external_app_name_right_pane">
+                    <label for="antareja_doa_external_app_name"/>
+                    <field name="antareja_doa_external_app_name" />
+<!--                    <br/>-->
+<!--                    <div class="mt8">-->
+<!--                        <button name="%(base.action_res_company_form)d" icon="fa-arrow-right" type="action" string="Manage Companies" class="btn-link"/>-->
+<!--                    </div>-->
+                </div>
+<!--                <div class="o_setting_right_pane" name="antareja_doa_endpoint_url_right_pane">-->
+<!--                    <label for="antareja_doa_endpoint_url"/>-->
+<!--                    <field name="antareja_doa_endpoint_url" />-->
+<!--                </div>-->
+<!--                <div class="o_setting_right_pane" name="antareja_doa_api_token_right_pane">-->
+<!--                    <label for="antareja_doa_api_token"/>-->
+<!--                    <field name="antareja_doa_api_token" />-->
+<!--                </div>-->
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

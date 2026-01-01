@@ -16,10 +16,9 @@ _logger = logging.getLogger(__name__)
 class ApplicationServerAuth(models.Model):
     _inherit = 'application.server.auth'
 
-    auth_type = fields.Selection([
+    auth_type = fields.Selection(selection_add=[
         ('jwt-odoo-rcp', 'JWT Odoo RCP'),
-        ('odoo-rcp', 'Odoo RCP'),
-        ('rest-token', 'Rest Token'),
+        ('odoo-rcp',),
     ], default='rest-token')
 
     rest_refresh = fields.Char()
