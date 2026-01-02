@@ -1,0 +1,155 @@
+<odoo>
+    <data>
+        <record id="mr_approval_instance_id" model="approval.strategy.template.instance">
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">material.requisition</field>
+            <field name="description">Material Requisition</field>
+            <field name="starting_status_approval">cost_control</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+config.update({
+    'description': (transaction_object and transaction_object.project_name) or 'MR',
+    'requester_id':transaction_object.request_by.id,
+    'request_date':transaction_object.request_date,
+})
+result=config
+                ]]></field>
+        </record>
+        <record id="stage_cost_control_mr_id" model="approval.strategy.template.stage">
+            <field name="approval_template_instance_id" ref="cni_inventory_intra_approval.mr_approval_instance_id"/>
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">material.requisition</field>
+            <field name="transaction_stage_field">stage_cost_control_mr_id</field>
+            <field name="stage_strategy_name">Cost Control Approval</field>
+            <field name="stage_strategy_config_name">cost_control_mr</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.cost_control_mr</field>
+            <field name="stage_strategy_inline" eval="False"/>
+            <field name="stage_mandatory" eval="True"/>
+            <field name="stage_dynamic_approval" eval="False"/>
+            <field name="status_waiting_approval">cost_control</field>
+            <field name="status_approved">waiting_approval</field>
+            <field name="status_reject">draft</field>
+<!--            <field name="email_template_approval_id" ref="cni_inventory_intra.mr_cost_control_mail_template"/>-->
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+#transaction_stage_field = kwargs.get('transaction_stage_field')
+#stage_strategy_name = kwargs.get('stage_strategy_name')
+#stage_strategy_config_name = kwargs.get('stage_strategy_config_name')
+#stage_strategy_config_model_name = kwargs.get('stage_strategy_config_model_name')
+config.update({
+    #'transaction_stage_field': transaction_stage_field,
+    #'stage_strategy_name': stage_strategy_name,
+    #'stage_strategy_config_name': stage_strategy_config_name,
+    #'stage_strategy_config_model_name': stage_strategy_config_model_name,
+    'description': (transaction_object and transaction_object.project_name) or 'Cost Control Approval MR',
+    'requester_id':transaction_object.request_by.id,
+
+    # Notification configuration
+    #'email_template_approval_id': self.env.ref('cni_inventory_intra.mr_cost_control_mail_template').id,
+    #'email_template_approved_id': None,
+    #'email_template_rejection_id': None,
+    'approval_tasks': [{
+                  "group_id": self.env.ref('cni_inventory_intra.cost_control_group').id,
+                  "type_approval": "group",
+    }]
+})
+result=config
+                ]]></field>
+        </record>
+
+        <record id="stage_inline_mr_id" model="approval.strategy.template.stage">
+            <field name="approval_template_instance_id" ref="cni_inventory_intra_approval.mr_approval_instance_id"/>
+            <field name="sequence">15</field>
+            <field name="transaction_model_name">material.requisition</field>
+            <field name="transaction_stage_field">stage_inline_mr_id</field>
+            <field name="stage_strategy_name">Employee Approval</field>
+            <field name="stage_strategy_config_name">inline_mr</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.inline_mr</field>
+
+            <field name="stage_strategy_inline" eval="True"/>
+            <field name="stage_strategy_inline_model_name">material.requisition.approval</field>
+            <field name="stage_mandatory" eval="True"/>
+            <field name="stage_dynamic_approval" eval="False"/>
+            <field name="status_waiting_approval">waiting_approval</field>
+            <field name="status_approved">approved</field>
+            <field name="status_reject">draft</field>
+<!--            <field name="email_template_approval_id" ref="cni_inventory_intra.mr_approver_mail_template"/>-->
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+transaction_stage_field = kwargs.get('transaction_stage_field')
+
+config.update({
+    'description': (transaction_object and transaction_object.project_name) or 'Inline Approval MR',
+    'requester_id':transaction_object.request_by.id,
+    # Notification configuration
+    # 'email_template_approval_id': self.env.ref('cni_inventory_intra.mr_approver_mail_template').id,
+    # 'email_template_approved_id': None,
+    # 'email_template_rejection_id': None
+})
+result=config
+                ]]></field>
+        </record>
+
+        <record id="mir_approval_instance_id" model="approval.strategy.template.instance">
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">material.inventory.request</field>
+            <field name="description">Material Inventory Requisition</field>
+            <field name="starting_status_approval">intercompany_approval</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+config.update({
+    'description': (transaction_object and transaction_object.used_for) or 'Approval MIR',
+    'requester_id':transaction_object.request_by.id,
+    'request_date':transaction_object.request_date,
+})
+result=config
+                ]]></field>
+        </record>
+
+        <record id="stage_inline_mir_id" model="approval.strategy.template.stage">
+            <field name="approval_template_instance_id" ref="cni_inventory_intra_approval.mir_approval_instance_id"/>
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">material.inventory.request</field>
+            <field name="transaction_stage_field">stage_inline_mir_id</field>
+            <field name="stage_strategy_name">Employee Hierarchy Approval</field>
+            <field name="stage_strategy_config_name">inline_mir</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.inline_mir</field>
+
+            <field name="stage_strategy_inline" eval="True"/>
+            <field name="stage_strategy_inline_model_name">material.inventory.request.approval</field>
+            <field name="stage_mandatory" eval="True"/>
+            <field name="stage_dynamic_approval" eval="False"/>
+            <field name="status_waiting_approval">intercompany_approval</field>
+            <field name="status_approved">approved</field>
+            <field name="status_reject">draft</field>
+<!--            <field name="email_template_approval_id" ref="cni_inventory_intra.mir_approver_mail_template"/>-->
+
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+
+config.update({
+    'description': (transaction_object and transaction_object.used_for) or 'Approval MIR',
+    'requester_id':transaction_object.request_by.id,
+    # status activate
+    # Notification configuration
+    #'email_template_approval_id': self.env.ref('cni_inventory_intra.mir_approver_mail_template').id,
+    # 'email_template_approved_id': None,
+    # 'email_template_rejection_id': None
+
+})
+result=config
+                ]]></field>
+        </record>
+
+    </data>
+</odoo>
