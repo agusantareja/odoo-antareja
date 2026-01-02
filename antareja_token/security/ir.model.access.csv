@@ -1,5 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_antareja_token_admin,access_antareja_token admin,model_antareja_token,base.group_erp_manager,1,1,1,1
 access_antareja_token_user,access_antareja_token user,model_antareja_token,base.group_user,1,0,0,0
-access_antareja_create_token_wizard,res_config_settings_antareja_create_token_wizard,model_antareja_create_token_wizard,base.group_system,1,1,1,1
 access_antareja_refresh_token,antareja.refresh.token,model_antareja_refresh_token,,1,1,1,1

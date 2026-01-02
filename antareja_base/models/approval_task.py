@@ -49,7 +49,7 @@ class ApprovalTask(models.Model):
     transaction_display_name = fields.Char(
         'Name',
         compute='_compute_transaction_display_name',
-        compute_sudo=True,
+        compute_sudo = True,
     )
     approval_res_id = fields.Integer(
         'Approval ID'
@@ -322,19 +322,19 @@ class ApprovalTask(models.Model):
 
     def get_users_for_notification(self, **kwargs):
         record = self.ensure_one()
-        users = kwargs.get('users')
+        users = kwargs.get('users') or record.get_users()
         if users:
             return users.get_users_for_notification(company=self.company_id)
         else:
-            return record.get_users().get_users_for_notification(company=self.company_id)
+            return users
 
     def get_users_for_approval(self, **kwargs):
         record = self.ensure_one()
-        users = kwargs.get('users')
+        users = kwargs.get('users') or record.get_users()
         if users:
-            return users.get_users_for_approval(company=record.company_id)
+            return users.get_users_for_approval(company=self.company_id)
         else:
-            return record.get_users().get_users_for_approval(company=record.company_id)
+            return users
 
     def get_users_for_mobile_approval(self, **kwargs):
         record = self.ensure_one()

@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from odoo.addons.test_convert.tests.test_env import record
 from odoo.exceptions import UserError
 from ..tools.utils import have_method, save_call_method
-
-
-# def have_method(obj, method):
-#     return hasattr(obj, method) and callable(getattr(obj, method))
 
 
 class ApprovalAccessMixin(models.AbstractModel):

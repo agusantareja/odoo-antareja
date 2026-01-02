@@ -39,13 +39,13 @@ class ResUsers(models.Model):
                     result |= user
         else:
             result = self
-        result = result.get_notification_users(company=company)
+        result = result.get_notification_users(company_id=company)
         return result.with_context(__user_with_delegatee_notification=True)
 
     def get_users_for_approval(self, company=None):
         if not self:
             return
-        if self.env.context.get("__user_with_delegatee_approval"):
+        if self.env.context.get("__user_with_delegator_approval"):
             return self
         if company:
             result = self.browse()
@@ -56,7 +56,7 @@ class ResUsers(models.Model):
         else:
             result = self
         # Tambahkan delegatee user
-        result = result | result.get_delegatee()
+        result = result | result.get_delegatee(company_id=company)
         return result.with_context(__user_with_delegatee_approval=True)
 
     def has_delegate_group_ext_id(self, group_ext_id):

@@ -29,7 +29,7 @@ class UserDelegate(models.Model):
         if delegatee:
             input_dict['delegatee_id'] = delegatee.id
         else:
-            raise ValidationError("Proxy user not found in external data.")
+            raise ValidationError("Delegatee user not found in external data.")
         return input_dict
 
     def lookup_user_external_data(self, item_dict):
