@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <menuitem id="menu_approval_management_root" name="Approval Management" sequence="10"/>
+    <menuitem id="menu_approval_management_root" name="Approval" sequence="-9"/>
 
     <menuitem id="menu_approval_user" name="Approval"
               parent="menu_approval_management_root" sequence="10"

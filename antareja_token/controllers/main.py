@@ -12,17 +12,19 @@ _logger = logging.getLogger(__name__)
 
 class ControllerMobileAccess(http.Controller):
 
-    @http.route(['/web_token_access', '/web_mobile_access'], type='http', auth='none', methods=['GET'], csrf=False)
-    def web_mobile_access(self, mobile_token=None, token_access=None, **kw):
+    @http.route(['/web_token_access'], type='http', auth='none', methods=['GET'], csrf=False)
+    def web_token_access(self, token_access=None, redirect=None,**kw):
 
         if request.session.uid:
             _logger.info("Sudah login")
         else:
-            token_data = request.env['antareja.token'].validate(token_access or mobile_token)
+            token_data = request.env['antareja.token'].validate(token_access)
             if token_data and token_data.get('uid'):
-                request.session.authenticate(request.session.db, uid=token_data['uid'], password=mobile_token)
+                request.session.authenticate(request.session.db, uid=token_data['uid'], password=token_access)
             # return http.redirect_with_hash('/web')
-        if kw:
+        if redirect:
+            url=redirect
+        elif kw:
             url = "/web#%s" % url_encode(kw)
         else:
             url = "/web"
@@ -75,7 +77,7 @@ class ControllerMobileAccess(http.Controller):
         if not refresh_token:
             return self._error("invalid_request")
 
-        payload = request.env['antareja.token'].validate(refresh_token)
+        payload = request.env['antareja.token'].validate(refresh_token,refresh_token=True)
 
         if not payload or not payload.get('token'):
             return self._error("Invalid or expired token")

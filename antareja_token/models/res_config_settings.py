@@ -19,6 +19,7 @@ class ResConfigSettings(models.TransientModel):
         "Secret",
         config_parameter='antareja_token.secret',
     )
+    module_antareja_token_oauth = fields.Boolean("Token OAuth")
 
     def create_jwt_token(self):
         return {
