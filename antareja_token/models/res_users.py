@@ -2,9 +2,7 @@
 
 import logging
 
-from odoo import models, fields, api
-from datetime import datetime, timedelta
-
+from odoo import models
 from odoo.exceptions import AccessDenied
 
 _logger = logging.getLogger(__name__)

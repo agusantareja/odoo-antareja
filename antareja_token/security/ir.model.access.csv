@@ -2,3 +2,9 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_antareja_token_admin,access_antareja_token admin,model_antareja_token,base.group_erp_manager,1,1,1,1
 access_antareja_token_user,access_antareja_token user,model_antareja_token,base.group_user,1,0,0,0
 access_antareja_refresh_token,antareja.refresh.token,model_antareja_refresh_token,,1,1,1,1
+
+access_antareja_token_audience_admin,access_antareja_token_audience admin,model_antareja_token_audience,base.group_erp_manager,1,1,1,1
+access_antareja_token_audience_user,access_antareja_token_audience user,model_antareja_token_audience,base.group_user,1,0,0,0
+
+access_antareja_token_issuer_admin,access_antareja_token_issuer admin,model_antareja_token_issuer,base.group_erp_manager,1,1,1,1
+access_antareja_token_issuer_user,access_antareja_token_issuer user,model_antareja_token_issuer,base.group_user,1,0,0,0

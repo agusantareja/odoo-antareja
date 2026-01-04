@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
-from odoo import models, fields, api
-from datetime import datetime, timedelta
 import jwt
 import time
-from jwt import ExpiredSignatureError, InvalidTokenError, InvalidAudienceError
-from odoo.exceptions import AccessDenied
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+
+from odoo import models, fields
+from datetime import datetime, timedelta
+from jwt import InvalidTokenError
 
 _logger = logging.getLogger(__name__)
-
-
-# try:
-#     from oauthlib import common as oauthlib_common
-# except ImportError:
-#     _logger.warning(
-#         'OAuth library not found. If you plan to use it, '
-#         'please install the oauth library from '
-#         'https://pypi.python.org/pypi/oauthlib')
 
 
 class AccessToken(models.Model):
@@ -54,7 +43,9 @@ class AccessToken(models.Model):
         access_token, payload = self.generate_token(user, expires_in=expires_in)
         refresh_token = self.create_refresh_token(user)
         return {
-            "access_token": access_token,
+            'access_token': access_token,
+            'token_type': 'Bearer',
+            'expires_in': expires_in,
             "refresh_token": refresh_token
         }
 
@@ -92,6 +83,7 @@ class AccessToken(models.Model):
         expire = int(time.time()) + expires_in
         payload = {
             'uid': user.id,
+            'user_id': user.login,
             'sub': user.login,
             'email': user.email,
             'db': self.env.cr.dbname,
@@ -118,12 +110,15 @@ class AccessToken(models.Model):
                 }
             )
             return payload
-        except InvalidAudienceError:
-            return None
-        except ExpiredSignatureError:
-            return None
+        # except InvalidIssuerError:
+        #     pass
+        # except InvalidAudienceError:
+        #     pass
+        # except ExpiredSignatureError:
+        #     pass
         except InvalidTokenError:
-            return None
+            pass
+        return None
 
     def create_access_token(self, user, retention_in=None):
         retention_in = retention_in or self.get_retention_in()
