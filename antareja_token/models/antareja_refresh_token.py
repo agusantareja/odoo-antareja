@@ -1,23 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import uuid
 
 from odoo import models, fields, api
-import uuid
-from datetime import datetime, timedelta
-from jwt import ExpiredSignatureError, InvalidTokenError, InvalidAudienceError
-from odoo.exceptions import AccessDenied
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+
 
 _logger = logging.getLogger(__name__)
-
-# try:
-#     from oauthlib import common as oauthlib_common
-# except ImportError:
-#     _logger.warning(
-#         'OAuth library not found. If you plan to use it, '
-#         'please install the oauth library from '
-#         'https://pypi.python.org/pypi/oauthlib')
 
 
 class AccessToken(models.Model):

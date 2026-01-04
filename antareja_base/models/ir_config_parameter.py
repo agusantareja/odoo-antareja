@@ -10,7 +10,7 @@ import traceback
 import logging
 from datetime import datetime, timedelta
 
-from ..tools.utils import save_call_method
+from ..tools.utils import safe_call_method
 
 _logger = logging.getLogger(__name__)
 

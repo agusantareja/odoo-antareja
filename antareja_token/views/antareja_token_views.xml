@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<odoo>
+        <record id="view_antareja_token_form" model="ir.ui.view">
+            <field name="name">antareja.token.form</field>
+            <field name="model">antareja.token</field>
+            <field name="arch" type="xml">
+                <form string="arch">
+                    <sheet>
+                        <group>
+                            <field name="user_id" />
+                            <field name="token" groups="base.group_erp_manager"/>
+                        </group>
+                        <group>
+                            <field name="expires" />
+                            <field name="retention" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>        
+        <record id="view_antareja_token_tree" model="ir.ui.view">
+            <field name="name">antareja.token.tree</field>
+            <field name="model">antareja.token</field>
+            <field name="arch" type="xml">
+                <tree string="arch">
+                    <field name="user_id" />
+                    <field name="token" groups="base.group_erp_manager"/>
+                    <field name="expires" />
+                    <field name="retention" />
+                </tree>
+            </field>
+        </record>
+        <record id="action_antareja_token" model="ir.actions.act_window">
+            <field name="name">Token JWT</field>
+            <field name="res_model">antareja.token</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="menu_antareja_tokens" name="Token Issuer"
+            parent="base.menu_users" sequence="30"
+            action="action_antareja_token" groups="base.group_no_one"/>
+</odoo>

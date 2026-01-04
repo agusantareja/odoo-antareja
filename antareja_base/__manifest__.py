@@ -6,19 +6,20 @@
     'description': """
         ANTAREJA
         
-        Application
+        Application 
         Notification
         Task Approval
-        Reactive
+        Authentication
+        Resilience for API Call
         Jwt
         Authority
     """,
     'author': "Agus Muhammad Ramdan",
-    'website': "http://www.yourcompany.com",
-    'category': 'Security & Access Rights',
-    'version': '13.0.0.0.4',
+    'website': "http://agus.ramdan.tech",
+    'category': 'Base',
+    'version': '13.0.0.0.5',
     # any module necessary for this one to work correctly
-    'depends': ['base','base_setup', 'mail'],
+    'depends': ['base', 'base_setup', 'mail'],
     # always loaded
     'data': [
         'security/ir.model.access.csv',

@@ -62,7 +62,8 @@ class UserDelegate(models.Model):
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
 
-    proxy_id = fields.Many2one('res.users', string='Delegatee (Acting On Behalf)', tracking=True, related='delegatee_id', store=True, )
+    proxy_id = fields.Many2one('res.users', string='Delegatee (Acting On Behalf)', tracking=True,
+                               related='delegatee_id', store=True, )
     delegatee_id = fields.Many2one(
         'res.users',
         string='Delegatee (Acting On Behalf)',
@@ -74,7 +75,8 @@ class UserDelegate(models.Model):
     note = fields.Text(string="Notes")
 
     def name_get(self):
-        return [(record.id, f"[{record.name}] {record.delegator_id.name} to {record.delegatee_id.name}") for record in self]
+        return [(record.id, f"[{record.name}] {record.delegator_id.name} to {record.delegatee_id.name}") for record in
+                self]
 
     def ensure_set_number(self):
         name = self.name or 'Draft'
@@ -516,7 +518,7 @@ class UserDelegate(models.Model):
         )
 
     @api.model
-    def read_user(self,user):
+    def read_user(self, user):
         # expectasi bahwa res.users hanya akan lookup saja tanpa melakukanan create bila tidak ditemukan
         # pencarian bisa menggunakan email atau id di aplikasi penerima
 
@@ -535,15 +537,15 @@ class UserDelegate(models.Model):
                 if 'delegator_group_ids' in fields:
                     fields.remove('delegator_group_ids')
 
-        result = super(UserDelegate,self).read(fields=fields,load=load)
+        result = super(UserDelegate, self).read(fields=fields, load=load)
         if self.env.context.get('__from_sync_data_api'):
             delegator = {}
             for rec in self:
                 delegator[rec.id] = {
                     'write_date': rec.write_date,
                 }
-                if self.delegator_id and (not fields or (fields and 'delegator_id' in fields)) :
-                    delegator[rec.id]['delegator_id']= self.read_user(rec.delegator_id)
+                if self.delegator_id and (not fields or (fields and 'delegator_id' in fields)):
+                    delegator[rec.id]['delegator_id'] = self.read_user(rec.delegator_id)
 
                 if self.delegatee_id and (not fields or (fields and 'delegatee_id' in fields)):
                     delegator[rec.id]['delegatee_id'] = self.read_user(rec.delegator_id)
