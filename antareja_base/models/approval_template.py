@@ -62,7 +62,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
     def invoke_method(self, transaction_object, method_name, **kwargs):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
-        save_call_method(transaction_object, object_method_name, **kwargs)
+        safe_call_method(transaction_object, object_method_name, kwargs=kwargs)
 
     def get_state_waiting_approvals(self):
         if self.state_waiting_approvals:

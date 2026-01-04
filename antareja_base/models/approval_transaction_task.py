@@ -13,6 +13,15 @@ class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
     _description = """ implement untuk instance yang akan akan di tambahkan approval
     """
+    access_approval = fields.Boolean(compute="compute_access_approval")
+
+    def compute_access_approval(self):
+        for rec in self:
+            access_approval = False
+            if rec.is_status_waiting_approval():
+                approval_task_line = rec.get_next_approval_task_line()
+                access_approval= approval_task_line and approval_task_line.access_approval
+            rec.access_approval = access_approval
 
     approval_line_for_document = fields.Many2many(
         'approval.audit.log',
@@ -229,3 +238,5 @@ class ApprovalTransactionTask(models.AbstractModel):
     def get_next_approval_task_line(self):
         raise NotImplemented
 
+    def is_status_waiting_approval(self):
+        raise NotImplemented

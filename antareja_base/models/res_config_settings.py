@@ -19,8 +19,9 @@ class ResConfigSettings(models.TransientModel):
 
     module_antareja_doa = fields.Boolean("Delegation of Authority (DoA)")
 
+    module_antareja_approval_ceria_mobile_intra = fields.Boolean("Ceria Apprval Mobile Intra")
     module_antareja_notification_ceria_mobile_intra = fields.Boolean("Ceria Mobile Mobile Intra")
 
-    module_ceria_mobile_notification = fields.Boolean("Ceria Mobile Notification and Approval Server")
-    module_ceria_mobile_notification_test = fields.Boolean("Test Module Ceria Mobile Firebase")
-    module_ceria_mobile_notification_token = fields.Boolean("Module Ceria Mobile Token")
+    # module_ceria_mobile_notification = fields.Boolean("Ceria Mobile Notification Server")
+    # module_ceria_mobile_notification_test = fields.Boolean("Test Module Ceria Mobile Firebase")
+    # module_ceria_mobile_notification_token = fields.Boolean("Module Ceria Mobile Token")
