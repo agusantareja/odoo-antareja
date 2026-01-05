@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="application.server" id="application_server">
+            <field name="name">hr.cerindocorp.id</field>
+            <field name="config_param_name">hr.cerindocorp.id</field>
+        </record>
+
+        <record model="application.server.auth" id="application_server_auth_default">
+            <field name="name">auth.default</field>
+            <field name="application_server_id" ref="application_server"/>
+            <field name="auth_type">rest-token</field>
+        </record>
+
+        <record model="application.server.auth" id="application_server_auth_leave_token_hr">
+            <field name="name">auth.leave.token_hr</field>
+            <field name="application_server_id" ref="application_server"/>
+            <field name="auth_type">rest-token</field>
+            <field name="config_param_name">leave.token_hr</field>
+        </record>
+
+        <record model="application.server.path" id="application_server_path_approver_employee">
+            <field name="name">path.approver_employee</field>
+            <field name="application_server_auth_id" ref="application_server_auth_leave_token_hr"/>
+            <field name="auth_type">rest-token</field>
+            <field name="config_param_name">cni_employee_intra.rest_api_approver_employee</field>
+        </record>
+    </data>
+</odoo>
