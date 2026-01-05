@@ -1,3 +1,4 @@
+
 import logging
 import inspect
 from functools import wraps
@@ -58,8 +59,11 @@ def safe_call_method(obj, method_name, *args, **kwargs):
     - args disesuaikan dengan signature
     """
 
-    if obj is None or obj is False or not method_name or not isinstance(method_name, str):
+    if not obj or not method_name or not isinstance(method_name, str):
         return None
+
+    if not hasattr(obj, method_name):
+        raise AttributeError(f"Method {method_name} not found")
 
     method = getattr(obj, method_name, None)
     if not callable(method):
