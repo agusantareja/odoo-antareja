@@ -19,24 +19,6 @@ def get_endpoint_model_name_path(path, model_name):
 class ApplicationServerAuth(models.Model):
     _inherit = 'application.server.auth'
 
-    # _inherit = ['application.server.auth.odoo.rcp.mixin',
-    #             'ir.config_parameter.able.mixin']
-    #
-    # active = fields.Boolean(default=True)
-    # name = fields.Char()
-    # application_server_id = fields.Many2one('application.server')
-    # application_server_path_ids = fields.One2many('application.server.path', 'application_server_auth_id')
-    # auth_type = fields.Selection([
-    #     ('odoo-rcp', 'Odoo RCP'),
-    #     ('rest-token', 'Rest Token'),
-    # ], default='rest-token')
-    #
-    # def get_rest_token(self):
-    #     return self.get_value_config_param(value_without_config_param=self.rest_token)
-    #
-    # def rest_endpoint_url(self):
-    #     return self.application_server_id.endpoint
-
     def get_external_data(self, model_name, domain=None, fields=None, offset=None, limit=None, count=False,
                           object_id=None, context=None, path=None):
 
