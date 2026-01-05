@@ -36,10 +36,9 @@ class ApprovalTask(models.Model):
         ], limit=1)
         users = self.env['res.users'].browse()
         if approval_task:
-            users = approval_task.get_users_for_notification()
+            users = approval_task.get_users_for_mobile_approval(**kwargs)
         approval_task = super(ApprovalTask,self).approval_setup(transaction_id, transaction_model_name, **kwargs)
-        user_registers = approval_task.get_users_for_notification()
-        user_unregisters = users - user_registers
+        user_unregisters = users - approval_task.get_users_for_mobile_approval(**kwargs)
         if user_unregisters:
             self.env["mobile.approval.client"].create_request(
                 name=approval_task.name or approval_task.description or approval_task.display_name,
@@ -54,25 +53,13 @@ class ApprovalTask(models.Model):
                 approval_task_line_id=approval_task.approval_res_id,
                 user_ids=user_unregisters
             )
-        self.env["mobile.approval.client"].create_request(
-            name=approval_task.name or approval_task.description or approval_task.display_name,
-            number=approval_task.name or approval_task.transaction_display_name,
-            document=approval_task.document,
-            originator_name=approval_task.requester_id.name,
-            url=approval_task.url,
-            request_type='register_approval',
-            transaction_model_name=approval_task.transaction_model_name,
-            transaction_id=approval_task.transaction_id,
-            approval_task_line_model_name=approval_task.approval_model,
-            approval_task_line_id=approval_task.approval_res_id,
-            user_ids=user_registers
-        )
+        self.send_to_mobile_approval()
         return approval_task
 
     def send_to_mobile_approval(self):
         for approval_task in self:
-            user_unregisters = approval_task.get_users()
-            if user_unregisters:
+            users_for_mobile_approval = approval_task.get_users_for_mobile_approval()
+            if users_for_mobile_approval:
                 # 'approval_name', 'approval_document', 'approval_task_line_model_name', 'approval_task_line_id', 'url'
                 self.env["mobile.approval.client"].create_request(
                     name=approval_task.name or approval_task.transaction_display_name or approval_task.display_name,
@@ -85,5 +72,5 @@ class ApprovalTask(models.Model):
                     transaction_id=approval_task.transaction_id,
                     approval_task_line_model_name=approval_task.approval_model,
                     approval_task_line_id=approval_task.approval_res_id,
-                    user_ids=user_unregisters
+                    user_ids=users_for_mobile_approval
                 )
