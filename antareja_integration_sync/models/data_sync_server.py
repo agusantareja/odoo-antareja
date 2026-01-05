@@ -20,52 +20,52 @@ class ExternalServerSync(models.Model):
     application_server_auth_id = fields.Many2one('application.server.auth', string="Application Server Auth")
     application_server_path_id = fields.Many2one('application.server.path', string="Application Server Path")
 
-    active = fields.Boolean(default=True)
-    name = fields.Char()
-    app_name = fields.Char("Application Name")
-
-    odoo_server_db = fields.Char()
-    odoo_server_uid = fields.Integer(readonly=True)
-
-    base_url = fields.Char()
-    path = fields.Char(default='/api')
-    auth_type = fields.Selection([
-        ('basic', 'Basic'),
-        ('token', 'Key Token'),
-    ], default='basic')
-
-    basic_auth_username = fields.Char()
-    basic_auth_password = fields.Char()
-
-    token_in = fields.Selection([(
-        'header', 'Header'), ('param', 'Parameter'), ('body', 'Body')
-    ], default='header')
-    token_key = fields.Char(
-        default='access_token'
-    )
-    token_value = fields.Char()
+    # active = fields.Boolean(default=True)
+    # name = fields.Char()
+    # app_name = fields.Char("Application Name")
+    #
+    # odoo_server_db = fields.Char()
+    # odoo_server_uid = fields.Integer(readonly=True)
+    #
+    # base_url = fields.Char()
+    # path = fields.Char(default='/api')
+    # auth_type = fields.Selection([
+    #     ('basic', 'Basic'),
+    #     ('token', 'Key Token'),
+    # ], default='basic')
+    #
+    # basic_auth_username = fields.Char()
+    # basic_auth_password = fields.Char()
+    #
+    # token_in = fields.Selection([(
+    #     'header', 'Header'), ('param', 'Parameter'), ('body', 'Body')
+    # ], default='header')
+    # token_key = fields.Char(
+    #     default='access_token'
+    # )
+    # token_value = fields.Char()
 
     # user_id = fields.Many2one('res.users')
-    def get_endpoint_url(self):
-        return f"{self.base_url}{self.path}"
+    # def get_endpoint_url(self):
+    #     return f"{self.base_url}{self.path}"
+    #
+    # def get_endpoint_model_name_url(self, model_name):
+    #     return f"{self.get_endpoint_url()}/{model_name}"
 
-    def get_endpoint_model_name_url(self, model_name):
-        return f"{self.get_endpoint_url()}/{model_name}"
+    # def get_headers_request(self):
+    #     return {
+    #         self.token_key: self.token_value,
+    #         "Accept": "application/json"
+    #     }
 
-    def get_headers_request(self):
-        return {
-            self.token_key: self.token_value,
-            "Accept": "application/json"
-        }
-
-    def get_model_name_data(self, model_name, ref_id):
-        url = self.get_endpoint_model_name_url(model_name) + f"/{ref_id}"
-        headers = self.get_headers_request()
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            raise UserError(f"Failed to fetch data: {response.status_code} - {response.text}")
-
-        return response.json()[0]
+    # def get_model_name_data(self, model_name, ref_id):
+    #     url = self.get_endpoint_model_name_url(model_name) + f"/{ref_id}"
+    #     headers = self.get_headers_request()
+    #     response = requests.get(url, headers=headers)
+    #     if response.status_code != 200:
+    #         raise UserError(f"Failed to fetch data: {response.status_code} - {response.text}")
+    #
+    #     return response.json()[0]
 
     def get_db_name_uid_password(self):
         rec = self.ensure_one()
