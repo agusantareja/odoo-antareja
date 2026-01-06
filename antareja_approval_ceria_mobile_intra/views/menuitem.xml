@@ -1,0 +1,9 @@
+<odoo>
+
+    <menuitem id="mobile_approval_client_menu"
+              parent="antareja_notification.antareja_notification_parent_menu"
+              action="mobile_approval_client_action"
+              sequence="4"
+    />
+
+</odoo>
