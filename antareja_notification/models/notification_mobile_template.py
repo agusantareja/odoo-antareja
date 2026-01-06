@@ -6,7 +6,7 @@ from odoo.tools import *
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 import logging
 
-from odoo.addons.antareja_base.tools.utils import save_call_method
+from odoo.addons.antareja_base.tools.utils import safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class NotificationMobileTemplate(models.Model):
         eval_context = self._run_action_code_multi(eval_context)
         data = eval_context.get('data')
         if 'url' not in data and not data.get('url'):
-            data['source_url'] = save_call_method(transaction_object,'get_internal_url') or None
+            data['source_url'] = safe_call_method(transaction_object,'get_internal_url') or None
         payload = {
             'notification': eval_context.get('notification'),
             'data':data
