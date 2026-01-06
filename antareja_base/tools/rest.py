@@ -24,6 +24,7 @@ class JSONEncoder(json.JSONEncoder):
             return Date.to_string(obj)
         return json.JSONEncoder.default(self, obj)
 
+
 def get_body_json():
     data = {}
     data_str = request.httprequest.data.decode("utf-8")
@@ -31,10 +32,11 @@ def get_body_json():
         try:
             data = json.loads(data_str)
             if isinstance(data, str):
-                data=json.loads(data)
+                data = json.loads(data)
         except:
             pass
     return data
+
 
 # Handle responses
 
