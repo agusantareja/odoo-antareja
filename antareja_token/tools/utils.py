@@ -76,7 +76,6 @@ def make_response_error(status=400, error="", error_description=""):
 
 def check_token_authorization(_func=None,*,setup_session=False, header_name=('token','access_token'), param_name=None):
     def decorator(func):
-        # routing = kw.copy()
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             error = {}

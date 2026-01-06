@@ -34,6 +34,7 @@ def get_body_json():
                 data=json.loads(data)
         except:
             pass
+    return data
 
 # Handle responses
 
