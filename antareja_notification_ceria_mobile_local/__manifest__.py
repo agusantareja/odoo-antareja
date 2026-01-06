@@ -2,7 +2,7 @@
 
 {
     'name': 'Antareja || Notification Ceria Mobile Local',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.2',
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
