@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 {
     'name':"Ceria Mobile Notification Token",
     'version':'13.0.1.0.1',
