@@ -1,26 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import datetime
 from odoo import models, fields, api, _
-import json
-import traceback
 import logging
 
 _logger = logging.getLogger(__name__)
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return fields.Datetime.to_string(obj)
-
-        if isinstance(obj, datetime.date):
-            return fields.Date.to_string(obj)
-
-        if isinstance(obj, (bytes, bytearray)):
-            return obj.decode("utf-8")
-        return json.JSONEncoder.default(self, obj)
 
 
 class ApplicationServerAuthRestToken(models.AbstractModel):

@@ -25,15 +25,15 @@ class ApplicationServerAuth(models.Model):
 
     @api.model
     def rest_login_path(self):
-        return '/api/application/login'
+        return '/application/token'
 
     @api.model
     def rest_profile_path(self):
-        return '/api/application/profile'
+        return '/application/profile'
 
     @api.model
     def rest_refresh_path(self):
-        return '/api/application/refresh'
+        return '/application/token'
 
     def is_jwt(self):
         try:
@@ -54,10 +54,11 @@ class ApplicationServerAuth(models.Model):
         now = int(time.time())
         return now >= exp
 
-    def rest_login(self, login, password):
+    def rest_login(self, login, password, **kwargs):
         rec = self.ensure_one()
         url = rec.rest_url(rec.rest_login_path())
-        response = requests.post(url, data={'login': login, 'password': password})
+        data = {'grant_type': 'password', 'username': login, 'password': password}
+        response = requests.post(url, data=data)
         response.raise_for_status()
         json_result = response.json()
         rest_token = json_result.get('access_token')
@@ -68,11 +69,12 @@ class ApplicationServerAuth(models.Model):
             rec.rest_refresh_token = rest_refresh
         return rest_token
 
-    def rest_post_refresh(self, refresh_token=None):
+    def rest_post_refresh(self, refresh_token=None, **kwargs):
         rec = self.ensure_one()
         refresh_token = refresh_token or rec.rest_refresh
         url = rec.rest_url(rec.rest_login_path())
-        response = requests.post(url, data={'refresh_token': refresh_token})
+        data = {'grant_type': 'password', 'refresh_token': refresh_token}
+        response = requests.post(url, data=data)
         response.raise_for_status()
         json_result = response.json()
         rest_token = json_result.get('access_token')
