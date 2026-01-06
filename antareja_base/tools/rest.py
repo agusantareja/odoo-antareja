@@ -39,15 +39,11 @@ def get_body_json():
 
 
 def valid_response(status, data):
-    try:
-        return werkzeug.wrappers.Response(
-            status=status,
-            content_type='application/json; charset=utf-8',
-            response=json.dumps(data, cls=JSONEncoder),
-        )
-    except Exception:
-        _logger.error(" data "+ str(data))
-        raise
+    return werkzeug.wrappers.Response(
+        status=status,
+        content_type='application/json; charset=utf-8',
+        response=json.dumps(data, cls=JSONEncoder),
+    )
 
 
 def invalid_response(status, error, info=""):

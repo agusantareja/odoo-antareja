@@ -57,7 +57,7 @@ class ControllerMobileAccess(http.Controller):
             url = "/web"
         return werkzeug.utils.redirect(url)
 
-    @http.route('/api/application/token', type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route('/application/token', type='http', auth='none', methods=['POST'], csrf=False)
     def api_token(self, **kwargs):
         grant_type = kwargs.get('grant_type')
 
@@ -72,7 +72,7 @@ class ControllerMobileAccess(http.Controller):
 
         return invalid_response(200, "unsupported_grant_type")
 
-    @http.route('/api/application/profile', type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route('/application/profile', type='http', auth='none', methods=['POST'], csrf=False)
     def api_profile(self):
         token = get_bearer_token()
         if token:

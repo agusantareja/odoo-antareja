@@ -38,6 +38,7 @@ class ApprovalTask(models.Model):
 
         return res_id,model_name
 
+
     def send_notification(self, **kwargs):
         self.ensure_one()
         notification_approval = kwargs.get("notification_approval")
