@@ -125,6 +125,9 @@ class AccessToken(models.Model):
         except InvalidTokenError:
             return None
 
+    def client_token_validation(self,token):
+        return False
+
     def create_access_token(self, user, retention_in=None):
         retention_in = retention_in or self.get_retention_in()
         token, payload = self.generate_token(user)
