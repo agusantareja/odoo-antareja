@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit res.config.settings view -->
+    <record id="res_config_settings_view_form_inherit" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.cni.api</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="antareja_base.view_config_settings_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='module_antareja_approval_ceria_mobile_intra']" position="after">
+                <div class="col-xs-12 col-md-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="module_antareja_approval_ceria_mobile_local"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <div class="content-group">
+                            <label for="module_antareja_approval_ceria_mobile_local"/>
+                            <div class="text-muted">
+                                Local Implementation Approval Ceria Mobile
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="mobile_approval_remote">
+                    <div class="o_setting_right_pane">
+                        <div class="content-group">
+                            <div class="text-muted">
+                                Config Intra Ceria Mobile Server
+                            </div>
+                            <div id="mobile_approval_endpoint" class="mt16 row">
+                                <label for="mobile_approval_endpoint" string="Endpoint"
+                                       class="col-3 col-lg-3 o_light_label"/>
+                                <field name="mobile_approval_endpoint" placeholder="Endpoint" nolabel="1"/>
+                            </div>
+                            <div id="mobile_approval_token" class="mt16 row">
+                                <label for="mobile_approval_token" string="Token"
+                                       class="col-3 col-lg-3 o_light_label"/>
+                                <field name="mobile_approval_token" placeholder="Token" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
