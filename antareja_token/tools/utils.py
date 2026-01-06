@@ -74,8 +74,9 @@ def make_response_error(status=400, error="", error_description=""):
     )
 
 
-def check_token_authorization(setup_session=False, header_name="", param_name=None):
+def check_token_authorization(_func=None,*,setup_session=False, header_name=('token','access_token'), param_name=None):
     def decorator(func):
+        # routing = kw.copy()
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             error = {}
@@ -83,39 +84,44 @@ def check_token_authorization(setup_session=False, header_name="", param_name=No
             uid = session.uid or request.uid
             login = session.login
             session_token = session.session_token
-
-            def is_accept_authorization(access_token):
-                if token:
-                    error["error"] = "invalid_request"
-                    error["error_description"] = "Missing Bearer token"
-                    return False
-                accept = True
-                if access_token:
-                    token_data = request.env['antareja.token'].validate(access_token)
-                    if token_data and token_data.get('uid'):
-                        uid = token_data['uid']
-                        login = token_data.get('username') or token_data.get('sub')
-                        if uid and login:
-                            accept = True
-                            if setup_session:
-                                set_session(login, uid)
-                    else:
-                        error["error"] = "invalid_request"
-                        error["error_description"] = "Missing Bearer token"
-                return accept
-
-            token = get_bearer_token()
-            accept_authorization = is_accept_authorization(get_bearer_token())
-            if not accept_authorization and header_name:
-                accept_authorization = is_accept_authorization(request.httprequest.headers.get(header_name))
-            if not accept_authorization and param_name:
+            # ambbil semua kemungkin token yang ada
+            token_list = [get_bearer_token()]
+            header_names = []
+            if header_names:
+                if isinstance(header_name,str):
+                    header_names=[header_names]
+                elif isinstance(header_name,(list, tuple)):
+                    header_names =header_name
+            for name in header_names:
+                token_list.append(request.httprequest.headers.get(name))
+            if param_name:
                 params = []
                 if isinstance(param_name, str):
                     params.append(param_name)
                 elif isinstance(param_name, (list, tuple)):
                     params.extend(param_name)
                 for p in params:
-                    accept_authorization = is_accept_authorization(request.params.get(p) or kwargs.get(p))
+                    token_list.append(request.params.get(p))
+                    token_list.append(kwargs.get(p))
+
+            tokens = set(token_list)
+            accept_authorization = False
+            for t in tokens:
+                if not t:
+                    continue
+                token_data = request.env['antareja.token'].sudo().validate(t)
+                if token_data and token_data.get('uid'):
+                    uid = token_data['uid']
+                    login = token_data.get('username') or token_data.get('sub')
+                    if uid and login:
+                        accept_authorization = True
+                        if setup_session:
+                            set_session(login, uid)
+                if accept_authorization:
+                    break
+            if not setup_session and not accept_authorization:
+                for t in tokens:
+                    accept_authorization = request.env['antareja.token'].sudo().client_token_validation(t)
                     if accept_authorization:
                         break
             if not accept_authorization:
@@ -125,9 +131,13 @@ def check_token_authorization(setup_session=False, header_name="", param_name=No
                 )
             result = func(self, *args, **kwargs)
             if setup_session:
+                # set kembali session sebelumnya
                 set_session(uid, login, session_token)
             return result
-
         return wrapper
 
-    return decorator
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
+

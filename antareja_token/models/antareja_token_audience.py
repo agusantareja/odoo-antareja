@@ -15,7 +15,7 @@ class AntarejaTokenAudience(models.Model):
     _order = 'name'
 
     name = fields.Char('Audience', required=True, help='Audience')
-    issuer_ids = fields.Many2one('antareja.token.issuer', string='Issuers')
+    issuer_ids = fields.Many2many('antareja.token.issuer', string='Issuers')
 
     def get_token_audience(self, audience, issuer):
         audience_id = self.sudo().search([('name', '=', audience)], limit=1)
