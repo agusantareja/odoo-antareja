@@ -97,11 +97,11 @@ class ControllerMobileAccess(http.Controller):
         else:
             return valid_response(200, {'active': active})
 
-    @http.route('/api/application/refresh', type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route('/application/refresh', type='http', auth='none', methods=['POST'], csrf=False)
     def api_application_refresh(self, refresh_token=None):
         return self._refresh_grant(refresh_token)
 
-    @http.route('/api/application/introspect', type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route('/application/introspect', type='http', auth='none', methods=['POST'], csrf=False)
     def api_application_introspect(self):
         active = False
         token = get_bearer_token()
