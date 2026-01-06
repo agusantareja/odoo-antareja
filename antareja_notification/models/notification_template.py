@@ -168,12 +168,6 @@ class NotificationTemplate(models.Model):
                         body=message,
                         author_id=odoobot_id
                     )
-                    # return rec.message_post(
-                    #     body=message,
-                    #     author_id=odoobot_id,
-                    #     message_type="comment",
-                    #     subtype_xmlid="mail.mt_comment"
-                    # )
         return None
 
     def send_notification_to_user_mobile(self,notification_to_user,res_id, **kwargs):

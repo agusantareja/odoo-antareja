@@ -17,7 +17,7 @@ def save_call_method(obj, method_name, **kw):
     Memanggil method pada object secara aman.
     Deprecated gunakan safe_call_method
     """
-    return safe_call_method(obj, method_name,[], kw)
+    return safe_call_method(obj, method_name, kwargs=kw)
     # if obj is None or not method_name or not isinstance(method_name, str):
     #     return None
     #
