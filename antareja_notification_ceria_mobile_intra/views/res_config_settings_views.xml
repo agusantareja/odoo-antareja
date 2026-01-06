@@ -27,16 +27,21 @@
                             <div class="text-muted">
                                 Config Intra Ceria Mobile Server
                             </div>
-                            <div id="mobile_notification_endpoint" class="mt16 row">
-                                <label for="mobile_notification_endpoint" string="Endpoint"
+                            <div id="mobile_notification_server_auth_id" class="mt16 row">
+                                <label for="mobile_notification_server_auth_id" string="Server"
                                        class="col-3 col-lg-3 o_light_label"/>
-                                <field name="mobile_notification_endpoint" placeholder="Endpoint" nolabel="1"/>
+                                <field name="mobile_notification_server_auth_id" nolabel="1"/>
                             </div>
-                            <div id="mobile_notification_token" class="mt16 row">
-                                <label for="mobile_notification_token" string="Token"
-                                       class="col-3 col-lg-3 o_light_label"/>
-                                <field name="mobile_notification_token" placeholder="Token" nolabel="1"/>
-                            </div>
+<!--                            <div id="mobile_notification_endpoint" class="mt16 row">-->
+<!--                                <label for="mobile_notification_endpoint" string="Endpoint"-->
+<!--                                       class="col-3 col-lg-3 o_light_label"/>-->
+<!--                                <field name="mobile_notification_endpoint" placeholder="Endpoint" nolabel="1"/>-->
+<!--                            </div>-->
+<!--                            <div id="mobile_notification_token" class="mt16 row">-->
+<!--                                <label for="mobile_notification_token" string="Token"-->
+<!--                                       class="col-3 col-lg-3 o_light_label"/>-->
+<!--                                <field name="mobile_notification_token" placeholder="Token" nolabel="1"/>-->
+<!--                            </div>-->
                         </div>
                     </div>
                 </div>

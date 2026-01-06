@@ -32,6 +32,7 @@ class ControllerMobileAccess(http.Controller):
 
     @http.route(['/web_token_access'], type='http', auth='none', methods=['GET'], csrf=False)
     def web_token_access(self, token_access=None, redirect=None, **kw):
+
         def get_valid_token_payload(token, env):
             token_data = env['antareja.token'].validate(token)
             if token_data and token_data.get('uid'):
