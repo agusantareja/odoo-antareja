@@ -10,7 +10,7 @@
                             <field name="name" />
                         </group>
                         <group>
-                            <field name="issuer_ids" />
+                            <field name="issuer_ids" widget="many2many_tags"/>
                         </group>
                     </sheet>
                 </form>
@@ -22,7 +22,7 @@
             <field name="arch" type="xml">
                 <tree string="arch">
                     <field name="name" />
-                    <field name="issuer_ids" />
+                    <field name="issuer_ids" widget="many2many_tags"/>
                 </tree>
             </field>
         </record>
