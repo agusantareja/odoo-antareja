@@ -6,7 +6,7 @@
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
-    'description': """Ceria mobile yang ada di intra""",
+    'description': """Deprecated akan di hapus karena antareja_token bisa trusted token antare""",
     'depends': ['base', 'antareja_notification_ceria_mobile_intra', 'antareja_token'],
     'data': [],
     'demo': [],
