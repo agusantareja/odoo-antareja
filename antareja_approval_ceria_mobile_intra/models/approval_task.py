@@ -53,7 +53,7 @@ class ApprovalTask(models.Model):
                 approval_task_line_id=approval_task.approval_res_id,
                 user_ids=user_unregisters
             )
-        self.send_to_mobile_approval()
+        approval_task.send_to_mobile_approval()
         return approval_task
 
     def send_to_mobile_approval(self):
