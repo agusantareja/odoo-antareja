@@ -12,9 +12,7 @@
     'data': [
         'data/cron.xml',
         'security/ir.model.access.csv',
-        #'views/approval_task_views.xml',
         'views/mobile_notification_views.xml',
-        #'views/mobile_approval_views.xml',
         'views/menuitem.xml',
         'views/res_config_settings_views.xml',
     ],
