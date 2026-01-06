@@ -178,6 +178,26 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
     order = None
     if 'filters' in params:
         domain += ast.literal_eval(params['filters'])
+    if 'context' in params:
+        context = ast.literal_eval(params['context']) or {}
+    else:
+        context = {}
+    if "__from_sync_data_api" not in context:
+        context.update({'__from_sync_data_api': __from_sync_data_api})
+
+    model = request.env[model_name].with_context(context)
+
+    if 'count' in params:
+        count = ast.literal_eval(params['count']) or False
+    else:
+        count = False
+
+    if count:
+        data_count = model.search_count(domain=domain)
+        return valid_response(status=status_code, data={
+            'count': data_count,
+        })
+
     if 'field' in params:
         fields += ast.literal_eval(params['field'])
     if 'offset' in params:
@@ -187,7 +207,9 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
     if 'order' in params:
         order = params['order']
 
-    data = request.env[model_name].with_context(__from_sync_data_api=__from_sync_data_api).search_read(
+    if filter_fields:
+            fields = filter_fields(model_name, fields)
+    data = model.search_read(
         domain=domain, fields=fields, offset=offset, limit=limit, order=order
     )
     if data:
@@ -203,16 +225,24 @@ def object_read_one(model_name, rec_id, params, status_code, filter_fields=None,
     fields = []
     if 'field' in params:
         fields += ast.literal_eval(params['field'])
-        if filter_fields:
-            fields = filter_fields(model_name, fields)
+    if 'context' in params:
+        context = ast.literal_eval(params['context']) or {}
+    else:
+        context = {}
+    if "__from_sync_data_api" not in context:
+        context.update({'__from_sync_data_api': __from_sync_data_api})
+
     try:
         rec_id = int(rec_id)
     except Exception as e:
         rec_id = False
-
     if not rec_id:
         return invalid_object_id()
-    data = request.env[model_name].search_read(domain=[('id', '=', rec_id)], fields=fields)
+    if filter_fields:
+        fields = filter_fields(model_name, fields)
+
+    model = request.env[model_name].with_context(context)
+    data = model.search_read(domain=[('id', '=', rec_id)], fields=fields)
     if data:
         return valid_response(status=status_code, data=data)
     else:
