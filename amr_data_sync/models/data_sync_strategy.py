@@ -86,10 +86,19 @@ class ExternalDataSync(models.Model):
         help="Method ini di panggil setelah data di proses dari external dan sebelum di simpan ke internal"
     )
     sync_cron = fields.Boolean()
+
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
     def create(self, vals_list):
         for vals in vals_list:
+            if 'company_name' in vals:
+                company_name = vals.pop('company_name')
+                if company_name and isinstance(company_name, str):
+                    company = self.env['res.company'].search([('name', 'ilike', company_name)], limit=1)
+                    if company:
+                        vals['company_id'] = company.id
+                    else:
+                        vals['company_id'] = False
             if 'server_sync_id' in vals and vals['server_sync_id']:
                 server = self.server_sync_id.browse(vals['server_sync_id'])
                 if not server:
@@ -109,9 +118,21 @@ class ExternalDataSync(models.Model):
                         'sync_strategy_id': rec.id,
                         'active': rec.sync_cron
                     })
+                elif sync_cron.active != rec.sync_cron:
+                    sync_cron.write({
+                            'active': rec.sync_cron
+                        })
         return result
 
+
     def write(self, vals):
+
+        if 'company_name' in vals:
+            company_name = vals.pop('company_name')
+            if company_name and isinstance(company_name, str):
+                company = self.env['res.company'].search([('name', 'ilike', company_name)], limit=1)
+                if company:
+                    vals['company_id'] = company.id
         if 'server_sync_id' in vals and vals['server_sync_id']:
             server = self.server_sync_id.browse(vals['server_sync_id'])
             if not server:

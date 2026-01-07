@@ -170,6 +170,7 @@ class ExternalServerSync(models.Model):
         except Exception as e:
             raise Exception(f"Unexpected Error: {str(e)}")
 
+
     def get_external_data(self, model_name, domain=None, fields=None, offset=None, limit=None, count=False,
                           object_id=None, context=None):
         if self.auth_type == 'basic':

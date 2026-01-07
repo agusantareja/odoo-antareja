@@ -576,9 +576,13 @@ class ExternalDataSyncRelated(models.Model):
             _logger.error("Error process related data %s : %s", self.name, stack_trace)
 
     def get_data_relation(self):
+
         if self.state != 'done':
             self.process_data()
-        if self.state == 'done' and self.internal_data_eval:
-            return ast.literal_eval(self.internal_data_eval)
+        if self.state == 'done':
+            if self.field_type=='many2one':
+                return self.related_external_data_sync_id.internal_odoo_id
+            if self.internal_data_eval:
+                return ast.literal_eval(self.internal_data_eval)
 
         return None
