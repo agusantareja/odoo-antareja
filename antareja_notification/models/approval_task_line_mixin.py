@@ -13,13 +13,26 @@ class ApprovalTaskLine(models.AbstractModel):
     _inherit =  "approval.task.line.mixin"
 
     def send_approval_notification(self, **kwargs):
-        self.send_notification(**kwargs)
+        approval_template = kwargs.get('approval_template')
+        if not kwargs.get('notification_template') and approval_template:
+            kwargs = dict(kwargs)
+            kwargs['notification_template'] = approval_template.notification_approval_id
+        super(ApprovalTaskLine,self).send_approval_notification(**kwargs)
 
     def send_rejected_notification(self, **kwargs):
-        self.send_notification(**kwargs)
+        approval_template = kwargs.get('approval_template')
+        if not kwargs.get('notification_template') and approval_template:
+            kwargs = dict(kwargs)
+            kwargs['notification_template']=approval_template.notification_rejection_id
+
+        super(ApprovalTaskLine,self).send_rejected_notification(**kwargs)
 
     def send_approved_notification(self, **kwargs):
-        self.send_notification(**kwargs)
+        approval_template = kwargs.get('approval_template')
+        if not kwargs.get('notification_template') and approval_template:
+            kwargs = dict(kwargs)
+            kwargs['notification_template'] = approval_template.notification_approved_id
+        super(ApprovalTaskLine,self).send_approved_notification(**kwargs)
 
     def get_res_id_for_notification(self,notification_approval, **kwargs):
         self.ensure_one()
@@ -44,8 +57,9 @@ class ApprovalTaskLine(models.AbstractModel):
         if notification_template:
             res_id,model_name = self.get_res_id_for_notification(notification_template, **kwargs)
             if res_id :
-                company = self.env.company
-                users = self.get_users().get_users_for_notification(company=company)
                 kw = dict(kwargs)
                 kw['approval_task_line']=self
+                if 'res_id' in kw:
+                    kw.pop('res_id')
+                users = kw.pop('users')
                 notification_template.send_notification_to_users(users,res_id,**kw)

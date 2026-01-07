@@ -28,3 +28,12 @@ class ApprovalTemplateMixin(models.AbstractModel):
         'notification.template',
         help="Notification template used for reject notifications."
     )
+
+    def get_notification_approval(self):
+        return self.notification_approval_id
+
+    def get_notification_rejection(self):
+        return self.notification_rejection_id
+
+    def get_notification_approved(self):
+        return self.notification_approved_id
