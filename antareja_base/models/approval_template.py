@@ -62,7 +62,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
     def invoke_method(self, transaction_object, method_name, **kwargs):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
-        save_call_method(transaction_object, object_method_name, **kwargs)
+        safe_call_method(transaction_object, object_method_name, kwargs=kwargs)
 
     def get_state_waiting_approvals(self):
         if self.state_waiting_approvals:
@@ -117,13 +117,14 @@ class ApprovalTemplateMixin(models.AbstractModel):
             'env': self.env,
             'uid': self._uid,
             'user': self.env.user,
-            # 'time': tools.safe_eval.time,
-            # 'datetime': tools.safe_eval.datetime,
-            # 'dateutil': tools.safe_eval.dateutil,
+            'time': tools.safe_eval.time,
+            'datetime': tools.safe_eval.datetime,
+            'dateutil': tools.safe_eval.dateutil,
             'timezone': timezone,
             'float_compare': float_compare,
             'b64encode': base64.b64encode,
             'b64decode': base64.b64decode,
+            'Command': Command,
             'approval_instance': approval_instance,
             'approval_template': self,
             'transaction_object': transaction_object,
@@ -138,7 +139,8 @@ class ApprovalTemplateMixin(models.AbstractModel):
                 raise ValidationError(msg)
 
     def _run_action_code_multi(self, eval_context):
-        safe_eval(self.code.strip(), eval_context, mode="exec", nocopy=True)  # nocopy allows to return 'action'
+        safe_eval(self.code.strip(), eval_context, mode="exec", nocopy=True,
+                  filename=str(self))  # nocopy allows to return 'action'
         return eval_context.get('response')
 
     # Configurasi tambahan

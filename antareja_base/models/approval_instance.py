@@ -232,7 +232,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             object_method_name = getattr(transaction_object, method_create_approval_task_line)
             if not object_method_name:
                 raise UserError("Method %s not found" % method_create_approval_task_line)
-            save_call_method(transaction_object, method_create_approval_task_line, **kwargs)
+            safe_call_method(transaction_object, method_create_approval_task_line, kwargs=kwargs)
             return
 
         approval_line = config_approval_task_line.get('approval_line')
@@ -463,7 +463,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         kw = dict(kwargs)
         kw['approval_instance'] = approval_instance
         transaction_object = approval_instance.get_transaction_object()
-        save_call_method(transaction_object, approval_template.invoke_approval_done, **kw)
+        safe_call_method(transaction_object, approval_template.invoke_approval_done, kwargs=kw)
         self.unregister_approval_task_line()
 
     def clear_approval(self):

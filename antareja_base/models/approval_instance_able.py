@@ -107,3 +107,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         self.env['approval.instance'].create_or_get(self).unregister_approval_task_line(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
 
+    def is_status_waiting_approval(self):
+        rec = self.ensure_one()
+        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        return approval_instance.is_status_waiting_approval()

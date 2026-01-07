@@ -66,7 +66,7 @@ class AppCallReTry(models.Model):
         if obj:
             param_args = json.loads(res.param_args) if res.param_args else []
             param_kwargs = json.loads(res.param_kwargs) if res.param_kwargs else {}
-            safe_call_method(obj.with_context(__api_call_retry_id=res.id), res.res_method, *param_args, **param_kwargs)
+            safe_call_method(obj.with_context(__api_call_retry_id=res.id), res.res_method, param_args, param_kwargs)
         else:
             _logger.warning(f"API Call Retry: Object {res.res_model} with ID {res.res_id} not found.")
             return

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import UserError
-from ..tools.utils import have_method, save_call_method
+from ..tools.utils import have_method, safe_call_method
 
 
 class ApprovalAccessMixin(models.AbstractModel):
@@ -364,10 +364,10 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         else:
             kw = dict(kwargs)
 
-        transaction_object = kw.get('transaction_object') or save_call_method(self, 'get_transaction_object')
+        transaction_object = kw.get('transaction_object') or safe_call_method(self, 'get_transaction_object',)
         if transaction_object:
             if have_method(transaction_object, 'prepare_approval_task_dict'):
-                update = save_call_method(transaction_object, 'prepare_approval_task_dict', **kw)
+                update = safe_call_method(transaction_object, 'prepare_approval_task_dict', kwargs=kw)
                 update and kw.update(update)
             kw['transaction_id'] = transaction_object.id
             kw['transaction_model_name'] = transaction_object._name
@@ -472,7 +472,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         else:
             transaction_object = kw.get('transaction_object') or rec.get_transaction_object()
             if have_method(transaction_object, 'event_after_approve'):
-                save_call_method(transaction_object, 'event_after_approve')
+                safe_call_method(transaction_object, 'event_after_approve')
 
     def do_reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
