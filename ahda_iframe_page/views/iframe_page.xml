@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-
+    <!-- Tree View (No changes needed) -->
     <record id="iframe_page_view_tree" model="ir.ui.view">
         <field name="name">iframe.page.view.tree</field>
         <field name="model">iframe.page</field>
@@ -13,58 +12,79 @@
         </field>
     </record>
 
+    <!-- Form View for Configuration (No changes needed) -->
     <record id="iframe_page_view_form" model="ir.ui.view">
         <field name="name">iframe.page.view.form</field>
         <field name="model">iframe.page</field>
         <field name="priority" eval="-99"/>
-
         <field name="arch" type="xml">
             <form>
                 <sheet>
                     <group>
                         <field name="name"/>
-                        <field name="parent_menu_id"/>
-                        <field name="url"/>
                         <field name="active"/>
+                        <field name="parent_menu_id"/>
                         <field name="sequence"/>
                         <field name="menu_id" readonly="1" attr="{'invisible':[('menu_id','=',False)]}"/>
                         <field name="menu_icon" widget="image" attrs="{'required':[('parent_menu_id','=',False)],'invisible':[('parent_menu_id','!=',False)]}"/>
-                    </group>
+                        <field name="page_type"/>
+                        <field name="source" widget="radio" attrs="{'invisible':[('page_type','!=','single')]}"/>
+                        <field name="html_page" widget="ace" attrs="{'invisible':['|',('page_type','!=','single'),('source','=','url')]}"/>
+                        <field name="url" attrs="{'invisible':['|',('page_type','!=','single'),('source','=','html')]}"/>
+                        <label for="auto_refresh" string="Auto Refresh" attrs="{'invisible':[('page_type','!=','single')]}"/>
+                        <div attrs="{'invisible':[('page_type','!=','single')]}">
+                        <field name="auto_refresh"  class="oe_inline"/>
+                        <field name="auto_refresh_interval"  attrs="{'invisible':[('auto_refresh','=',False)]}" style="margin-right:5px"  class="oe_inline"/><a attrs="{'invisible':[('auto_refresh','=',False)]}">seconds</a>
+                        </div>
+                        </group>
+                        <field name="slide_show_url_ids" attrs="{'invisible':[('page_type','!=','slide')]}">
+                            <tree>
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="source"/>
+                                <field name="auto_refresh_interval" string="Duration (s)"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="name"/>
+                                    <field name="source"/>
+                                    <field name="url" attrs="{'invisible':[('source','=','html')]}"/>
+                                    <field name="html_page" attrs="{'invisible':[('source','=','url')]}"/>
+                                    <label for="auto_refresh_interval" string="Slide Duration (seconds)"/>
+                                    <div>
+                                        <field name="auto_refresh_interval"  class="oe_inline"/>
+                                    </div>
+                                </group>
+                            </form>
+                        </field>
                 </sheet>
             </form>
         </field>
     </record>
 
+    <!-- Action and Menu (No changes needed) -->
     <record id="iframe_page_action" model="ir.actions.act_window">
         <field name="name">Iframe Page</field>
         <field name="res_model">iframe.page</field>
         <field name="view_mode">tree,form</field>
     </record>
-
     <menuitem id="iframe_page_setting_menu" name="Iframe Page" action="iframe_page_action" parent="base.menu_custom" sequence="99"/>
 
+    <!-- MODIFIED: Display Form View -->
     <record id="iframe_page_show_form" model="ir.ui.view">
         <field name="name">iframe.page.show.form</field>
         <field name="model">iframe.page</field>
         <field name="arch" type="xml">
-            <form edit="False" create="False">
-            <style>
-            .o_control_panel{display:none !important}
-            .o_form_nosheet{
-              padding:0 !important;
-              height:100%;
-            }
-            div[class~=o_readonly]{
-            height:100% !important;
-              background:url('/metalindo_imacs/static/src/img/loader1.gif') center center no-repeat;
-            }
-            .o_field_html{
-            height:100% !important;
-            }
-            </style>
-                <field name="iframe_html"/>
+            <form>
+                <!--
+                    This view is intentionally minimal.
+                    The entire content, including the JavaScript logic for slideshows
+                    and auto-refresh, is computed into the 'iframe_html' field.
+                    This ensures that the display logic has access to all necessary
+                    record data when it is rendered.
+                -->
+                <field name="iframe_html" nolabel="1"/>
             </form>
         </field>
     </record>
-</data>
 </odoo>
