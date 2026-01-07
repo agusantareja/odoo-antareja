@@ -50,13 +50,15 @@ def set_session(login, uid, session_token=None):
     else:
         session.session_token = session_token
     if not session.session_token:
-        request.uid = None
+        request.update_env()
+        # request.uid = None
         session.uid = None
         session.login = None
     else:
-        request.uid = uid
-        request.disable_db = False
-        session.get_context()
+        request.update_env(user=request.session.uid)
+        # request.uid = uid
+        #request.disable_db = False
+        #session.get_context()
 
 
 def get_bearer_token():

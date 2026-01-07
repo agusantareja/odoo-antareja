@@ -47,6 +47,7 @@ class ControllerMobileAccess(http.Controller):
             uid = token_data['uid']
             login = token_data.get('username') or token_data.get('sub')
             set_session(login, uid)
+
         # if not request.session.uid:
         #     _logger.info("Sudah login")
         # else:
