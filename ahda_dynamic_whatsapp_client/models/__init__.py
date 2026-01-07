@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from . import actions_server
 from . import whatsapp_api
 from . import whatsapp_log
