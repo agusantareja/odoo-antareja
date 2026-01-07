@@ -46,3 +46,6 @@ class ApplicationServer(models.Model):
                 rec.endpoint = rec.get_value_config_param(config_param_name=rec.config_param_name)
             else:
                 rec.endpoint = rec.endpoint_value
+
+    def get_endpoint_url(self):
+        return self.endpoint
