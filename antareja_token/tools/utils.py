@@ -2,6 +2,7 @@
 
 import logging
 import json
+import base64
 
 from odoo.http import request, OpenERPSession, SessionExpiredException
 from odoo.service import security
@@ -66,6 +67,22 @@ def get_bearer_token():
     return auth.split(" ", 1)[1]
 
 
+def get_basic_auth():
+    auth = request.httprequest.headers.get('Authorization')
+    if not auth:
+        return None, None
+
+    try:
+        scheme, encoded = auth.split(' ', 1)
+        if scheme.lower() != 'basic':
+            return None, None
+
+        decoded = base64.b64decode(encoded).decode('utf-8')
+        return decoded.split(':', 1)
+    except Exception:
+        return None, None
+
+
 def make_response_error(status=400, error="", error_description=""):
     return Response(
         json.dumps({"error": error, 'error_description': error_description}),
@@ -80,58 +97,71 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
         def wrapper(self, *args, **kwargs):
             error = {}
             session = request.session
-            uid = session.uid or request.uid
-            login = session.login
+            save_uid = session.uid or request.uid
+            save_login = session.login
             session_token = session.session_token
-            # ambbil semua kemungkin token yang ada
-            token_list = [get_bearer_token()]
-            header_names = []
-            if header_names:
-                if isinstance(header_name,str):
-                    header_names=[header_names]
-                elif isinstance(header_name,(list, tuple)):
-                    header_names =header_name
-            for name in header_names:
-                token_list.append(request.httprequest.headers.get(name))
-            if param_name:
-                params = []
-                if isinstance(param_name, str):
-                    params.append(param_name)
-                elif isinstance(param_name, (list, tuple)):
-                    params.extend(param_name)
-                for p in params:
-                    token_list.append(request.params.get(p))
-                    token_list.append(kwargs.get(p))
-
-            tokens = set(token_list)
             accept_authorization = False
-            for t in tokens:
-                if not t:
-                    continue
-                token_data = request.env['antareja.token'].sudo().validate(t)
-                if token_data and token_data.get('uid'):
-                    uid = token_data['uid']
-                    login = token_data.get('username') or token_data.get('sub')
-                    if uid and login:
-                        accept_authorization = True
-                        if setup_session:
-                            set_session(login, uid)
-                if accept_authorization:
-                    break
-            if not setup_session and not accept_authorization:
+            try:
+                username,password = get_basic_auth()
+                uid = request.session.authenticate(
+                    request.session.db,
+                    username,
+                    password
+                )
+            except :
+                uid = None
+            if uid:
+                accept_authorization = True
+            else:
+                # ambbil semua kemungkin token yang ada
+                token_list = [get_bearer_token()]
+                header_names = []
+                if header_names:
+                    if isinstance(header_name,str):
+                        header_names=[header_names]
+                    elif isinstance(header_name,(list, tuple)):
+                        header_names =header_name
+                for name in header_names:
+                    token_list.append(request.httprequest.headers.get(name))
+                if param_name:
+                    params = []
+                    if isinstance(param_name, str):
+                        params.append(param_name)
+                    elif isinstance(param_name, (list, tuple)):
+                        params.extend(param_name)
+                    for p in params:
+                        token_list.append(request.params.get(p))
+                        token_list.append(kwargs.get(p))
+
+                tokens = set(token_list)
+
                 for t in tokens:
-                    accept_authorization = request.env['antareja.token'].sudo().client_token_validation(t)
+                    if not t:
+                        continue
+                    token_data = request.env['antareja.token'].sudo().validate(t)
+                    if token_data and token_data.get('uid'):
+                        uid = token_data['uid']
+                        login = token_data.get('username') or token_data.get('sub')
+                        if uid and login:
+                            accept_authorization = True
+                            if setup_session:
+                                set_session(login, uid)
                     if accept_authorization:
                         break
+                if not setup_session and not accept_authorization:
+                    for t in tokens:
+                        accept_authorization = request.env['antareja.token'].sudo().client_token_validation(t)
+                        if accept_authorization:
+                            break
             if not accept_authorization:
                 return invalid_response(
                     401, error.get("error", "invalid_token"),
                     error.get("error_description", "The token is invalid or expired.")
                 )
             result = func(self, *args, **kwargs)
-            if setup_session:
+            if uid or setup_session:
                 # set kembali session sebelumnya
-                set_session(uid, login, session_token)
+                set_session(save_uid, save_login, session_token)
             return result
         return wrapper
 

@@ -31,11 +31,21 @@ class AntarejaTokenAudience(models.Model):
 
     def validate(self, token, raise_exception=False):
         try:
-            payload = jwt.decode(token)
+            payload = jwt.decode(
+                token,
+                options={
+                    "verify_signature": False,
+                    "verify_exp": True,
+                    "verify_aud": False,
+                    "verify_iss": False,
+                }
+            )
             audience, issuer = self.get_token_audience(payload.get('aud'), payload.get('iss'))
             if not audience:
+                _logger.error(f"Invalid Audience {audience}")
                 raise InvalidAudienceError('Invalid Audience')
             if not issuer:
+                _logger.error(f"Invalid Issuer {issuer}")
                 raise InvalidIssuerError('Invalid Issuer')
             if issuer.validate(token):
                 login = payload.get('sub')
@@ -45,12 +55,16 @@ class AntarejaTokenAudience(models.Model):
                     user = self.env['res.users'].sudo().search([('login', '=', login)], limit=1)
                 if not user:
                     user = self.env['res.users'].sudo().search([('email', '=', email)], limit=1)
+                if not user:
+                    user = self.env['res.users'].sudo().search([('partner_id.email', '=', email)], limit=1)
                 if user:
                     payload['uid'] = user.id
                     payload['username'] = user.login
                     return payload
+                _logger.error(f"User Not found {login} , {email}")
                 return payload
         except InvalidTokenError:
+            _logger.error("InvalidTokenError")
             if raise_exception:
                 raise
 
