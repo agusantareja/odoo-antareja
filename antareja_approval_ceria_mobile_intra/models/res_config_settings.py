@@ -5,7 +5,7 @@ from odoo import models, fields
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    mobile_notification_server_auth = fields.Many2one(
+    mobile_approval_server_auth_id = fields.Many2one(
         'application.server.auth',
         string='Notification Mobile Server Auth',
         config_parameter='antareja_approval_ceria_mobile_intra.mobile_approval_server_auth_id'
