@@ -53,7 +53,7 @@ class MobileNotificationClient(models.Model):
     def get_endpoint(self):
         config = self.env['ir.config_parameter'].sudo()
         base_url = config.get_param('antareja_notification.mobile_notification_endpoint')
-        url = f"{base_url}/{self.get_mobile_notification_path()}"
+        url = f"{base_url}{self.get_mobile_notification_path()}"
         headers = {
             "token": config.get_param('antareja_notification.mobile_notification_token'),
             "Accept": "application/json"
