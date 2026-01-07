@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# Part of Flectra. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, models, _
+from odoo import api, models
 
 
 class IrModel(models.Model):
@@ -9,7 +8,6 @@ class IrModel(models.Model):
 
     @api.model
     def is_read_sync_api(self):
-
         return True
 
     def readable_fields(self, fields):
