@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+
 import ast
-import requests
 import json
 import logging
 from odoo import models, fields, api, _
@@ -7,10 +8,12 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
 import random
 import re
+import requests
 
 _logger = logging.getLogger(__name__)
 
-class WhatsappTemplate(models.Model):
+
+class WhatsAppTemplate(models.Model):
     _name = 'whatsapp.template'
     _sql_constraints = [
         ('unique_template_name_model', 'unique(name, model_id)', 'The combination of WhatsApp template name and model must be unique.')
@@ -22,7 +25,7 @@ class WhatsappTemplate(models.Model):
     model_id = fields.Many2one('ir.model', string='Model', required=True, ondelete='cascade')
     recipient = fields.Char("Recipient", help="Expression to determine the recipient partner(s). Use ${...} expressions. Example: ${[partner]} or ${[obj.partner_id]}.")
     body_param_ids = fields.One2many('whatsapp.template.param','template_id')
-    whatsapp_api_id = fields.Many2one('whatsapp.api','Whatsapp API')
+    whatsapp_api_id = fields.Many2one('whatsapp.api','WhatsApp API')
 
     def _register_hook(self):
         super()._register_hook()
@@ -233,16 +236,16 @@ class WhatsappTemplate(models.Model):
 
     @api.model
     def create(self, vals):
-        template = super(WhatsappTemplate, self).create(vals)
+        template = super(WhatsAppTemplate, self).create(vals)
         self._inject_send_whatsapp_method()
         return template
 
     def write(self, vals):
-        res = super(WhatsappTemplate, self).write(vals)
+        res = super(WhatsAppTemplate, self).write(vals)
         self._inject_send_whatsapp_method()
         return res
 
-class WhatsappTemplateParam(models.Model):
+class WhatsAppTemplateParam(models.Model):
     _name = 'whatsapp.template.param'
 
     key = fields.Char('Key')
