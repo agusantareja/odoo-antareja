@@ -65,13 +65,14 @@
                                         <field name="external_fields"/>
                                         <field name="parent_sync_strategy_id"/>
                                         <field name="parent_field_name" />
+                                        <field name="relation_field_ignore"/>
                                     </group>
                                     <group>
                                         <field name="internal_model" />
                                         <field name="exclude_fields" />
                                         <field name="internal_process_method" />
                                         <field name="internal_context" />
-                                        <field name="relation_field_ignore"/>
+                                        <field name="company_id"/>
                                     </group>
                                 </group>
                                 <field name="line_mapping_ids" context="{'default_sync_strategy_id': active_id}">
@@ -116,7 +117,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="external_data_sync_strategy_action">
-            <field name="name">External Data Sync Strategy</field>
+            <field name="name">Data Sync Strategy</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">external.data.sync.strategy</field>
             <field name="view_mode">tree,form</field>
