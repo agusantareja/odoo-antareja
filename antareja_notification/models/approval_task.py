@@ -38,10 +38,11 @@ class ApprovalTask(models.Model):
 
         return res_id,model_name
 
-    def get_users_for_notification(self,**kwargs):
-        self.ensure_one()
-        users = self.get_users().get_users_for_notification(company=self.company_id)
-        return users
+    # move to base untuk DOA
+    # def get_users_for_notification(self,**kwargs):
+    #     self.ensure_one()
+    #     users = self.get_users().get_users_for_notification(company=self.company_id)
+    #     return users
 
     def send_notification(self, **kwargs):
         self.ensure_one()
