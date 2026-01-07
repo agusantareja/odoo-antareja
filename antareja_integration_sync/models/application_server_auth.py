@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import datetime
-from odoo import models, fields, api, _
-import json
-import traceback
+from odoo import models
 import logging
 
 _logger = logging.getLogger(__name__)
