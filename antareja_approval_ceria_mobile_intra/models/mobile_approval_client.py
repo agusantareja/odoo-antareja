@@ -46,6 +46,18 @@ class MobileApprovalClient(models.Model):
     def get_application_name(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja.application_name')
 
+    def get_mobile_approval_path(self):
+        return "/api/intra/mobile/approval"
+
+    def get_server_auth(self):
+        server_auth_id = int(
+            self.env['ir.config_parameter']
+            .sudo()
+            .get_param('antareja_approval_ceria_mobile_intra.mobile_approval_server_auth_id', 0)
+        )
+
+        return self.env['application.server.auth'].browse(server_auth_id)
+
     def create_request(self, **kwargs):
         data = {}
 
@@ -92,8 +104,10 @@ class MobileApprovalClient(models.Model):
         try:
             payload_dict = self.prepare_send_data()
             payload = json.dumps(payload_dict)
-            url, headers = self.get_endpoint_approval()
-            response = requests.post(url, data=payload, headers=headers)
+            # url, headers = self.get_endpoint_approval()
+            server_auth = self.get_server_auth()
+            response = server_auth.rest_post(path=self.get_mobile_approval_path(), data=json.dumps(payload))
+            # response = requests.post(url, data=payload, headers=headers)
             response.raise_for_status()
             self.write({
                 'response': response.text,
