@@ -46,6 +46,7 @@ class ApplicationServerAuth(models.Model):
             if object_id and isinstance(object_id, int):
                 path_model = f"{path_model}/{object_id}"
             else:
+                object_id = None
                 if domain:
                     params['domain'] = str(domain)
                 if fields is not None:
@@ -62,4 +63,6 @@ class ApplicationServerAuth(models.Model):
             response.raise_for_status()
             if count:
                 return response.json().get("count", 0)
+            if object_id:
+                return response.json() or []
             return response.json().get("results", [])
