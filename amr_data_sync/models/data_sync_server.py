@@ -219,10 +219,10 @@ class ExternalServerSync(models.Model):
                     params['offset'] = offset
                 if limit is not None:
                     params['limit'] = limit
-                if count:
-                    params['count'] = True
-                if context:
-                    params['context'] = str(context)
+            if count:
+                params['count'] = True
+            if context:
+                params['context'] = str(context)
             response = requests.get(url, params=params, headers=headers)
             response.raise_for_status()
             if count:

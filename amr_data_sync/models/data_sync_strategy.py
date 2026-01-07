@@ -333,7 +333,7 @@ class ExternalDataSync(models.Model):
         self.ensure_one()
         server_sync = self.get_server_sync()
         offset = 0
-        row_count = limit = 100
+        row_count = limit = 200
         domain = []
         if self.external_domain:
             domain = ast.literal_eval(self.external_domain)
@@ -345,7 +345,7 @@ class ExternalDataSync(models.Model):
 
         while total and row_count == limit:
             data = server_sync.get_external_data(
-                self.external_model, domain, fields=fields_list, offset=None, limit=None, context=context)
+                self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context)
             row_count = len(data) if data else 0
             if row_count == 0:
                 break
