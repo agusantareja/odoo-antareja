@@ -26,13 +26,14 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         raise NotImplemented
 
     def rest_url(self, path):
+        rest_endpoint = self.rest_endpoint_url()
         if not path or path == '/':
-            return self.rest_endpoint_url()
-        if not path.startswith('http'):
+            return rest_endpoint
+        if path.startswith('http'):
             return path
         if not path.startswith('/'):
             path = f'/{path}'
-        return f"{self.rest_endpoint_url()}{path}"
+        return f"{rest_endpoint}{path}"
 
     def rest_headers(self, headers=None):
         if self.rest_token_in == 'bearer':
@@ -168,4 +169,7 @@ class ApplicationServerAuth(models.Model):
         return self.get_value_config_param(value_without_config_param=self.rest_token)
 
     def rest_endpoint_url(self):
-        return self.application_server_id.endpoint
+        self.ensure_one()
+        endpoint_url = self.application_server_id.get_endpoint_url()
+        _logger.info(f"Endpoint URL : {endpoint_url}")
+        return self.application_server_id.get_endpoint_url()
