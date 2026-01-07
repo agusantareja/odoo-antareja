@@ -12,7 +12,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'API',
-    'version': '13.0.0.0.2',
+    'version': '16.0.0.0.1',
     'depends': ['base', 'antareja_base', ],
     # always loaded
     'data': [

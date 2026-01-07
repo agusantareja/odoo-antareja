@@ -32,6 +32,7 @@ class ControllerMobileAccess(http.Controller):
 
     @http.route(['/web_token_access'], type='http', auth='none', methods=['GET'], csrf=False)
     def web_token_access(self, token_access=None, redirect=None, **kw):
+
         def get_valid_token_payload(token, env):
             token_data = env['antareja.token'].validate(token)
             if token_data and token_data.get('uid'):
@@ -41,14 +42,15 @@ class ControllerMobileAccess(http.Controller):
                 return payload
             return None
 
-        if request.session.uid:
-            _logger.info("Sudah login")
-        else:
-            token_data = get_valid_token_payload(token_access, request.env)
-            if token_data and token_data.get('uid'):
-                uid = token_data['uid']
-                login = token_data.get('username') or token_data.get('sub')
-                set_session(login, uid)
+        token_data = get_valid_token_payload(token_access, request.env)
+        if token_data and token_data.get('uid'):
+            uid = token_data['uid']
+            login = token_data.get('username') or token_data.get('sub')
+            set_session(login, uid)
+        # if not request.session.uid:
+        #     _logger.info("Sudah login")
+        # else:
+
         if redirect:
             url = redirect
         elif kw:
@@ -57,7 +59,7 @@ class ControllerMobileAccess(http.Controller):
             url = "/web"
         return werkzeug.utils.redirect(url)
 
-    @http.route('/api/application/token', type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route('/application/token', type='http', auth='none', methods=['POST'], csrf=False)
     def api_token(self, **kwargs):
         grant_type = kwargs.get('grant_type')
 
@@ -70,19 +72,43 @@ class ControllerMobileAccess(http.Controller):
         if grant_type == 'trusted_token':
             return self._trusted_grant(kwargs.get('access_token'))
 
-        return invalid_response(200, "unsupported_grant_type")
+        return invalid_response(401, "unsupported_grant_type")
 
-    @http.route('/api/application/profile', type='http', auth='none', methods=['POST'], csrf=False)
-    def api_profile(self):
-        token = get_bearer_token()
+    @http.route('/application/profile', type='http', auth='none', methods=['GET'], csrf=False)
+    def api_application_introspect(self, access_token):
+        active = False
+        token = access_token or get_bearer_token()
         if token:
-            payload = request.env['antareja.token'].validate(token) or {}
-            active = False
+            payload = request.env['antareja.token'].validate(token)
             if payload and payload.get('uid'):
                 uid = payload.get('uid')
-            if uid:
-                user = request.env['res.users'].sudo().browse(request.uid)
+                user = request.env['res.users'].sudo().browse(uid)
                 active = user.exists()
+
+        if active:
+            data = dict(payload)
+            data.update(
+                uid=user.id,
+                user_id=user.id,
+                name=user.name,
+                login=user.login,
+                db=request.session.db,
+            )
+            return valid_response(200, data)
+        else:
+            return invalid_response(401, "invalid_token","Invalid Token")
+
+    @http.route('/application/introspect', type='http', auth='none', methods=['GET'], csrf=False)
+    def api_application_introspect(self,access_token):
+        active = False
+        token = access_token or get_bearer_token()
+        if token:
+            payload = request.env['antareja.token'].validate(token)
+            if payload and payload.get('uid'):
+                uid = payload.get('uid')
+                user = request.env['res.users'].sudo().browse(uid)
+                active = user.exists()
+
         if active:
             data = dict(payload)
             data.update(
@@ -95,36 +121,7 @@ class ControllerMobileAccess(http.Controller):
             )
             return valid_response(200, data)
         else:
-            return valid_response(200, {'active': active})
-
-    @http.route('/api/application/refresh', type='http', auth='none', methods=['POST'], csrf=False)
-    def api_application_refresh(self, refresh_token=None):
-        return self._refresh_grant(refresh_token)
-
-    @http.route('/api/application/introspect', type='http', auth='none', methods=['POST'], csrf=False)
-    def api_application_introspect(self):
-        active = False
-        token = get_bearer_token()
-        if token:
-            payload = request.env['antareja.token'].validate(token)
-            if payload and payload.get('uid'):
-                uid = payload.get('uid')
-                user = request.env['res.users'].sudo().browse(uid)
-                active = user.exists()
-
-        if active:
-            data = dict(payload)
-            data.update(
-                active=active,
-                uid=user.id,
-                user_id=user.id,
-                name=user.name,
-                login=user.login,
-                db=request.session.db,
-            )
-            return valid_response(200, data)
-        else:
-            return valid_response(200, {'active': active})
+            return valid_response(401, {'active': False,"error": "invalid_token"})
 
     def _trusted_grant(self, token_access):
         payload = self.env['antareja.token.audience'].validate(token_access)
@@ -132,7 +129,7 @@ class ControllerMobileAccess(http.Controller):
             kw = request.env["antareja.token"].login(payload['uid'])
             return valid_response(200, kw)
         else:
-            return invalid_response(200, "invalid_grant")
+            return invalid_response(401, "invalid_grant")
 
     def _refresh_grant(self, refresh_token=None):
         if not refresh_token:
