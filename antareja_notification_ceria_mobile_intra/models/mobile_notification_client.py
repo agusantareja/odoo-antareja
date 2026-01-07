@@ -17,7 +17,7 @@ class MobileNotificationClient(models.Model):
         ('outgoing', 'Outgoing'),
         ('done', 'Done'),
         ('cancel', 'Cancel'),
-    ],default='accept')
+    ], default='accept')
 
     notification_type = fields.Selection(
         [('approval', 'Approval'),
@@ -41,9 +41,9 @@ class MobileNotificationClient(models.Model):
     response = fields.Text()
 
     def create_payload(self, **kwargs):
-        accept_data= json.dumps(kwargs)
+        accept_data = json.dumps(kwargs)
         return self.create([{
-            'accept_data':accept_data
+            'accept_data': accept_data
         }])[0]
 
     # -------------------------------------------------------
@@ -53,12 +53,24 @@ class MobileNotificationClient(models.Model):
     def get_endpoint(self):
         config = self.env['ir.config_parameter'].sudo()
         base_url = config.get_param('antareja_notification.mobile_notification_endpoint')
-        url = f"{base_url}/api/intra/mobile/notification"
+        url = f"{base_url}{self.get_mobile_notification_path()}"
         headers = {
             "token": config.get_param('antareja_notification.mobile_notification_token'),
             "Accept": "application/json"
         }
-        return url,headers
+        return url, headers
+
+    def get_mobile_notification_path(self):
+        return "/api/intra/mobile/notification"
+
+    def get_server_auth(self):
+        server_auth_id = int(
+            self.env['ir.config_parameter']
+            .sudo()
+            .get_param('antareja_notification_ceria_mobile_intra.mobile_notification_server_auth_id', 0)
+        )
+
+        return self.env['application.server.auth'].browse(server_auth_id)
 
     def send(self):
         self.ensure_one()
@@ -68,16 +80,18 @@ class MobileNotificationClient(models.Model):
             data = payload.get('data') or {}
             payload['data'] = self.prepare_send_data(**data)
             payload['notification'] = {
-                'title':self.title or None,
-                'body':self.body or None,
-                'image':self.image or None,
+                'title': self.title or None,
+                'body': self.body or None,
+                'image': self.image or None,
             }
-            url,headers = self.get_endpoint()
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            # url, headers = self.get_endpoint()
+            server_auth = self.get_server_auth()
+            response = server_auth.rest_post(path=self.get_mobile_notification_path(), data=json.dumps(payload))
+            # response = requests.post(url, data=json.dumps(payload), headers=headers)
             response.raise_for_status()
             self.write({
                 'response': response.text,
-                'payload':json.dumps(payload),
+                'payload': json.dumps(payload),
                 'state': 'done'
             })
             return True
@@ -93,7 +107,7 @@ class MobileNotificationClient(models.Model):
             return False
 
     def cron_send(self):
-        records = self.search([('state', '=', 'outgoing')],limit=1000)
+        records = self.search([('state', '=', 'outgoing')], limit=1000)
         for rec in records:
             rec.send()
 
@@ -112,7 +126,7 @@ class MobileNotificationClient(models.Model):
             accept_data = json.loads(self.accept_data or "{}")
             mobile_notification = {}
             notification = accept_data.get('notification') or {}
-            if notification and isinstance(notification,dict):
+            if notification and isinstance(notification, dict):
                 notification_fields = {
                     'title',
                     'body',
@@ -121,7 +135,7 @@ class MobileNotificationClient(models.Model):
                 mobile_notification.update({k: v for k, v in notification.items() if k in notification_fields})
             data = accept_data.get('data') or {}
             notification_to_user = None
-            if data and isinstance(data,dict):
+            if data and isinstance(data, dict):
                 allowed_fields = {
                     'notification_type',
                     'source_application',
@@ -131,12 +145,14 @@ class MobileNotificationClient(models.Model):
                 mobile_notification.update({k: v for k, v in data.items() if k in allowed_fields})
                 notification_to_user = data.get('notification_to_user')
             if notification_to_user:
-                to_user_id = self.to_user_id.search(['|',('partner_id.email','=',notification_to_user),('login','=',notification_to_user)],limit=1)
+                to_user_id = self.to_user_id.search(
+                    ['|', ('partner_id.email', '=', notification_to_user), ('login', '=', notification_to_user)],
+                    limit=1)
             else:
                 raise ValueError("notification_to_user not found")
 
             if to_user_id:
-                mobile_notification['to_user_id']=to_user_id.id
+                mobile_notification['to_user_id'] = to_user_id.id
             else:
                 raise ValueError("User not found")
             self.write({**mobile_notification, 'state': 'outgoing'})
@@ -152,7 +168,7 @@ class MobileNotificationClient(models.Model):
     # -------------------------------------------------------
     # SEND PAYLOAD
     # -------------------------------------------------------
-    def prepare_send_data(self,**data):
+    def prepare_send_data(self, **data):
         data_notif = {k: str(v) for k, v in data.items()}
         data_notif.update(
             {
@@ -163,6 +179,6 @@ class MobileNotificationClient(models.Model):
                 "request_datetime": fields.Datetime.to_string(self.create_date)
             }
         )
-        if self.to_user_id.partner_id.email :
-            data_notif['notification_to_user']= self.to_user_id.partner_id.email
+        if self.to_user_id.partner_id.email:
+            data_notif['notification_to_user'] = self.to_user_id.partner_id.email
         return data_notif
