@@ -9,7 +9,7 @@
     'website': "http://www.yourcompany.com",
     'category': 'Uncategorized',
     'version': '13.0.1.0.0.1',
-    'depends': ['base', 'mail', 'antareja_integartion'],
+    'depends': ['base', 'mail', 'antareja_integration'],
     # always loaded
     'data': [
         'data/application_server_data.xml',
