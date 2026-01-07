@@ -49,16 +49,16 @@ class ApplicationServerAuth(models.Model):
                 object_id = None
                 if domain:
                     params['domain'] = str(domain)
-                if fields is not None:
-                    params['fields'] = str(fields)
                 if offset is not None:
                     params['offset'] = offset
                 if limit is not None:
                     params['limit'] = limit
                 if count:
                     params['count'] = True
-                if context:
+            if context:
                     params['context'] = str(context)
+            if fields is not None:
+                    params['fields'] = str(fields)
             response = rec.rest_get(path_model, params=params)
             response.raise_for_status()
             if count:
