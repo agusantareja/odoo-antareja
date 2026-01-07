@@ -107,7 +107,11 @@ class NotificationTemplate(models.Model):
 
         self.ensure_one()
         if self.template_email and kwargs.get('send_notification_email', True):
-            values = self.template_email.with_context(notification_to_user=notification_to_user).generate_email(res_id)
+            values = self.template_email.with_context(notification_to_user=notification_to_user).generate_email(
+                res_id, ['subject', 'body_html',
+                         'email_from',
+                         'email_cc', 'email_to', 'partner_to', 'reply_to',
+                         'auto_delete', 'scheduled_date'])
             values['recipient_ids'] = [(4, pid) for pid in values.get('partner_ids', list())]
             values['attachment_ids'] = [(4, aid) for aid in values.get('attachment_ids', list())]
             values.pop('partner_ids', None)
@@ -144,8 +148,9 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         if self.template_chatter:
-            values = self.template_chatter.with_context(notification_to_user=notification_to_user).generate_email(res_id)
-            message=values['body_html']
+            values = self.template_chatter.with_context(notification_to_user=notification_to_user).generate_email(
+                res_id, ['subject', 'body_html'])
+            message = values['body_html']
             return notification_to_user.send_odoobot_message(message)
 
         return None
@@ -162,18 +167,13 @@ class NotificationTemplate(models.Model):
                 if rec and have_method(rec, 'message_post'):
                     values = self.template_comment.generate_email(res_id, ['body_html'])
                     message = values['body_html']
-                    odoobot_id = self.env['ir.model.data'].xmlid_to_res_id("base.partner_root")
-                    #odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
-                    return rec.sudo().message_post(
+                    odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
+                    return rec.message_post(
                         body=message,
-                        author_id=odoobot_id
+                        author_id=odoobot_id,
+                        message_type="comment",
+                        subtype_xmlid="mail.mt_comment"
                     )
-                    # return rec.message_post(
-                    #     body=message,
-                    #     author_id=odoobot_id,
-                    #     message_type="comment",
-                    #     subtype_xmlid="mail.mt_comment"
-                    # )
         return None
 
     def send_notification_to_user_mobile(self,notification_to_user,res_id, **kwargs):
