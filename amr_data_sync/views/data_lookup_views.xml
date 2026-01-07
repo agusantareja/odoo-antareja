@@ -59,7 +59,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="external_data_lookup_action">
-            <field name="name">External Data Lookup </field>
+            <field name="name">Data Lookup </field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">external.data.lookup</field>
             <field name="view_mode">tree,form</field>

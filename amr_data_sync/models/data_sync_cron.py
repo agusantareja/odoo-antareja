@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class ExternalDataSyncCron(models.Model):
     _name = 'external.data.sync.cron'
-    _description = """Model strategy bagaimana object di synccron dari server external
+    _description = """Model strategy bagaimana object di sync cron dari server external
     """
     sync_strategy_id = fields.Many2one(
         'external.data.sync.strategy',
