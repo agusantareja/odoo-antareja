@@ -32,7 +32,8 @@ class NotificationTemplate(models.Model):
                 _logger.warning("Invalid phone number for partner ID %s , name %s , %s", partner.id,partner.name,phone_number)
                 return
 
-            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(res_id)
+            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(
+                res_id,['subject', 'body_html'])
             message_wa = values['body_html']
             ref = values['subject']
             payload = {

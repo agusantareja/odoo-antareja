@@ -14,9 +14,10 @@ def have_method(obj, method):
 class WhatsAppLog(models.Model):
     _inherit = 'whatsapp.log'
     template_id = fields.Many2one('whatsapp.template')
-    status = fields.Selection(selection_add=[
-        ('cancel', 'Cancel')
-    ])
+    status = fields.Selection(
+        selection_add=[('cancel', 'Cancel')],
+        ondelete={'cancel': 'cascade'},
+    )
     send_message_post = fields.Boolean("Post Message on Record Chatter", default=True)
     def _referencable_models(self):
         return [(m.model, m.name) for m in self.env['ir.model'].search([])]
