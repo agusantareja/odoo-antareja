@@ -7,10 +7,11 @@
     'description': """
     """,
     'author': "Agus Muhammad Ramdan",
+    "license": "AGPL-3",
     'website': "http://www.yourcompany.com",
     'category': 'API',
-    'version': '13.0.0.0.0',
-    'depends': ['base',],
+    'version': '13.0.0.0.1',
+    'depends': ['base', ],
     # always loaded
     'data': [
         'security/ir.model.access.csv',
@@ -20,8 +21,6 @@
         'views/data_sync_strategy_views.xml',
         'views/data_sync_cron_views.xml',
         'views/data_lookup_views.xml',
-        # 'views/res_user_view.xml',
-        # 'views/ir_model_view.xml',
         'views/menuitem.xml',
         'data/cron.xml',
     ],

@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import ast
-import datetime
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-import json
-import traceback
 import logging
 from odoo.tools.safe_eval import safe_eval
-from ..tools.utils import *
+from ..tools.utils import is_callable_method, get_callable_method
 
 _logger = logging.getLogger(__name__)
 
@@ -83,47 +80,69 @@ class ExternalDataSync(models.Model):
         help="Method ini di panggil setelah data di proses dari external dan sebelum di simpan ke internal"
     )
     internal_call_method = fields.Char(
-        help="Method ini di panggil setelah data di proses dari external dan sebelum di simpan ke internal"
+        help="Method ini di panggil untuk option call_method"
     )
     sync_cron = fields.Boolean()
+
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
     def create(self, vals_list):
         for vals in vals_list:
+            if 'company_name' in vals:
+                company_name = vals.pop('company_name')
+                if company_name and isinstance(company_name, str):
+                    company = self.env['res.company'].search([('name', 'ilike', company_name)], limit=1)
+                    if company:
+                        vals['company_id'] = company.id
+                    else:
+                        vals['company_id'] = False
             if 'server_sync_id' in vals and vals['server_sync_id']:
                 server = self.server_sync_id.browse(vals['server_sync_id'])
                 if not server:
                     raise UserError(_("Server dengan ID %s tidak ditemukan") % vals['sync_strategy_id'])
-                vals['external_app_name'] = server.app_name
+                vals['external_app_name'] = server.get_application_name()
 
-        result= super(ExternalDataSync, self).create(vals_list)
+        result = super(ExternalDataSync, self).create(vals_list)
 
         if self._context.get('__from_sync_cron'):
             return result
 
         for rec in result:
             if rec.sync_cron:
-                sync_cron = self.env['external.data.sync.cron'].with_context(active_test=False).search([('sync_strategy_id', '=', rec.id)],limit=1)
+                sync_cron = self.env['external.data.sync.cron'].with_context(active_test=False).search(
+                    [('sync_strategy_id', '=', rec.id)], limit=1)
                 if not sync_cron:
                     self.env['external.data.sync.cron'].create({
                         'sync_strategy_id': rec.id,
                         'active': rec.sync_cron
                     })
+                elif sync_cron.active != rec.sync_cron:
+                    sync_cron.write({
+                        'active': rec.sync_cron
+                    })
         return result
 
     def write(self, vals):
+
+        if 'company_name' in vals:
+            company_name = vals.pop('company_name')
+            if company_name and isinstance(company_name, str):
+                company = self.env['res.company'].search([('name', 'ilike', company_name)], limit=1)
+                if company:
+                    vals['company_id'] = company.id
         if 'server_sync_id' in vals and vals['server_sync_id']:
             server = self.server_sync_id.browse(vals['server_sync_id'])
             if not server:
                 raise UserError(_("Server dengan ID %s tidak ditemukan") % vals['sync_strategy_id'])
-            vals['external_app_name'] = server.app_name
+            vals['external_app_name'] = server.get_application_name()
 
-        result=super(ExternalDataSync, self).write(vals)
+        result = super(ExternalDataSync, self).write(vals)
         if self._context.get('__from_sync_cron'):
             return result
         for rec in self:
             if 'sync_cron' in vals:
-                sync_cron = self.env['external.data.sync.cron'].with_context(active_test=False).search([('sync_strategy_id', '=', rec.id)],limit=1)
+                sync_cron = self.env['external.data.sync.cron'].with_context(active_test=False).search(
+                    [('sync_strategy_id', '=', rec.id)], limit=1)
                 if not sync_cron and vals['sync_cron']:
                     self.env['external.data.sync.cron'].create({
                         'sync_strategy_id': rec.id,
@@ -155,7 +174,9 @@ class ExternalDataSync(models.Model):
         return include_fields
 
     def get_mapping_fields(self):
-        mapping_list = self.line_mapping_ids.filtered(lambda m: m.internal_field and m.mapping_strategy=='field_mapping')
+        mapping_list = self.line_mapping_ids.filtered(
+            lambda m: m.internal_field and m.mapping_strategy == 'field_mapping'
+        )
         return {
             m.internal_field: m for m in mapping_list
         }
@@ -199,7 +220,7 @@ class ExternalDataSync(models.Model):
         if self.external_fields:
             fields = self.get_external_fields()
         result = self.ensure_one().get_server_sync().get_external_data(
-            self.external_model, fields=fields,object_id=object_id, context=context
+            self.external_model, fields=fields, object_id=object_id, context=context
         )
         return result and result[0]
 
@@ -235,7 +256,7 @@ class ExternalDataSync(models.Model):
                 ('server_sync_id', '=', server_sync.id),
             ], limit=1)
 
-            external_app_name = server_sync.app_name or external_app_name
+            external_app_name = server_sync.get_application_name() or external_app_name
 
         if not strategy and external_app_name:
             strategy = self.search([
@@ -306,13 +327,17 @@ class ExternalDataSync(models.Model):
     def sync_from_application_server(self):
         if self.external_sync == 'jsonrpc':
             self.jsonrcp_sync_from_application_server()
+        elif self.external_sync == 'method_call':
+            self.method_call_sync_from_application_server()
+        else:
+            raise NotImplementedError(f"External sync {self.external_sync} not implemented yet")
 
     @api.model
     def jsonrcp_sync_from_application_server(self):
         self.ensure_one()
         server_sync = self.get_server_sync()
         offset = 0
-        row_count = limit = 100
+        row_count = limit = 200
         domain = []
         if self.external_domain:
             domain = ast.literal_eval(self.external_domain)
@@ -324,7 +349,8 @@ class ExternalDataSync(models.Model):
 
         while total and row_count == limit:
             data = server_sync.get_external_data(
-                self.external_model, domain, fields=fields_list, offset=None, limit=None, context=context)
+                self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context
+            )
             row_count = len(data) if data else 0
             if row_count == 0:
                 break
@@ -336,6 +362,12 @@ class ExternalDataSync(models.Model):
                 )
 
         _logger.info("Offset %s = total %s", offset, total)
+
+    @api.model
+    def method_call_sync_from_application_server(self):
+        model = self.env[self.internal_model]
+        func = get_callable_method(model, self.internal_call_method)
+        return func(self)
 
     def get_internal_context(self):
         return self.internal_context and ast.literal_eval(self.internal_context) or {}
