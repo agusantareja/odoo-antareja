@@ -7,6 +7,7 @@ class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
     antareja_application_name = fields.Char(config_parameter='antareja.application_name')
 
+    module_antareja_sync_api = fields.Boolean("Sync Service API")
     module_antareja_integration = fields.Boolean("Application Integration")
 
     module_antareja_notification = fields.Boolean("Notification")
