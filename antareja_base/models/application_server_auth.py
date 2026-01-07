@@ -1,26 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import datetime
 from odoo import models, fields, api, _
-import json
-import traceback
+import requests
+import base64
 import logging
 
+
 _logger = logging.getLogger(__name__)
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return fields.Datetime.to_string(obj)
-
-        if isinstance(obj, datetime.date):
-            return fields.Date.to_string(obj)
-
-        if isinstance(obj, (bytes, bytearray)):
-            return obj.decode("utf-8")
-        return json.JSONEncoder.default(self, obj)
 
 
 class ApplicationServerAuthRestToken(models.AbstractModel):
@@ -28,6 +14,7 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
 
     # rest-token
     rest_token_in = fields.Selection([
+        ('basic', 'Basic'),
         ('bearer', 'Bearer'),
         ('header', 'Header'),
         ('param', 'Parameter'),
@@ -42,21 +29,33 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         raise NotImplemented
 
     def rest_url(self, path):
+        rest_endpoint = self.rest_endpoint_url()
         if not path or path == '/':
-            return self.rest_endpoint_url()
-        if not path.startswith('http'):
+            return rest_endpoint
+        if path.startswith('http'):
             return path
         if not path.startswith('/'):
             path = f'/{path}'
-        return f"{self.rest_endpoint_url()}{path}"
+        return f"{rest_endpoint}{path}"
 
     def rest_headers(self, headers=None):
+        if self.rest_token_in == 'basic':
+            return self.rest_basic_header(headers)
         if self.rest_token_in == 'bearer':
             return self.rest_bearer_header(headers)
         if self.rest_token_in == 'header':
             if headers is None:
                 headers = {}
             headers[self.rest_token_key] = self.get_rest_token()
+        return headers
+
+    def rest_basic_header(self, headers=None):
+        if headers is None:
+            headers = {}
+        username, password = self.get_username_password()
+        token = f"{username}:{password}"
+        encoded = base64.b64encode(token.encode()).decode()
+        headers['Authorization'] = f"Basic {encoded}"
         return headers
 
     def rest_bearer_header(self, headers=None):
@@ -106,6 +105,12 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
     odoo_username = fields.Char()
     odoo_password = fields.Char()
 
+    def get_odoo_server_db(self):
+        return self.odoo_server_db
+
+    def get_odoo_username_password(self):
+        raise NotImplemented
+
     @api.model
     def get_jsonrpc_path(self):
         return '/jsonrpc'
@@ -113,8 +118,7 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
     def jsonrpc_authenticate(self):
         db = self.odoo_server_db
         uid = self.odoo_server_uid
-        username = self.odoo_username
-        password = self.odoo_password
+        username, password = self.get_odoo_username_password()
         if not uid:
             # 1. Authenticate
             auth_payload = {
@@ -173,15 +177,32 @@ class ApplicationServerAuth(models.Model):
 
     active = fields.Boolean(default=True)
     name = fields.Char()
-    application_server_id = fields.Many2one('application.server')
-    application_server_path_ids = fields.One2many('application.server.path', 'application_server_auth_id')
+    application_server_id = fields.Many2one(
+        'application.server'
+    )
+    application_server_path_ids = fields.One2many(
+        'application.server.path',
+        'application_server_auth_id'
+    )
     auth_type = fields.Selection([
         ('odoo-rcp', 'Odoo RCP'),
         ('rest-token', 'Rest Token'),
     ], default='rest-token')
 
+    username = fields.Char()
+    password = fields.Char()
+
+    def get_username_password(self):
+        return self.username, self.password
+
+    def get_odoo_username_password(self):
+        return self.username, self.password
+
     def get_rest_token(self):
         return self.get_value_config_param(value_without_config_param=self.rest_token)
 
     def rest_endpoint_url(self):
-        return self.application_server_id.endpoint
+        self.ensure_one()
+        endpoint_url = self.application_server_id.get_endpoint_url()
+        _logger.info(f"Endpoint URL : {endpoint_url}")
+        return self.application_server_id.get_endpoint_url()

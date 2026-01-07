@@ -30,7 +30,6 @@ class AppCallReTry(models.Model):
         ('error', 'Error'),
         ('done', 'Done'),
     ], default='retry')
-
     res_id = fields.Integer()
     res_model = fields.Char()
     res_method= fields.Char()

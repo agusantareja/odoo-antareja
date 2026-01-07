@@ -38,12 +38,12 @@
                     </div>
                     <group>
                         <group>
-                            <field name="endpoint" string="Endpoint" attrs="{'invisible':[('config_param_name','!=','')]}"/>
-                            <field name="endpoint_value" string="Endpoint" attrs="{'invisible':[('config_param_name','=','')]}"/>
+                            <field name="endpoint" string="Endpoint" attrs="{'invisible':[('config_param_name','in',['',False])]}"/>
+                            <field name="endpoint_value" string="Endpoint" attrs="{'invisible':[('config_param_name','not in',['',False])]}"/>
                         </group>
                         <group>
                             <field name="config_param_name"/>
-                            <button string="Edit" type="object" name="open_config_parameter" attrs="{'invisible':[('config_param_name','!=','')]}"/>
+                            <button string="Edit" type="object" name="open_config_parameter" attrs="{'invisible':[('config_param_name','in',['',False])]}"/>
                         </group>
                     </group>
                     <notebook >

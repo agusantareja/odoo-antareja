@@ -42,9 +42,13 @@
                             <group>
                                 <group>
                                     <field name="rest_token_in"/>
-                                    <field name="rest_token_key"/>
                                 </group>
-                                <group>
+                                <group attrs="{'invisible':[('rest_token_in','!=','basic')]}">
+                                    <field name="username"/>
+                                    <field name="password"/>
+                                </group>
+                                <group attrs="{'invisible':[('rest_token_in','=','basic')]}">
+                                    <field name="rest_token_key"/>
                                     <field name="rest_token"/>
                                 </group>
                             </group>
@@ -56,8 +60,8 @@
                                     <field name="odoo_server_uid"/>
                                 </group>
                                 <group>
-                                    <field name="odoo_username"/>
-                                    <field name="odoo_password"/>
+                                    <field name="username"/>
+                                    <field name="password"/>
                                 </group>
                             </group>
                         </page>
