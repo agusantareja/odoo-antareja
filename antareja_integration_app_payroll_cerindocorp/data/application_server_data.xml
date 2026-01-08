@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="application.server" id="application_server">
+            <field name="name">payroll.cerindocorp.id</field>
+            <field name="config_param_name">payroll.cerindocorp.id</field>
+        </record>
+
+        <record model="application.server.auth" id="application_server_auth_default">
+            <field name="name">auth.default</field>
+            <field name="application_server_id" ref="application_server"/>
+            <field name="auth_type">rest-token</field>
+        </record>
+    </data>
+</odoo>
