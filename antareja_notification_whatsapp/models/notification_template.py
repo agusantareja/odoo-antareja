@@ -19,14 +19,14 @@ class NotificationTemplate(models.Model):
             return self.env['hr.employee'].search([('user_id', '=', notification_to_user.id)], limit=1).mobile_phone
 
         if self.template_wa and kwargs.get('send_notification_whatsapp', True):
-            WhatsappTemplate = self.env['whatsapp.template']
+            WhatsAppTemplate = self.env['whatsapp.template']
             partner = notification_to_user.partner_id
             phone_number = partner.mobile or partner.phone or get_phone_number()
-            phone = WhatsappTemplate._format_phone_number(phone_number)
+            phone = WhatsAppTemplate._format_phone_number(phone_number)
             test_wa = self.get_test_wa()
             if test_wa and test_wa != 'False':
                 _logger.info(f"WA TO: {phone} --> {test_wa}")
-                phone = WhatsappTemplate._format_phone_number(test_wa)
+                phone = WhatsAppTemplate._format_phone_number(test_wa)
 
             if not phone:
                 _logger.warning("Invalid phone number for partner ID %s , name %s , %s", partner.id,partner.name,phone_number)
