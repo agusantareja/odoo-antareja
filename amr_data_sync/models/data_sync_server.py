@@ -10,13 +10,14 @@ _logger = logging.getLogger(__name__)
 
 class ExternalServerSync(models.Model):
     _name = 'external.server.sync'
+    _description = 'External Server Sync Configuration'
 
     active = fields.Boolean(default=True)
     name = fields.Char()
     app_name = fields.Char("Application Name")
 
     odoo_server_db = fields.Char()
-    odoo_server_uid = fields.Integer(readonly=True)
+    odoo_server_uid = fields.Integer()
 
     base_url = fields.Char()
     path = fields.Char(default='/api')
@@ -28,8 +29,10 @@ class ExternalServerSync(models.Model):
     basic_auth_username = fields.Char()
     basic_auth_password = fields.Char()
 
-    token_in = fields.Selection([(
-        'header', 'Header'), ('param', 'Parameter'), ('body', 'Body')
+    token_in = fields.Selection([
+        ('header', 'Header'),
+        ('param', 'Parameter'),
+        ('body', 'Body')
     ], default='header')
     token_key = fields.Char(
         default='access_token'
@@ -37,6 +40,9 @@ class ExternalServerSync(models.Model):
     token_value = fields.Char()
 
     # user_id = fields.Many2one('res.users')
+    def get_application_name(self):
+        return self.app_name
+
     def get_endpoint_url(self):
         return f"{self.base_url}{self.path}"
 
@@ -59,19 +65,16 @@ class ExternalServerSync(models.Model):
         return response.json()[0]
 
     def get_db_name(self):
-        url = f"{self.base_url}/api/sync/authenticate"
-        response = requests.post(url, data={
-            'login': self.basic_auth_username,
-            'password': self.basic_auth_password,
-        })
-        response.raise_for_status()
-        json_data = response.json()
-        self.odoo_server_db = json_data.get('db')
-        self.odoo_server_uid = json_data.get('uid')
+        return self.odoo_server_db
+
+    def get_odoo_uid(self):
+        return self.odoo_server_uid
 
     def get_db_name_uid_password(self):
-        if self.odoo_server_db and self.odoo_server_uid:
-            return self.odoo_server_db, self.odoo_server_uid, self.basic_auth_password
+        odoo_server_db = self.get_db_name()
+        odoo_server_uid = self.get_odoo_uid()
+        if odoo_server_db and odoo_server_uid:
+            return odoo_server_db, odoo_server_uid, self.basic_auth_password
         return self.sync_authenticate()
 
     def sync_authenticate(self):

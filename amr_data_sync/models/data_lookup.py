@@ -5,7 +5,7 @@ from odoo import models, fields, _
 
 class ExternalDataLookup(models.Model):
     _name = 'external.data.lookup'
-    _description = 'Lookup display_name to internal data object'
+    _description = 'Configuration Lookup by display_name to internal data object'
     active = fields.Boolean(
         string='Active',
         default=True,
@@ -22,7 +22,7 @@ class ExternalDataLookup(models.Model):
     def action_open_internal(self):
         self.ensure_one()
         return {
-            'name': _('Data Internal Data'),
+            'name': _('Lookup Internal Data'),
             'type': 'ir.actions.act_window',
             'res_model': self.internal_model,
             'res_id': self.internal_id,

@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 class ExternalDataSyncExclude(models.Model):
     _name = 'external.data.sync.exclude'
     _description = """
+Model untuk menyimpan konfigurasi exclude field atau model
     """
 
     active = fields.Boolean(default=True)

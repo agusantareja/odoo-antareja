@@ -67,6 +67,9 @@ class ExternalDataSync(models.Model):
         help="Related data linked to this external data sync record."
     )
 
+    def get_external_application_name(self):
+        return self.external_app_name or (self.server_sync_id and self.server_sync_id.get_application_name()) or None
+
     def create(self, vals_list):
         for vals in vals_list:
             if 'sync_strategy_id' in vals and vals['sync_strategy_id']:
@@ -74,7 +77,7 @@ class ExternalDataSync(models.Model):
                 if not strategy:
                     raise UserError(_("Strategy dengan ID %s tidak ditemukan") % vals['sync_strategy_id'])
                 vals['external_model'] = strategy.external_model
-                vals['external_app_name'] = strategy.external_app_name or strategy.server_sync_id.app_name
+                vals['external_app_name'] = strategy.get_external_application_name()
                 vals['internal_model'] = strategy.internal_model or strategy.external_model
 
             if 'state' not in vals or not vals['state']:

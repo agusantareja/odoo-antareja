@@ -117,7 +117,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="external_data_sync_strategy_action">
-            <field name="name">External Data Sync Strategy</field>
+            <field name="name">Data Sync Strategy</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">external.data.sync.strategy</field>
             <field name="view_mode">tree,form</field>
