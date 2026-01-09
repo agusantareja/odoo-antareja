@@ -1,9 +1,12 @@
+
 from odoo import Command
+from functools import wraps
+
 import logging
 import inspect
 import traceback
-
-from functools import wraps
+import base64
+import binascii
 
 _logger = logging.getLogger(__name__)
 
@@ -18,40 +21,9 @@ def save_call_method(obj, method_name, **kw):
     Deprecated gunakan safe_call_method
     """
     return safe_call_method(obj, method_name, kwargs=kw)
-    # if obj is None or not method_name or not isinstance(method_name, str):
-    #     return None
-    #
-    # method = getattr(obj, method_name, None)
-    # if not callable(method):
-    #     raise AttributeError(f"Callable method '{method_name}' not found on {obj}")
-    #
-    # if not hasattr(obj, method_name):
-    #     raise AttributeError(f"Method {method_name} not found")
-    #
-    # method = getattr(obj, method_name)
-    #
-    # # cek apakah method menerima **kw
-    # signature = inspect.signature(method)
-    # has_var_keyword = any(
-    #     p.kind == p.VAR_KEYWORD
-    #     for p in signature.parameters.values()
-    # )
-    #
-    # if has_var_keyword:
-    #     # method menerima **kwargs
-    #     return method(**kw)
-    # else:
-    #     # method tidak menerima **kwargs
-    #     # Hanya kirim parameter yang cocok
-    #     valid_params = {
-    #         name: kw[name]
-    #         for name in signature.parameters.keys()
-    #         if name in kw
-    #     }
-    #     return method(**valid_params)
 
 
-#def safe_call_method(obj, method_name, *args, **kwargs):
+# def safe_call_method(obj, method_name, *args, **kwargs):
 def safe_call_method(obj, method_name, args=None, kwargs=None):
     """
     Memanggil method pada object secara aman.
@@ -82,8 +54,8 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
     args = args or []
     for name, p in params.items():
         if p.kind in (
-            inspect.Parameter.POSITIONAL_ONLY,
-            inspect.Parameter.POSITIONAL_OR_KEYWORD
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD
         ):
             if args:
                 final_args.append(args[0])
@@ -129,7 +101,7 @@ def ensure_list_create(record_list):
     return [ensure_dict(rec) for rec in record_list]
 
 
-def call_retry(_func=None,*,callback_error_method_name=None):
+def call_retry(_func=None, *, callback_error_method_name=None, ):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -153,7 +125,7 @@ def call_retry(_func=None,*,callback_error_method_name=None):
                 )
 
                 if callback_error_method_name and have_method(self, callback_error_method_name):
-                    return safe_call_method(self, callback_error_method_name,[] ,{
+                    return safe_call_method(self, callback_error_method_name, [], {
                         'args': args,
                         'res_method': res_method,
                         'exception': e,
@@ -167,3 +139,63 @@ def call_retry(_func=None,*,callback_error_method_name=None):
         return decorator
     else:
         return decorator(_func)
+
+
+def is_base64_bytes(b):
+    if not isinstance(b, bytes):
+        return False
+    try:
+        base64.b64decode(b, validate=True)
+        return True
+    except Exception:
+        return False
+
+
+def is_base64_string(s):
+    if not isinstance(s, str):
+        return False
+    try:
+        base64.b64decode(s, validate=True)
+        return True
+    except (binascii.Error, ValueError):
+        return False
+
+
+def normalize_binary(value):
+    """
+    Return base64 string or False
+    """
+    if not value:
+        return False
+
+    # sudah base64 string
+    if isinstance(value, str) and is_base64_string(value):
+        return value
+
+    # binary bytes → convert ke base64
+    if isinstance(value, (bytes, bytearray)):
+        return base64.b64encode(value).decode('utf-8')
+
+    raise ValueError("Unsupported binary format")
+
+
+def serialize_filter(self, for_default=False):
+    self.ensure_one()
+    data = {}
+
+    for field_name, field in self._fields.items():
+        value = getattr(self, field_name)
+        key = f"default_{field_name}" if for_default else field_name
+        if field.type == 'many2many':
+            data[key] = (6, 0, value.ids) if value else []
+        elif field.type == 'many2one':
+            data[key] = value.id if value else None
+        elif field.type == 'one2many':
+            data[key] = [
+                {k: getattr(line, k) for k in line._fields if k != 'id'}
+                for line in value
+            ]
+        else:
+            data[key] = value
+
+    return data
