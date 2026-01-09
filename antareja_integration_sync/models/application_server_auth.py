@@ -43,10 +43,13 @@ class ApplicationServerAuth(models.Model):
         else:
             path_model = get_endpoint_model_name_path(path, model_name)
             params = {}
+            is_single_object = False
             if object_id and isinstance(object_id, int):
                 path_model = f"{path_model}/{object_id}"
+                is_single_object=True
             else:
-                object_id = None
+                if object_id and isinstance(object_id, list):
+                    params['ids'] = str(object_id)
                 if domain:
                     params['domain'] = str(domain)
                 if offset is not None:
@@ -56,13 +59,13 @@ class ApplicationServerAuth(models.Model):
                 if count:
                     params['count'] = True
             if context:
-                    params['context'] = str(context)
+                params['context'] = str(context)
             if fields is not None:
-                    params['fields'] = str(fields)
+                params['fields'] = str(fields)
             response = rec.rest_get(path_model, params=params)
             response.raise_for_status()
             if count:
                 return response.json().get("count", 0)
-            if object_id:
+            if is_single_object:
                 return response.json() or []
             return response.json().get("results", [])
