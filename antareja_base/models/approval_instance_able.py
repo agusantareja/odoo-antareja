@@ -19,7 +19,8 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         compute="compute_approval_instance_id"
     )
     access_approval = fields.Boolean(
-        compute="compute_access_approval"
+        compute="compute_access_approval",
+        search="search_filter_access_approval",
     )
     flag_reject = fields.Boolean()
     note_reject = fields.Text()
@@ -27,6 +28,11 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     def compute_access_approval(self):
         for rec in self:
             rec.access_approval = rec.approval_instance_id.access_approval
+
+    def search_filter_access_approval(self, operator, value):
+        datas = self.search([])
+        ids= [data.id for data in datas if data.access_approval]
+        return [('id','in',ids)]
 
     def action_ensure_approval_instance(self):
         rec = self.ensure_one()
@@ -80,8 +86,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     def get_next_approval_task_line(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
-        return approval_instance and approval_instance.get_next_approval_task_line() or self.env[
-            'cni.approval.transaction'].browse()
+        return approval_instance and approval_instance.get_next_approval_task_line()
 
     def get_users_approval_notification(self, **kwargs):
         return self.get_next_approval_task_line().get_users_approval_notification(**kwargs)
@@ -99,7 +104,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         Approval task as done
         """
         self.ensure_one()
-        self.env['approval.instance'].create_or_get(self).unregister_approval_transaction_task(**kwargs)
+        self.env['approval.instance'].create_or_get(self).unregister_approval_task_line(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
 
     def is_status_waiting_approval(self):

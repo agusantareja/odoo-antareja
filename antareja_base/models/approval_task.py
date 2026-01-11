@@ -1,104 +1,101 @@
-from Tools.scripts.parse_html5_entities import create_dict
+# -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-
-import logging
-
+from odoo.exceptions import UserError, AccessError
 from odoo.models import BaseModel
+from ..tools.utils import have_method
+import logging
 
 _logger = logging.getLogger(__name__)
 
 
-class ApprovalTransactionTask(models.AbstractModel):
-    _name = "approval.transaction.task.able.mixin"
-
-    def done_approval_transaction_task(self, **kwargs):
-        """
-        Approval task as done
-        """
-        self.ensure_one()
-        approval = self.get_approval_transaction_task()
-        if approval:
-            approval.approval_done(**kwargs)
-
-        if kwargs.get("skip_create_approval_log"):
-            return
-        self.create_approval_log(**kwargs)
-
-    def setup_approval_transaction_task(self, **kwargs):
-        """
-        Register to approval task system
-        """
-        self.ensure_one()
-        transaction_id = self.id
-        transaction_model_name = self._name
-        kw = dict(kwargs)
-
-        if 'name' not in kw:
-            kw['name'] = self.display_name
-
-        self.env['approval.task'].approval_setup(
-            transaction_id, transaction_model_name, **kw
-        )
-
-    def get_approval_transaction_task(self):
-        return  self.env['approval.task'].search([
-            ('transaction_id','=',self.id),
-            ('transaction_model_name','=',self._name),
-        ],limit=1)
-
-    def send_notification_approval(self, **kwargs):
-        approval = self.get_approval_transaction_task()
-        if approval:
-            approval.send_notification(**kwargs)
-
-    def create_approval_log(self, **kwargs):
-        self.ensure_one()
-        create_d = dict(kwargs)
-        create_d['transaction_id'] = self.id
-        create_d['transaction_model_name'] = self._name
-        self.env['approval.audit.log'].create_audit_log(**create_d)
-
 class ApprovalTask(models.Model):
     _name = 'approval.task'
-    _inherit = 'approval.transaction.able.mixin'
+    _inherit = 'approval.transaction.view.able.mixin'
     _description = 'This is Approval Task for Approval helper waiting approval'
     _order = 'create_date desc'
     name = fields.Char('Name')
+    document = fields.Char()
     description = fields.Char()
+    url = fields.Char(string="URL")
     date = fields.Datetime(string='Create Time', readonly=True, default=fields.Datetime.now)
-
     transaction_id = fields.Integer(
         'Transaction ID'
     )
     transaction_model_name = fields.Char(
         'Transaction Model Name',
     )
+    company_id = fields.Many2one(
+        'res.company'
+    )
     user_ids = fields.Many2many(
-        'res.users',  'approval_task_users_rel','approval_task_id','user_id',
+        'res.users', 'approval_task_users_rel', 'approval_task_id', 'user_id',
     )
     group_ids = fields.Many2many(
-        'res.groups',  'approval_task_groups_rel','approval_task_id','group_id',
+        'res.groups', 'approval_task_groups_rel', 'approval_task_id', 'group_id',
         help="Groups of users who can approve this task"
     )
-
+    requester_id = fields.Many2one(
+        'res.users', 'Requester',
+        default=lambda self: self.env.user,
+        ondelete='set null',
+        help="User who requested the approval."
+    )
     user_have_access_to_approval = fields.Boolean(
         string="Can Approve",
         compute='_compute_user_have_access_to_approval',
         search='search_filter_user_have_access_to_approval',
     )
+    transaction_display_name = fields.Char(
+        'Name',
+        compute='_compute_transaction_display_name',
+        compute_sudo = True,
+    )
+    approval_res_id = fields.Integer(
+        'Approval ID'
+    )
+    approval_model = fields.Char(
+        'Approval Model',
+    )
+    approval_instance_id = fields.Many2one(
+        'approval.instance',
+        ondelete='set null',
+    )
+
+    def check_access_rights_and_rule(self, user_and_delegator):
+        rec = self.ensure_one()
+        record = rec.sudo().get_transaction_object()
+        if not record:
+            return False
+        can_access = False
+        for user in user_and_delegator:
+            try:
+                record_check = record.with_user(user)
+                record_check.check_access_rights('read')
+                record_check.check_access_rule('read')
+                return True
+            except AccessError:
+                can_access = False
+
+        return can_access
 
     def _compute_user_have_access_to_approval(self):
         """Hitung apakah user login punya akses approve/reject."""
         current_user = self.env.user
         for rec in self:
-            rec.user_have_access_to_approval = current_user.id in rec.get_users().ids
+            rec.user_have_access_to_approval = current_user.id in rec.get_users_for_approval().ids
 
     def search_filter_user_have_access_to_approval(self, operator, value):
         current_uid = self.env.user.id
         cr = self._cr
         ids = set()
-
+        delegators = self.env.user.get_delegators()
+        if delegators:
+            user_and_delegator = self.env.user | delegators
+            user_filter = f"IN ({', '.join(str(d.id) for d in user_and_delegator)})"
+        else:
+            user_and_delegator = self.env.user
+            user_filter = f"= {current_uid}"
         # CASE: Multi User (M2M)
         if 'user_ids' in self._fields:
             rel_table = self._fields['user_ids'].relation
@@ -106,8 +103,8 @@ class ApprovalTask(models.Model):
             col_user = self._fields['user_ids'].column2
             cr.execute(f"""
                    SELECT {col_this} FROM {rel_table}
-                   WHERE {col_user} = %s
-               """, (current_uid,))
+                   WHERE {col_user} {user_filter}
+               """)
             ids.update(r[0] for r in cr.fetchall())
 
         # CASE: Multi Group (M2M)
@@ -119,11 +116,15 @@ class ApprovalTask(models.Model):
                    SELECT DISTINCT mg.{col_this}
                    FROM {rel_table} mg
                    JOIN res_groups_users_rel gu ON gu.gid = mg.{col_group}
-                   WHERE gu.uid = %s
+                   WHERE gu.uid {user_filter}
                """, (current_uid,))
             ids.update(r[0] for r in cr.fetchall())
         if (operator == '=' and value) or (operator == '!=' and not value):
-            return [('id', 'in', list(ids))]
+            if ids and self.env.context.get('__transaction_data_check_access_rights_and_rule'):
+                ids = [rec.id for rec in self.browse(list(ids)) if rec.check_access_rights_and_rule(user_and_delegator)]
+            else:
+                ids = list(ids)
+            return [('id', 'in', ids)]
         else:
             return [('id', 'not in', list(ids))]
 
@@ -131,7 +132,7 @@ class ApprovalTask(models.Model):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
         users = self.env['res.users'].browse()
-        if  self.user_ids:
+        if self.user_ids:
             users |= self.user_ids
 
         if self.group_ids:
@@ -143,28 +144,40 @@ class ApprovalTask(models.Model):
         if not self.transaction_id or not self.transaction_model_name:
             return None
 
-        if self.transaction_id :
+        if self.transaction_id:
             return self.env[self.transaction_model_name].browse(self.transaction_id)
 
         return self.env[self.transaction_model_name].browse()
 
     def approval_done(self, **kwargs):
-        self.unlink()
+        if self:
+            records = self
+        else:
+            transaction_id = kwargs.get('transaction_id')
+            transaction_model_name = kwargs.get('transaction_model_name')
+            if transaction_model_name and transaction_id:
+                records = self.search([('transaction_id', '=', transaction_id),
+                                       ('transaction_model_name', '=', transaction_model_name), ])
+            else:
+                return True
+        return records.unlink()
 
-    def prepare_data(self,**kwargs):
+    def prepare_data(self, **kwargs):
         data = dict()
+
         def to_list_for_m2m(values):
             if isinstance(values, BaseModel):
                 return values.ids
             elif isinstance(values, list):
                 return values
             return []
-        if 'name' in kwargs:
-            data['name'] = kwargs.get('name')
-        if 'description' in kwargs:
-            data['description'] = kwargs.get('description')
-        if 'date' in kwargs:
-            data['date'] = kwargs.get('date')
+
+        for key in ['name', 'document', 'description', 'url', 'date', 'view_name', 'requester_id', 'company_id',
+                    'approval_res_id', 'approval_model', 'approval_instance_id']:
+            value = kwargs.get(key, None)
+            if value is not None:
+                data[key] = value
+
         if 'user_ids' in kwargs:
             objects = kwargs.get('user_ids')
             if objects:
@@ -177,30 +190,174 @@ class ApprovalTask(models.Model):
                 data['group_ids'] = [(6, 0, to_list_for_m2m(objects))]
         else:
             data['group_ids'] = []
+        if 'approval_instance_id' not in data:
+            approval_instance = kwargs.get('approval_instance', 0)
+            approval_instance and data.update(approval_instance_id=int(approval_instance))
         return data
 
-    def prepare_create(self,**kwargs):
-        return self.prepare_data(**kwargs)
+    def prepare_create(self, **kwargs):
+        transaction_id = kwargs.get('transaction_id')
+        transaction_model_name = kwargs.get('transaction_model_name')
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(
+            transaction_id)
+        kw = self.prepare_data(**kwargs) or {}
+        if transaction_object:
+            if 'name' not in kw and have_method(transaction_object, 'get_internal_number'):
+                kw['name'] = transaction_object.get_internal_number()
 
-    def prepare_write(self,**kwargs):
-        return self.prepare_data(**kwargs)
+            if not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
+                kw['document'] = transaction_object.get_internal_document()
 
-    def approval_setup(self, transaction_id,transaction_model_name,**kwargs):
+            if not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
+                kw['description'] = transaction_object.get_internal_description()
+
+            if not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
+                kw['requester_id'] = transaction_object.get_internal_requester_id()
+
+            if 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
+                kw['url'] = transaction_object.get_internal_url()
+
+            if 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
+                kw['company_id'] = transaction_object.company_id.id
+
+            if not kw.get('transaction_id'):
+                kw['transaction_id'] = transaction_object.id
+
+            if not kw.get('transaction_model_name'):
+                kw['transaction_model_name'] = transaction_object._name
+        else:
+            raise UserError("No Transaction")
+
+        return kw
+
+    def prepare_write(self, **kwargs):
+        transaction_id = kwargs.get('transaction_id')
+        transaction_model_name = kwargs.get('transaction_model_name')
+        transaction_object = kwargs.get('transaction_object') or self.env[transaction_model_name].sudo().browse(
+            transaction_id)
+        kw = self.prepare_data(**kwargs) or {}
+        if self and transaction_object:
+            rec = self.ensure_one()
+            if not rec.name and 'name' not in kw and have_method(transaction_object, 'get_internal_number'):
+                kw['name'] = transaction_object.get_internal_number()
+
+            if not rec.document and not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
+                kw['document'] = transaction_object.get_internal_document()
+
+            if not rec.description and not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
+                kw['description'] = transaction_object.get_internal_description()
+
+            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
+                kw['requester_id'] = transaction_object.get_internal_requester_id()
+
+            if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
+                kw['url'] = transaction_object.get_internal_url()
+
+            if not rec.company_id and 'company_id' not in kw and hasattr(transaction_object, 'company_id'):
+                kw['company_id'] = transaction_object.company_id.id
+
+        if not kw.get('user_ids'):
+            kw['user_ids'] = [(5, 0, 0)]
+        if not kw.get('group_ids'):
+            kw['group_ids'] = [(5, 0, 0)]
+
+        return kw
+
+    def approval_setup(self, transaction_id, transaction_model_name, **kwargs):
         approval_task = self.search([
-            ('transaction_id','=',transaction_id),
-            ('transaction_model_name','=',transaction_model_name),
-        ],limit=1)
+            ('transaction_id', '=', transaction_id),
+            ('transaction_model_name', '=', transaction_model_name),
+        ], limit=1)
+        prepare_dict = dict(kwargs)
+        prepare_dict.update(
+            transaction_id=transaction_id,
+            transaction_model_name=transaction_model_name,
+        )
         if approval_task:
-            write_dict = self.prepare_write(**kwargs)
+            write_dict = approval_task.prepare_write(**prepare_dict)
             approval_task.sudo().write(write_dict)
         else:
-            create_dict = self.prepare_create(**kwargs)
-            create_dict.update(dict(
-                transaction_id=transaction_id,
-                transaction_model_name=transaction_model_name,
-            ))
+            create_dict = self.prepare_create(**prepare_dict)
             approval_task = self.sudo().create(create_dict)
+        if not kwargs.get('skip_send_notification'):
+            approval_task.send_notification(**kwargs)
         return approval_task
+
+    def action_approval_transaction(self):
+        transaction_object = self.get_transaction_object()
+        if transaction_object and have_method(transaction_object, 'action_approval_transaction'):
+            win_dict = transaction_object.action_approval_transaction()
+            if win_dict:
+                return win_dict
+
+        win_dict = super(ApprovalTask, self).action_approval_transaction()
+        rec = self.ensure_one()
+        if rec.view_name:
+            model = self.env['ir.model'].search([('model', '=', rec.transaction_model_name)], limit=1)
+            if rec.group_ids:
+                query = """
+                        SELECT perm_read
+                        FROM ir_model_access 
+                        WHERE model_id = %s
+                        AND group_id IN (SELECT hid FROM res_groups_implied_rel WHERE gid = %s)
+                    """ % (model.id, rec.group_ids.ids[0])
+                self._cr.execute(query)
+                ress = self._cr.fetchall()
+            else:
+                ress = None
+            if ress and any([x[0] for x in ress]):
+                obj_ir_view = self.env["ir.ui.view"]
+                obj_ir_view_browse = obj_ir_view.search(
+                    [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)]
+                    , limit=1)
+                if obj_ir_view_browse:
+                    win_dict['view_id'] = obj_ir_view_browse.id
+
+        return win_dict
+
+    def _compute_transaction_display_name(self):
+        for rec in self:
+            obj = rec.get_transaction_object()
+            rec.transaction_display_name = obj and obj.display_name or rec.name or rec.display_name
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        if users:
+            return users.get_users_for_notification(company=self.company_id)
+        else:
+            return users
+
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        if users:
+            return users.get_users_for_approval(company=self.company_id)
+        else:
+            return users
+
+    def get_users_for_mobile_approval(self, **kwargs):
+        record = self.ensure_one()
+        return record.get_users_for_approval(**kwargs)
+
+    def send_to_mobile_approval(self, **kwargs):
+        pass
 
     def send_notification(self, **kwargs):
         pass
+
+    def check_approval_task_status(self):
+        if not self:
+            return
+        rec = self.ensure_one()
+        if rec.approval_instance_id:
+            rec.approval_instance_id.check_approval_task_status()
+        elif not rec.transaction_model_name or not rec.transaction_id:
+            rec.unlink()
+        else:
+            transaction_object = rec.get_transaction_object()
+            if transaction_object:
+                if have_method(transaction_object, 'check_approval_task_status'):
+                    transaction_object.check_approval_task_status()
+            else:
+                rec.approval_done()
