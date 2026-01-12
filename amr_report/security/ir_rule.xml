@@ -1,0 +1,29 @@
+<odoo>
+    <!-- User: hanya bisa READ record miliknya -->
+    <record id="report_store_rule_read_own" model="ir.rule">
+        <field name="name">Report Generate Store: Read Own Records</field>
+        <field name="model_id" ref="model_report_store"/>
+        <field name="domain_force">
+            [('user_id', '=', user.id)]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Administrator: bisa READ semua -->
+    <record id="report_store_rule_read_admin" model="ir.rule">
+        <field name="name">Report Generate Store: Admin Read All</field>
+        <field name="model_id" ref="model_report_store"/>
+        <field name="domain_force">
+            [(1, '=', 1)]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+</odoo>

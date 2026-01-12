@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_report_delay_admin,access_report_delay admin,model_report_delay,base.group_erp_manager,1,1,1,1
+access_report_delay_user,access_report_delay user,model_report_delay,base.group_user,1,0,0,0
+
+access_report_store_admin,access_report_store admin,model_report_store,base.group_erp_manager,1,1,1,1
+access_report_store_user,access_report_store user,model_report_store,base.group_user,1,1,1,1
+
+access_report_download_wizard_user,access_report_download_wizard user,model_report_download_wizard,base.group_user,1,1,1,1
