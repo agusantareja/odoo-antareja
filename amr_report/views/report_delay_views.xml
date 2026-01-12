@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_report_delay_tree" model="ir.ui.view">
+        <field name="name">report.delay.tree</field>
+        <field name="model">report.delay</field>
+        <field name="arch" type="xml">
+            <tree string="Reprot Delay" >
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="send_email_template_id"/>
+                <field name="report_in_email_attachment"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_report_delay_form" model="ir.ui.view">
+        <field name="name">report.delay.form</field>
+        <field name="model">report.delay</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <form string="Report Delay">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="model_id"/>
+                            <field name="model"/>
+                        </group>
+                        <group>
+                            <field name="send_email_template_id"/>
+                            <field name="send_email_to_partner"/>
+                            <field name="report_in_email_attachment"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_report_delay" model="ir.actions.act_window">
+        <field name="name">Report Delay</field>
+        <field name="res_model">report.delay</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_report_delay"
+              name="Report Delay"
+              parent="base.reporting_menuitem"
+              action="action_report_delay"
+              sequence="10"/>
+</odoo>
