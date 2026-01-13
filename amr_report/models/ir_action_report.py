@@ -3,7 +3,6 @@
 
 from odoo import fields, models
 from odoo.tools.safe_eval import safe_eval
-import time
 import base64
 import mimetypes
 
@@ -24,7 +23,6 @@ class IrActionsReport(models.Model):
             if report.print_report_name and not len(obj) > 1:
                 globals_dict = {
                     "object": obj,
-                    "time": time,
                     "multi": False,
                     'ctx': self.env.context,
                     'context': self.env.context,
@@ -36,7 +34,6 @@ class IrActionsReport(models.Model):
             elif report.print_report_name and len(obj) > 1:
                 globals_dict = {
                     "objects": obj,
-                    "time": time,
                     "multi": False,
                     'ctx': self.env.context,
                     'context': self.env.context,
@@ -45,6 +42,14 @@ class IrActionsReport(models.Model):
                 report_name = safe_eval(report.print_report_name, globals_dict, )
 
         return report_name
+
+    # backward compatibility 1.3
+    def render(self, res_ids, data=None):
+        report_type = self.report_type.lower().replace('-', '_')
+        render_func = getattr(self, '_render_' + report_type, None)
+        if not render_func:
+            return None
+        return render_func(res_ids, data=data)
 
     def report_action(self, docids, data=None, config=True):
         """Return an action of type ir.actions.report.

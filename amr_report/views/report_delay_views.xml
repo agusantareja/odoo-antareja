@@ -4,7 +4,7 @@
         <field name="name">report.delay.tree</field>
         <field name="model">report.delay</field>
         <field name="arch" type="xml">
-            <tree string="Reprot Delay" >
+            <tree string="Report Async" >
                 <field name="name"/>
                 <field name="model_id"/>
                 <field name="send_email_template_id"/>
@@ -18,7 +18,7 @@
         <field name="model">report.delay</field>
         <field name="priority">10</field>
         <field name="arch" type="xml">
-            <form string="Report Delay">
+            <form string="Report Async">
                 <sheet>
                     <group>
                         <group>
@@ -27,6 +27,7 @@
                             <field name="model"/>
                         </group>
                         <group>
+                            <field name="next_action_id" domain="[('model_id','=',model_id)]"/>
                             <field name="send_email_template_id"/>
                             <field name="send_email_to_partner"/>
                             <field name="report_in_email_attachment"/>
@@ -38,13 +39,13 @@
     </record>
 
     <record id="action_report_delay" model="ir.actions.act_window">
-        <field name="name">Report Delay</field>
+        <field name="name">Report Async</field>
         <field name="res_model">report.delay</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <menuitem id="menu_report_delay"
-              name="Report Delay"
+              name="Report Async"
               parent="base.reporting_menuitem"
               action="action_report_delay"
               sequence="10"/>

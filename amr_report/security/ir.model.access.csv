@@ -5,3 +5,5 @@ access_report_delay_user,access_report_delay user,model_report_delay,base.group_
 
 access_report_store_admin,access_report_store admin,model_report_store,base.group_erp_manager,1,1,1,1
 access_report_store_user,access_report_store user,model_report_store,base.group_user,1,1,1,1
+
+access_report_download_wizard_user,access_report_download_wizard user,model_report_download_wizard,base.group_user,1,1,1,1

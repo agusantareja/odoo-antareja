@@ -59,7 +59,7 @@ class ReportGenerateStoreWizardMixin(models.AbstractModel):
 class ReportStore(models.Model):
     _name = 'report.store'
     _inherit = 'report.download.attachment.mixin'
-    _description = 'Report Store'
+    _description = 'Report Async Store'
 
     name = fields.Char('Name')
     user_id = fields.Many2one(
@@ -95,13 +95,18 @@ class ReportStore(models.Model):
     error_message = fields.Char()
     error_trace = fields.Text()
     last_call = fields.Datetime()
-    next_call = fields.Datetime(default=lambda self: fields.Datetime.now() + timedelta(minutes=1))
+    next_call = fields.Datetime(default=lambda self: fields.Datetime.now() + timedelta(seconds=10))
     send_email_report = fields.Boolean(
         string="Send Email",
         help="Send email with link to report, when it is ready",
+        readonly=True
+    )
+    next_action = fields.Boolean(
+        string="Next Action",
+        help="Execute Next Action when done generate report",
+        readonly=True
     )
     generated_at = fields.Datetime(
-        default=fields.Datetime.now,
         readonly=True
     )
     parameter_json = fields.Text('Parameter JSON')
@@ -230,10 +235,10 @@ class ReportStore(models.Model):
             """
             if '___model_name' in obj:
                 ids = obj.get('___ids', [])
-                uid = obj.get('___uid')
+                # uid = obj.get('___uid')
                 model = self.env[obj['___model_name']]
-                if uid != self._uid:
-                    model = model.with_user(uid)
+                # if uid != self._uid:
+                #     model = model.with_user(uid)
                 return model.browse(ids)
             return obj
 
@@ -248,44 +253,46 @@ class ReportStore(models.Model):
             context['force_company'] = self.company_id.id
         if self.user_id.company_ids:
             context['allowed_company_ids'] = self.user_id.company_ids.ids
-        env = self.report_id.with_context(context).env
-        if self.user_id and self._uid != self.user_id.id:
-            env = env.with_user(self.user_id)
-        report = self.report_id.with_env(env)
+        report = self.report_id.with_user(self.user_id).with_context(context)
+        # if self.user_id and self._uid != self.user_id.id:
+        #     env = env.with_user(self.user_id)
+        #report = self.report_id.with_env(env)
         attachment_dict = report.render_prepare_attachment(docids, data=data)
         attachment_dict.update(
             res_model=self._name,
             res_id=self.id
         )
         self.attachment_id = self.env['ir.attachment'].sudo().create(attachment_dict)
-        # partners = self.report_id.get_partner
-        self.recipient_ids and self._send_email()
-        server_action = report.next_action_id
-        server_action and server_action.run()
+        self._send_email()
+        self._next_action(parameters)
 
     def action_send_email(self):
-        self._send_email()
+        parameters = self.get_parameter()
+        docids = parameters.get('docids') or []
+        self._send_email(docids,raise_exception=True)
 
-    def _send_email(self, docids=None):
-        template = self.report_id.send_email_template_id or self.env.ref("amr_report.report_delivery")
-        email_values = {'recipient_ids': self.recipient_ids.ids}
-        if self.report_id.report_in_email_attachment:
-            email_values['attachment_ids'] = self.attachment_id.ids
 
-        rec_id = None
-        if 'ir.attachment' == template.model:
-            rec_id = self.attachment_id.id
-        elif 'report.store' == template.model:
-            rec_id = self.id
-        elif docids and self.report_id.model == template.model:
-            if isinstance(docids, int):
-                rec_id = docids
-            elif isinstance(docids, list) and len(docids) == 1:
-                rec_id = docids[0]
+    def action_next_action(self):
+        parameters = self.get_parameter()
+        self._next_action(parameters, raise_exception=True)
 
-        rec_id and template.send_mail(
-            rec_id,
-            email_values=email_values,
-            notif_layout="mail.mail_notification_light",
-            force_send=False
-        )
+
+    def _send_email(self, docids=None,raise_exception=False):
+        if self.recipient_ids:
+            try:
+                email_values = {'recipient_ids': self.recipient_ids.ids}
+                self.report_id.report_delay_id.send_email(docids,self.attachment_id,email_values=email_values)
+                self.send_email_report=False
+            except Exception:
+                if raise_exception:
+                    raise
+                self.send_email_report=True
+
+    def _next_action(self, parameters,raise_exception=False):
+        try:
+            self.report_delay_id.next_action(parameters)
+            self.next_action = False
+        except Exception:
+            if raise_exception:
+                raise
+            self.next_action = True
