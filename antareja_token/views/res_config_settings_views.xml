@@ -5,14 +5,6 @@
         <field name="inherit_id" ref="antareja_base.view_config_settings_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@id='antareja_token_description']" position="after">
-                <!--                <span class="o_form_label">Format</span>-->
-                <!--                                        <div class="text-muted">-->
-                <!--                                            Set the paper format of printed documents</div>-->
-                <!--                <div class="content-group">-->
-                <!--                                            <div class="mt16 row">-->
-                <!--                                                <button name="open_company" icon="fa-arrow-right" type="object" string="Update Info" class="btn-link"/>-->
-                <!--                                            </div>-->
-                <!--                                        </div>-->
                 <div class="mt16 row">
                     <label for="antareja_token_secret" class="col-3 col-lg-3 o_light_label"/>
                     <field name="antareja_token_secret" nolabel="1"/>
