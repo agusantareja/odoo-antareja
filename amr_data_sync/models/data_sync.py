@@ -2,6 +2,8 @@
 
 import ast
 import datetime
+from email.policy import default
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from ..tools.utils import is_callable_method
@@ -58,7 +60,7 @@ class ExternalDataSync(models.Model):
     data_json = fields.Text()
     error_info = fields.Text()
 
-    next_processing_datetime = fields.Datetime()
+    next_processing_datetime = fields.Datetime(default=fields.Datetime.now)
     last_processing_datetime = fields.Datetime()
 
     related_ids = fields.One2many(
@@ -169,7 +171,8 @@ class ExternalDataSync(models.Model):
         return related.get_data_relation()
 
     def data_from_external(self, item, sync_strategy):
-
+        if not sync_strategy:
+            raise UserError("Sync Strategy Not found")
         external_odoo_id = item.get('id')
         external_last_update = item.get('write_date')
         display_name = item.get('display_name')
@@ -202,14 +205,13 @@ class ExternalDataSync(models.Model):
                 external_odoo_id=external_odoo_id,
                 sync_strategy_id=sync_strategy.id,
             )
-            if sync_strategy:
-                internal = sync_strategy.internal_lookup(item)
-                if internal:
-                    input_dict.update(
-                        internal_odoo_id=internal.id,
-                        state='done',
-                        last_success=fields.Datetime.now(),
-                    )
+            internal = sync_strategy.internal_lookup(item)
+            if internal:
+                input_dict.update(
+                    internal_odoo_id=internal.id,
+                    state='done',
+                    last_success=fields.Datetime.now(),
+                )
             existing = self.create([input_dict])[0]
 
         return existing
@@ -389,7 +391,7 @@ class ExternalDataSync(models.Model):
     def action_open_internal(self):
         self.ensure_one()
         return {
-            'name': _('Data Internal Data'),
+            'name': _('Internal Data'),
             'type': 'ir.actions.act_window',
             'res_model': self.internal_model,
             'res_id': self.internal_odoo_id,
@@ -405,13 +407,17 @@ class ExternalDataSync(models.Model):
         to_process = self.search(
             [('state', '!=', 'done'),
              '|',
-             ('last_processing_datetime', '<=', fields.Datetime.now()),
-             ('last_processing_datetime', '=', False)],
-            limit=limit, order='last_processing_datetime asc,id asc'
+             ('next_processing_datetime', '<=', fields.Datetime.now()),
+             ('next_processing_datetime', '=', False)],
+            limit=limit, order='next_processing_datetime asc,last_processing_datetime asc, id '
         )
         for t in to_process:
             try:
+                t.write({
+                    'last_processing_datetime': fields.Datetime.now(),
+                })
                 t.process_data()
+                self._cr.commit()
             except Exception:
                 self._cr.rollback()
                 t.write({
@@ -420,6 +426,7 @@ class ExternalDataSync(models.Model):
                     'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
+
             if fields.Datetime.now() > limit_time:
                 break
 

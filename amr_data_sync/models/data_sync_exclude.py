@@ -21,6 +21,20 @@ Model untuk menyimpan konfigurasi exclude field atau model
     model = fields.Char(required=True)
     fields = fields.Char()
 
+    def get_exclude_all_fields(self):
+        env = self.env
+        exclude_fields = []
+        for exclude in self.search([('exclude', '=', 'all_fields'), ('active', '=', True)]):
+            try:
+                if exclude.model in env:
+                    model = env[exclude.model]
+                    if model._abstract:
+                        exclude_fields.extend(model._fields.keys())
+            except Exception as e:
+                _logger.error(f"Error evaluating exclude fields for model: {e}")
+                continue
+        return exclude_fields
+
     def get_exclude_fields(self, model_name):
         env = self.env
         exclude_fields = []

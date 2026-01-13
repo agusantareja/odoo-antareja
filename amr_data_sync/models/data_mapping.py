@@ -4,7 +4,7 @@ from odoo import models, fields
 from datetime import datetime
 from odoo.tools.safe_eval import safe_eval
 
-from ..tools.utils import *
+from ..tools.utils import is_callable_method,has_kwargs
 
 
 class ExternalDataMapping(models.Model):
@@ -52,8 +52,8 @@ class ExternalDataMapping(models.Model):
         ('date', 'Date'),
         ('datetime', 'Datetime')
     ], string='Constant Value Type', )
-
     constant_simple_value = fields.Boolean(compute='_compute_constant_simple_value')
+    constant_value = fields.Char()
 
     def _compute_constant_simple_value(self):
         for rec in self:
@@ -62,7 +62,6 @@ class ExternalDataMapping(models.Model):
             else:
                 rec.constant_simple_value = False
 
-    constant_value = fields.Char()
 
     def mapping_data(self, external_data, model=None):
         if self.mapping_strategy == 'field_mapping':
