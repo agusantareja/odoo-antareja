@@ -5,7 +5,6 @@ from odoo.http import content_disposition, request, route, serialize_exception
 from odoo.tools import html_escape
 from odoo.tools.safe_eval import safe_eval
 from odoo.addons.web.controllers import main as report
-import time
 import json
 
 
@@ -36,21 +35,7 @@ class ReportController(report.ReportController):
                     del data["context"]["lang"]
                 context.update(data["context"])
             xls = report.with_context(context).render_xls(docids, data=data)[0]
-            report_name = report.report_file
-            if report.print_report_name and docids:
-                if not len(docids) > 1:
-                    obj = request.env[report.model].browse(docids[0])
-                    report_name = safe_eval(
-                        report.print_report_name,
-                        {"object": obj, "time": time, "data": data, "ctx": context}
-                    )
-                else:
-                    obj = request.env[report.model].browse(docids)
-                    report_name = safe_eval(
-                        report.print_report_name,
-                        {"objects": obj, "time": time, "data": data, "ctx": context, 'multi': True}
-                    )
-
+            report_name = report.get_report_filename(docids, data=data)
             xlshttpheaders = [
                 ("Content-Type", "application/vnd.ms-excel",),
                 ("Content-Length", len(xls)),

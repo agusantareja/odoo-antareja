@@ -8,7 +8,10 @@ from odoo.exceptions import UserError
 class ReportAction(models.Model):
     _inherit = "ir.actions.report"
 
-    report_type = fields.Selection(selection_add=[("xls", "xls")])
+    report_type = fields.Selection(
+        selection_add=[("xls", "XLS")],
+        ondelete={"xls": "set default"}
+    )
 
     def is_download_form(self, data={}):
         if self.report_type == 'xls':
@@ -16,13 +19,9 @@ class ReportAction(models.Model):
         return super(ReportAction, self).is_download_form(data=data)
 
     @api.model
-    def render_xls(self, docids, data):
+    def _render_xls(self, docids, data):
         report_model_name = "report.%s" % self.report_name
         report_model = self.env.get(report_model_name)
         if report_model is None:
             raise UserError(_("%s model was not found") % report_model_name)
-        return report_model.with_context(
-            active_model=self.model
-        ).create_xls_report(  # noqa
-            docids, data
-        )
+        return report_model.with_context(active_model=self.model).sudo(False).create_xls_report(docids, data)
