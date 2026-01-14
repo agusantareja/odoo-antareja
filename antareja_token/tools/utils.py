@@ -31,7 +31,7 @@ def custom_check_security(self):
     if request and request.httprequest and request.httprequest.path:
         path = request.httprequest.path
         if path and self.uid and not self.session_token:
-            _logger.warning("Session tanpa token dianggap expired API route %s", path)
+            _logger.warning("Session tanpa token dianggap expired (API route %s)", path)
             raise SessionExpiredException("Session expired")
 
     _original_check_security(self)
@@ -116,9 +116,9 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
                 # ambbil semua kemungkin token yang ada
                 token_list = [get_bearer_token()]
                 header_names = []
-                if header_names:
+                if header_name:
                     if isinstance(header_name,str):
-                        header_names=[header_names]
+                        header_names=[header_name]
                     elif isinstance(header_name,(list, tuple)):
                         header_names =header_name
                 for name in header_names:
