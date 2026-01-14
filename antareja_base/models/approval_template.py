@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, tools
+from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import *
+from odoo.tools import float_compare
 from odoo.tools.safe_eval import safe_eval, test_python_expr
+from pytz import timezone
+from ..tools.utils import safe_call_method
 
-from ..tools.utils import *
 import base64
 import logging
-
-from pytz import timezone
 
 _logger = logging.getLogger(__name__)
 

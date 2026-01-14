@@ -16,5 +16,4 @@ from . import approval_instance
 from . import approval_task_line
 from . import approval_instance_able
 from . import approval_task
-from . import delay_call
 from . import res_config_settings
