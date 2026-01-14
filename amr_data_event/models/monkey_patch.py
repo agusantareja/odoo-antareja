@@ -49,7 +49,7 @@ EXCLUDE_PREFIXES = (
 
 # simpan reference original method
 _original_create = BaseModel.create
-_original_write = BaseModel._write
+_original_write = BaseModel.write
 _original_unlink = BaseModel.unlink
 
 
@@ -89,5 +89,5 @@ def event_unlink(self):
 
 
 BaseModel.create = event_create
-BaseModel._write = event_write
+BaseModel.write = event_write
 BaseModel.unlink = event_unlink
