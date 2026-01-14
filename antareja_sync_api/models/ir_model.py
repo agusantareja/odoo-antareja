@@ -48,8 +48,11 @@ class IrModel(models.Model):
     def excluded_read_sync_api(self):
         return self.model in EXCLUDE_MODELS or self.model.startswith(EXCLUDE_PREFIXES)
 
-    @api.model
     def is_read_sync_api(self):
+        return True
+
+    @api.model
+    def sudo_read_sync_api(self):
         return True
 
     def readable_fields(self, fields):
