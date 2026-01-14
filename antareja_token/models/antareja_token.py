@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import logging
-
 from odoo import models, fields, api
 from datetime import datetime, timedelta
+from jwt import InvalidTokenError
+
+import logging
 import jwt
 import time
-from jwt import ExpiredSignatureError, InvalidTokenError, InvalidAudienceError
-from odoo.exceptions import AccessDenied
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
-
-
-# try:
-#     from oauthlib import common as oauthlib_common
-# except ImportError:
-#     _logger.warning(
-#         'OAuth library not found. If you plan to use it, '
-#         'please install the oauth library from '
-#         'https://pypi.python.org/pypi/oauthlib')
 
 
 class AccessToken(models.Model):
@@ -30,21 +19,27 @@ class AccessToken(models.Model):
     expires = fields.Integer('Expires (Epoc)')
     retention = fields.Integer('Retention (Epoc)')
 
+    @api.model
     def get_expires_in(self):
         return int(self.env['ir.config_parameter'].sudo().get_param('antareja_token.expires_in')) or (60 * 60 * 24)
 
+    @api.model
     def get_retention_in(self):
         return int(self.env['ir.config_parameter'].sudo().get_param('antareja_token.retention_in')) or (60 * 60 * 4)
 
+    @api.model
     def get_secret(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja_token.secret')
 
+    @api.model
     def get_issuer(self):
         return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
+    @api.model
     def get_audience(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja.application_name')
 
+    @api.model
     def get_algorithm(self):
         return 'HS256'
 
@@ -54,7 +49,9 @@ class AccessToken(models.Model):
         access_token, payload = self.generate_token(user, expires_in=expires_in)
         refresh_token = self.create_refresh_token(user)
         return {
-            "access_token": access_token,
+            'access_token': access_token,
+            'token_type': 'Bearer',
+            'expires_in': expires_in,
             "refresh_token": refresh_token
         }
 
@@ -92,6 +89,7 @@ class AccessToken(models.Model):
         expire = int(time.time()) + expires_in
         payload = {
             'uid': user.id,
+            'user_id': user.login,
             'sub': user.login,
             'email': user.email,
             'db': self.env.cr.dbname,
@@ -118,12 +116,15 @@ class AccessToken(models.Model):
                 }
             )
             return payload
-        except InvalidAudienceError:
-            return None
-        except ExpiredSignatureError:
-            return None
+        # except InvalidIssuerError:
+        #     pass
+        # except InvalidAudienceError:
+        #     pass
+        # except ExpiredSignatureError:
+        #     pass
         except InvalidTokenError:
-            return None
+            pass
+        return None
 
     def client_token_validation(self,token):
         return False
