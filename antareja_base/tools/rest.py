@@ -170,7 +170,7 @@ def eval_json_to_data(modelname, json_data, create=True):
     return values
 
 
-def object_read(model_name, params, status_code, filter_fields=None, __from_sync_data_api=True):
+def object_read(model_name, params, status_code, filter_fields=None, __from_sync_data_api=True, sudo_read=False):
     domain = []
     fields = []
     offset = 0
@@ -186,6 +186,8 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         context.update({'__from_sync_data_api': __from_sync_data_api})
 
     model = request.env[model_name].with_context(context)
+    if sudo_read:
+        model = model.sudo(sudo_read)
 
     if 'count' in params:
         count = ast.literal_eval(params['count']) or False
@@ -209,6 +211,7 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
 
     if filter_fields:
             fields = filter_fields(model_name, fields)
+
     try:
         data = model.search_read(
             domain=domain, fields=fields, offset=offset, limit=limit, order=order
@@ -230,7 +233,7 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
             500, "Process error please contact Administrator", "Error: %s" % str(e)
         )
 
-def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True):
+def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True, sudo_read=False):
     fields = []
     if 'fields' in params:
         fields += ast.literal_eval(params['fields'])
@@ -252,6 +255,8 @@ def object_read_one(model_name, rec_id, params, status_code, filter_fields=None,
         fields = filter_fields(model_name, fields)
 
     model = request.env[model_name].with_context(context)
+    if sudo_read:
+        model = model.sudo(sudo_read)
     try:
         data = model.search_read(domain=[('id', '=', rec_id)], fields=fields)
         if data:
