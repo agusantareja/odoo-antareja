@@ -22,7 +22,7 @@ class JSONEncoder(json.JSONEncoder):
             return Datetime.to_string(obj)
         if isinstance(obj, date):
             return Date.to_string(obj)
-        return json.JSONEncoder.default(self, obj)
+        return super().default(obj)
 
 
 def get_body_json():
@@ -55,7 +55,7 @@ def invalid_response(status, error, info=""):
         content_type='application/json; charset=utf-8',
         response=json.dumps({
             'error': error,
-            'error_descrip': info,
+            'error_description': info,
         }),
     )
 
@@ -193,7 +193,7 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         count = False
 
     if count:
-        data_count = model.search_count(domain=domain)
+        data_count = model.search_count(domain)
         return valid_response(status=status_code, data={
             'count': data_count,
         })

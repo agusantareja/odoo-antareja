@@ -1,6 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_approval_audit_log,approval.audit.log,model_approval_audit_log,base.group_user,1,0,1,0
-access_approval_task,approval.task.audit.log,model_approval_task,base.group_user,1,1,1,1
+access_approval_audit_log_user,approval.task.audit.log user,model_approval_task,base.group_user,1,1,1,0
+access_approval_audit_log_admin,approval.task.audit.log,model_approval_task,base.group_user,1,1,1,0
 
 access_approval_template_read_user,Read Approval Template,model_approval_template,base.group_user,1,0,0,0
 access_approval_template_system_user,CRUD Approval Template,model_approval_template,base.group_system,1,1,1,1
@@ -9,11 +9,11 @@ access_approval_instance_user,Approval Instance,model_approval_instance,base.gro
 access_approval_task_line_user,Approval Task Line,model_approval_task_line,base.group_user,1,1,1,1
 
 access_application_server_system_user,CRUD Server,model_application_server,base.group_system,1,1,1,1
-access_application_server_user,CRUD Server ,model_application_server,base.group_user,1,0,0,0
+access_application_server_user,Read Server ,model_application_server,base.group_user,1,0,0,0
 access_application_server_auth_system_user,CRUD Auth,model_application_server_auth,base.group_system,1,1,1,1
-access_application_server_auth_user,CRUD Auth,model_application_server_auth,base.group_user,1,0,0,0
+access_application_server_auth_user,Read Auth,model_application_server_auth,base.group_user,1,0,0,0
 access_application_server_path_system_user,CRUD Path,model_application_server_path,base.group_system,1,1,1,1
-access_application_server_path_user,CRUD Path,model_application_server_path,base.group_user,1,0,0,0
+access_application_server_path_user,Read Path,model_application_server_path,base.group_user,1,0,0,0
 
-access_api_call_retry,approval.task.audit.log,model_api_call_retry,base.group_user,1,1,1,1
-access_api_call_log,approval.audit.log,model_api_call_log,base.group_user,1,0,1,0
+access_api_call_retry,api.call.retry,model_api_call_retry,base.group_user,1,1,1,1
+access_api_call_log,api_call_retry.log Read Create,model_api_call_log,base.group_user,1,0,1,0

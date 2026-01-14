@@ -52,8 +52,8 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
     args = args or []
     for name, p in params.items():
         if p.kind in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD
         ):
             if args:
                 final_args.append(args[0])

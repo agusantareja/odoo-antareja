@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import datetime
-
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-import json
-import traceback
-import logging
-from datetime import datetime, timedelta
 
-from ..tools.utils import safe_call_method
+import logging
 
 _logger = logging.getLogger(__name__)
 

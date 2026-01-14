@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, _
+from odoo import models, fields
+from datetime import timedelta
+from ..tools.utils import safe_call_method
+
 import json
 import logging
-from datetime import timedelta
-from ..tools.utils import safe_call_method, have_method
 
 _logger = logging.getLogger(__name__)
 

@@ -5,7 +5,6 @@ import requests
 import base64
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
 
