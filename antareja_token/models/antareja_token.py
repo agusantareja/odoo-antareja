@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from odoo import models, fields, api
+from datetime import datetime, timedelta
+from jwt import InvalidTokenError
+
 import logging
 import jwt
 import time
-
-from odoo import models, fields
-from datetime import datetime, timedelta
-from jwt import InvalidTokenError
 
 _logger = logging.getLogger(__name__)
 
@@ -19,21 +19,27 @@ class AccessToken(models.Model):
     expires = fields.Integer('Expires (Epoc)')
     retention = fields.Integer('Retention (Epoc)')
 
+    @api.model
     def get_expires_in(self):
         return int(self.env['ir.config_parameter'].sudo().get_param('antareja_token.expires_in')) or (60 * 60 * 24)
 
+    @api.model
     def get_retention_in(self):
         return int(self.env['ir.config_parameter'].sudo().get_param('antareja_token.retention_in')) or (60 * 60 * 4)
 
+    @api.model
     def get_secret(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja_token.secret')
 
+    @api.model
     def get_issuer(self):
         return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
+    @api.model
     def get_audience(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja.application_name')
 
+    @api.model
     def get_algorithm(self):
         return 'HS256'
 
