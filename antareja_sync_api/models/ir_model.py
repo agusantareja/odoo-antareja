@@ -2,9 +2,51 @@
 
 from odoo import api, models
 
+EXCLUDE_MODELS = {
+    # Technical
+    'ir.model',
+    'ir.model.fields',
+    'ir.cron',
+    'ir.ui.view',
+    'ir.actions.act_window',
+
+    # Security
+    'res.users',
+    'res.groups',
+    'res.company',
+    'res.config.settings',
+    'user.delegate',
+    'antareja.token',
+
+    # Messaging
+    'mail.message',
+    'mail.followers',
+    'mail.activity',
+
+    'send_message.email',
+    'api.call.retry',
+}
+
+EXCLUDE_PREFIXES = (
+    'ir.',
+    'bus.',
+    'base.',
+    'mail.',
+    'web.',
+    'internal.data.',
+    'external.data.',
+    'application.',
+    'approval.',
+    'antareja.',
+    'notification.'
+    'whatsapp.'
+)
 
 class IrModel(models.Model):
     _inherit = 'ir.model'
+
+    def excluded_read_sync_api(self):
+        return self.model in EXCLUDE_MODELS or self.model.startswith(EXCLUDE_PREFIXES)
 
     @api.model
     def is_read_sync_api(self):

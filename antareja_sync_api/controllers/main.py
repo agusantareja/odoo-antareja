@@ -29,7 +29,7 @@ class ControllerSync(http.Controller):
         Model_id = Model.sudo().search([('model', '=', model_name)], limit=1)
         if not Model_id:
             return modal_not_found(model_name)
-        if Model_id.is_read_sync_api():
+        if Model_id.excluded_read_sync_api() or not Model_id.is_read_sync_api():
             return rest_api_unavailable(model_name)
         if id:
             return object_read_one(model_name, id, kwargs, status_code=200, filter_fields=readable_fields)
