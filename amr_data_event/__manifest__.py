@@ -14,5 +14,10 @@
     'version': '13.0.0.0.0',
     'depends': ['base'],
     # always loaded
-    'data': [],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/data_event_config_views.xml',
+        'views/data_event_views.xml',
+        'views/menuitem.xml',
+    ],
 }
