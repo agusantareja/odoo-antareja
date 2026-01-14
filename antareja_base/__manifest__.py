@@ -17,7 +17,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
-    'version': '13.0.0.0.9',
+    'version': '13.0.0.0.10',
     # any module necessary for this one to work correctly
     'depends': ['base', 'base_setup', 'mail'],
     # always loaded
@@ -31,6 +31,7 @@
         'views/approval_template_views.xml',
         'views/approval_instance_views.xml',
         'views/res_config_settings_views.xml',
+        'views/menuitem.xml',
         'wizard/popup_reject.xml',
     ],
     'demo': [],

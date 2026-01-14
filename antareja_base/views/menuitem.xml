@@ -1,0 +1,42 @@
+<odoo>
+    <menuitem id="base_parent_menu"
+                  name="Application Addons"
+                  parent="base.menu_custom"
+                  sequence="10"
+    />
+    <menuitem id="base_application_menu"
+                  name="Application"
+                  parent="base_parent_menu"
+                  sequence="12"
+    />
+    <menuitem id="base_notification_menu"
+                  name="Notification"
+                  parent="base_parent_menu"
+                  sequence="14"
+    />
+    <menuitem id="base_task_approval_menu"
+                  name="Task Approval"
+                  parent="base_parent_menu"
+                  sequence="16"
+    />
+    <menuitem id="base_reporting_menu"
+                  name="Reporting"
+                  parent="base_parent_menu"
+                  sequence="18"
+    />
+    <menuitem id="base_integration_menu"
+                  name="Integration"
+                  parent="base_parent_menu"
+                  sequence="20"
+    />
+    <menuitem id="base_jwt_token_menu"
+                  name="JWT Token"
+                  parent="base_parent_menu"
+                  sequence="20"
+    />
+    <menuitem id="base_doa_menu"
+                  name="DoA"
+                  parent="base_parent_menu"
+                  sequence="22"
+    />
+</odoo>
