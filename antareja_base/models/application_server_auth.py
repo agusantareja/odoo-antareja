@@ -7,6 +7,27 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+class RemoteModelObject(object):
+
+    def __init__(
+        self,
+        auth,
+        model_name,
+        context = None
+    ):
+        self.auth = auth
+        self.model_name = model_name
+        self.context = context
+
+    def __getattr__(self, method):
+        def delay(*args, **kw):
+            return self.auth.jsonrpc_call(self.model_name,method,args=args,kw=kw)
+        return delay
+
+    def __str__(self):
+        return "RemoteModelObject({})".format(self.model_name)
+
+    __repr__ = __str__
 
 class ApplicationServerAuthRestToken(models.AbstractModel):
     _name = 'application.server.auth.rest.token.mixin'
@@ -20,7 +41,7 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         ('body', 'Body')
     ], default='header')
     rest_token_key = fields.Char(
-        default='access_token'
+        default='basic'
     )
     rest_token = fields.Char()
 
@@ -114,6 +135,15 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
     def get_jsonrpc_path(self):
         return '/jsonrpc'
 
+    @api.model
+    def get_jsonrpc_url(self):
+        return self.rest_url(self.get_jsonrpc_path())
+
+    def jsonrpc_post(self, obj_payload):
+        response = requests.post(self.get_jsonrpc_url(), json=obj_payload)
+        response.raise_for_status()
+        return response.json()
+
     def jsonrpc_authenticate(self):
         db = self.odoo_server_db
         uid = self.odoo_server_uid
@@ -130,7 +160,11 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
                 },
                 "id": 1,
             }
-            res = self.rest_post(self.get_jsonrpc_path(), json=auth_payload).json()
+            # res = self.jsonrpc_post(auth_payload)
+            # url = self.rest_url(self.get_jsonrpc_path())
+            # response = requests.post(url, json=auth_payload)
+            # response.raise_for_status()
+            res = self.jsonrpc_post(auth_payload)
             uid = res.get("result")
         return db, uid, password
 
@@ -157,9 +191,11 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
             "id": 2,
         }
         try:
-            response = self.rest_post(self.get_jsonrpc_path(), json=obj_payload)
-            response.raise_for_status()
-            json_data = response.json()
+            json_data = self.jsonrpc_post(obj_payload)
+            # url = self.rest_url(self.get_jsonrpc_path())
+            # response = requests.post(url, json=obj_payload)
+            # response.raise_for_status()
+            # json_data = response.json()
             if "error" in json_data:
                 raise Exception(f"Odoo Error: {json_data['error']}")
             return json_data.get("result")
@@ -167,6 +203,10 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
             raise Exception(f"Network Error: {str(e)}")
         except Exception as e:
             raise Exception(f"Unexpected Error: {str(e)}")
+
+    @api.model
+    def get_remote_model(self, model,context=None):
+        return RemoteModelObject( model, context)
 
 
 class ApplicationServerAuth(models.Model):

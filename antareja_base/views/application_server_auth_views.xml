@@ -36,7 +36,7 @@
                     </group>
                     <notebook>
                         <page string="Path" attrs="{'invisible':[('auth_type','!=','rest-token')]}">
-                            <field name="application_server_path_ids" context="{'edit_from_parent':True, 'default_application_server_id':parent.id}"/>
+                            <field name="application_server_path_ids" context="{'edit_from_parent':True}"/>
                         </page>
                         <page string="Auth Rest" attrs="{'invisible':[('auth_type','!=','rest-token')]}">
                             <group>
