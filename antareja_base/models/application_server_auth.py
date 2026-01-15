@@ -5,6 +5,7 @@ import requests
 import base64
 import logging
 
+
 _logger = logging.getLogger(__name__)
 
 class RemoteModelObject(object):
@@ -28,6 +29,7 @@ class RemoteModelObject(object):
         return "RemoteModelObject({})".format(self.model_name)
 
     __repr__ = __str__
+
 
 class ApplicationServerAuthRestToken(models.AbstractModel):
     _name = 'application.server.auth.rest.token.mixin'
