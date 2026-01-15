@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="external.data.sync.strategy" id="external_data_sync_strategy_intra_employee">
+    <!--        <field name="name">External Data Process Cron</field>-->
+            <field name="server_sync_id" ref="external_server_sync_intra_employee"/>
+            <field name="external_app_name">hr.cerindocorp.id</field>
+            <field name="external_model">hr.employee</field>
+<!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
+            <field name="external_context">{}</field>
+            <field name="external_fields">name,work_email,work_phone,job_id,department_id,mobile_phone,acting,nip,bank_name,nama_rekening,no_rekening</field>
+            <field name="sync_cron" eval="True"/>
+            <field name="strategy">external_cu</field>
+            <field name="internal_model">hr.employee</field>
+            <field name="internal_lookup_method">internal_lookup_for_employee</field>
+            <field name="internal_process_method">internal_process_for_employee</field>
+            <field name="internal_context">{'employee_id_offset':10000}</field>
+<!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
+        </record>
+    </data>
+</odoo>
