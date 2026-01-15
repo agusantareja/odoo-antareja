@@ -84,6 +84,9 @@ class ExternalDataSync(models.Model):
     )
     sync_cron = fields.Boolean()
 
+    def get_external_application_name(self):
+        return self.server_sync_id.get_application_name() or self.external_app_name
+
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
     def create(self, vals_list):
