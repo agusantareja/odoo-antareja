@@ -8,7 +8,7 @@
     """,
     'author': "Agus Muhammad Ramdan",
     "license": "AGPL-3",
-    'website': "http://www.yourcompany.com",
+    'website': "http://agus.ramdan.tech",
     'category': 'API',
     'version': '13.0.0.0.1',
     'depends': ['base', ],
