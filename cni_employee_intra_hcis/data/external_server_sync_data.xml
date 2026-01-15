@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="external.server.sync" id="external_server_sync_intra_employee">
+            <field name="name">HR Server</field>
+            <field name="application_server_auth_id" ref="antareja_integration_app_hr_cerindocorp.application_server_auth_sync"/>
+<!--            <field name="app_name">intra.cerindocorp.id</field>-->
+<!--            <field name="odoo_server_db"/>-->
+<!--            <field name="base_url">https://hr.cerindocorp.id</field>-->
+<!--            <field name="username">admin</field>-->
+<!--            <field name="password">1</field>-->
+        </record>
+    </data>
+</odoo>
