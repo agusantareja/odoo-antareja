@@ -11,6 +11,7 @@ from datetime import datetime, date
 from odoo.fields import Datetime, Date, Many2many, One2many
 from odoo.http import request
 from odoo.exceptions import AccessError
+
 _logger = logging.getLogger(__name__)
 
 
@@ -210,7 +211,7 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         order = params['order']
 
     if filter_fields:
-            fields = filter_fields(model_name, fields)
+        fields = filter_fields(model_name, fields)
 
     try:
         data = model.search_read(
@@ -233,7 +234,9 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
             500, "Process error please contact Administrator", "Error: %s" % str(e)
         )
 
-def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True, sudo_read=False):
+
+def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True,
+                    sudo_read=False):
     fields = []
     if 'fields' in params:
         fields += ast.literal_eval(params['fields'])
@@ -268,7 +271,6 @@ def object_read_one(model_name, rec_id, params, status_code, filter_fields=None,
         return invalid_response(
             403, "you don't have access to read records for " "this model", "Error: %s" % e.name
         )
-
 
 
 def object_create_one(model_name, data, status_code):
