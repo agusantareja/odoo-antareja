@@ -178,8 +178,7 @@ class ExternalDataSync(models.Model):
 
     def get_mapping_fields(self):
         mapping_list = self.line_mapping_ids.filtered(
-            lambda m: m.internal_field and m.mapping_strategy == 'field_mapping'
-        )
+            lambda m: m.internal_field and m.mapping_strategy == 'field_mapping')
         return {
             m.internal_field: m for m in mapping_list
         }
@@ -197,7 +196,7 @@ class ExternalDataSync(models.Model):
         exclude_fields.extend(env['mail.thread']._fields.keys())
         exclude_fields.extend(env['mail.activity.mixin']._fields.keys())
         exclude_fields.extend(env['mail.blacklist']._fields.keys())
-
+        exclude_fields.extend(env['external.data.sync.exclude'].get_exclude_all_fields())
         return exclude_fields
 
     def get_internal_lookup_fields(self):
@@ -228,22 +227,41 @@ class ExternalDataSync(models.Model):
         return result and result[0]
 
     def internal_lookup(self, item):
+
         Model = self.env[self.internal_model].sudo()
         if is_callable_method(Model, self.internal_lookup_method):
             method = getattr(Model, self.internal_lookup_method)
             return method(item)
 
+        external_id = None
+        display_name = None
+        if isinstance(item, dict):
+            external_id = item.get('id')
+            display_name = item.get('display_name')
+        elif isinstance(item, list) and len(item) > 1 and isinstance(item[0], int) and isinstance(item[1], str):
+            external_id = item[0]
+            display_name = item[1]
+        elif isinstance(item, int):
+            external_id = item
+
+        data_lookup = self.env['external.data.lookup'].lookup_internal(
+            self.external_app_name,self.external_model,self.internal_model,
+            external_id,display_name
+        )
+
+        if data_lookup:
+            return data_lookup
+
         internal_lookup_fields = self.get_internal_lookup_fields()
-        if not internal_lookup_fields:
-            internal_lookup_fields = ['name']
-
-        _fields = Model._fields
-        domain = []
-        for f in internal_lookup_fields:
-            if f in _fields and f in item:
-                domain.append((f, '=', item[f]))
-
-        return Model.search(domain, limit=1)
+        if internal_lookup_fields:
+            _fields = Model._fields
+            domain = []
+            for f in internal_lookup_fields:
+                if f in _fields and f in item:
+                    domain.append((f, '=', item[f]))
+            return Model.search(domain, limit=1)
+        else:
+            return Model.browse()
 
     def lookup_strategy(self, internal_model, parent_sync_strategy=None, server_sync=None, external_app_name=None):
         if parent_sync_strategy:
@@ -352,8 +370,7 @@ class ExternalDataSync(models.Model):
 
         while total and row_count == limit:
             data = server_sync.get_external_data(
-                self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context
-            )
+                self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context)
             row_count = len(data) if data else 0
             if row_count == 0:
                 break
