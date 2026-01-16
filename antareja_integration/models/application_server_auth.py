@@ -19,7 +19,7 @@ class ApplicationServerAuth(models.Model):
     auth_type = fields.Selection(selection_add=[
         ('jwt-odoo-rcp', 'JWT Odoo RCP'),
         ('odoo-rcp',),
-    ], default='rest-token')
+    ])
 
     rest_refresh = fields.Char()
 
@@ -115,5 +115,6 @@ class ApplicationServerAuth(models.Model):
 
     def action_login(self):
         for rec in self:
-            rec.rest_login(rec.odoo_username, rec.odoo_password)
+            username, password = rec.get_odoo_username_password()
+            rec.rest_login(username, rec.password)
         return True
