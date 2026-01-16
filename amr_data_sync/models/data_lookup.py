@@ -37,7 +37,7 @@ class ExternalDataLookup(models.Model):
     def get_internal_object(self):
         return self and self.internal_id and self.env[self.internal_model].browse(self.internal_id)
 
-    def lookup_internal(self,external_app_name,external_model,internal_model,external_id=None,display_name=None):
+    def lookup_internal(self, external_app_name, external_model, internal_model, external_id=None, display_name=None):
         data_lookup = None
         if not external_app_name or not external_model or not internal_model:
             raise UserError("Invalid parameter")

@@ -46,6 +46,7 @@
                                         <field name="sync_cron" />
                                         <field name="external_sync" />
                                         <field name="strategy" />
+                                        <field name="filter_last_update"/>
                                     </group>
                                     <group>
                                         <field name="external_domain"/>
@@ -54,7 +55,7 @@
                                         <field name="internal_lookup_fields" />
                                         <field name="internal_lookup_method" />
 
-                                        <field name="internal_call_method" />
+                                        <field name="internal_call_method" attrs="{'invisible':[('external_sync','=','method_call')]}"/>
                                     </group>
                                 </group>
                             </page>

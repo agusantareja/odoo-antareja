@@ -3,11 +3,14 @@ import inspect
 
 
 def get_callable_method(obj, method):
-    return obj and method and hasattr(obj, method) and callable(getattr(obj, method))
+    try:
+        return hasattr(obj, method) and callable(getattr(obj, method))
+    except Exception:
+        return False
 
 
 def is_callable_method(model, method):
-    return bool(model and method and hasattr(model, method) and callable(getattr(model, method)))
+    return get_callable_method(model, method)
 
 
 def has_kwargs(func):
