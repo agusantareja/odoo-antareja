@@ -28,10 +28,10 @@
                     </div>
                     <group>
                         <group>
-                            <field name="application_server_id"/>
+                            <field name="auth_type"/>
                         </group>
                         <group>
-                            <field name="auth_type"/>
+                            <field name="application_server_id"  invisible="context.get('edit_from_server_form')" />
                         </group>
                     </group>
                     <notebook>
@@ -62,6 +62,7 @@
                                 <group>
                                     <field name="username"/>
                                     <field name="password"/>
+                                    <button string="Test" type="object" name="action_test_connection"/>
                                 </group>
                             </group>
                         </page>

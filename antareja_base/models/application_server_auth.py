@@ -1,28 +1,38 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 import requests
 import base64
 import logging
 
-
 _logger = logging.getLogger(__name__)
+
 
 class RemoteModelObject(object):
 
     def __init__(
-        self,
-        auth,
-        model_name,
-        context = None
+            self,
+            auth,
+            model_name,
+            context=None,
+            ids=None,
     ):
         self.auth = auth
         self.model_name = model_name
         self.context = context
+        if ids and isinstance(ids, int):
+            self.ids = [ids]
+        else:
+            self.ids = ids or []
 
     def __getattr__(self, method):
         def delay(*args, **kw):
-            return self.auth.jsonrpc_call(self.model_name,method,args=args,kw=kw)
+            args = list(args)
+            if self.ids is not None:
+                args = [self.ids] + args
+            return self.auth.jsonrpc_call(self.model_name, method, args=args, kw=kw)
+
         return delay
 
     def __str__(self):
@@ -141,6 +151,22 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
     def get_jsonrpc_url(self):
         return self.rest_url(self.get_jsonrpc_path())
 
+    def action_test_connection(self):
+        try:
+            db, uid, password = self.jsonrpc_authenticate()
+            if not uid:
+                raise UserError(_("Authentication failed. Please check your credentials."))
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Info',
+                    'message': _("Connection successful. (DB: %s, UID: %s)") % (db, uid),
+                    'type': 'info',
+                }
+            }
+        except Exception as e:
+            raise UserError(_("Connection failed: %s") % str(e))
     def jsonrpc_post(self, obj_payload):
         response = requests.post(self.get_jsonrpc_url(), json=obj_payload)
         response.raise_for_status()
@@ -207,8 +233,8 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
             raise Exception(f"Unexpected Error: {str(e)}")
 
     @api.model
-    def get_remote_model(self, model,context=None):
-        return RemoteModelObject( model, context)
+    def get_remote_model(self, model, context=None):
+        return RemoteModelObject(model, context)
 
 
 class ApplicationServerAuth(models.Model):
