@@ -326,11 +326,12 @@ class ExternalDataSync(models.Model):
 
     def process_data(self):
         try:
-            ModelObject = self.env[self.internal_model]
+            sync_strategy = self.get_sync_strategy()
+            ModelObject = self.env[self.internal_model].with_context(sync_strategy._context)
             item = json.loads(self.data_json)
             internal_odoo_id = self.internal_odoo_id
             if not internal_odoo_id:
-                internal_odoo = self.sync_strategy_id.internal_lookup(item)
+                internal_odoo = sync_strategy.internal_lookup(item)
                 if internal_odoo:
                     self.write_done_internal_odoo(internal_odoo)
                     internal_odoo_id = internal_odoo.id
@@ -343,9 +344,10 @@ class ExternalDataSync(models.Model):
             if not item or not isinstance(item, dict):
                 item = self.get_json_data_for_create()
             existing = None
-            if is_callable_method(ModelObject, self.sync_strategy_id.internal_process_method):
-                method = getattr(ModelObject, self.sync_strategy_id.internal_process_method)
-                existing = method(item, sync_strategy=self.sync_strategy_id, data_sync=self)
+
+            if is_callable_method(ModelObject, sync_strategy.internal_process_method):
+                method = getattr(ModelObject, sync_strategy.internal_process_method)
+                existing = method(item, sync_strategy=sync_strategy, data_sync=self)
                 self.write_done_internal_odoo(existing)
             else:
                 input_dict = self.prepare_input_external(item)
@@ -428,7 +430,7 @@ class ExternalDataSync(models.Model):
                 break
 
         sync_related = self.env['external.data.sync.related'].search(
-            [('state', '!=', 'done')],order='write_date,external_data_sync_id', limit=limit,)
+            [('state', '!=', 'done')], order='write_date,external_data_sync_id', limit=limit, )
         external_data_sync = self.browse()
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
         for t in sync_related:
@@ -459,11 +461,11 @@ class ExternalDataSync(models.Model):
         if self.internal_model:
             model = self.env[self.internal_model]
             if self.internal_odoo_id:
-                return model.browse(self.internal_odoo_id)
+                return model.search([('id', '=', self.internal_odoo_id)])
             return model
         return None
 
-    def process_field_after_create(self,existing):
+    def process_field_after_create(self, existing):
         after_create = {}
         for r in self.related_ids:
             if r.field_after_create:
@@ -479,6 +481,20 @@ class ExternalDataSync(models.Model):
             existing = rec.get_internal_object()
             if existing:
                 rec.process_field_after_create(existing)
+
+    def get_last_sync_datetime(self, strategy):
+        domain = [
+            ('sync_strategy_id', '=', strategy.id),
+            ('state', '=', 'done'),
+            ('internal_odoo_id', '!=', False),
+        ]
+        last_sync = self.search(domain, order='last_success desc', limit=1)
+        if last_sync:
+            return last_sync.last_success
+        return None
+
+    def get_sync_strategy(self):
+        return self.sync_strategy_id.ensure_internal_context()
 
 
 class ExternalDataSyncRelated(models.Model):
@@ -587,7 +603,7 @@ class ExternalDataSyncRelated(models.Model):
         if self.state != 'done':
             self.process_data()
         if self.state == 'done':
-            if self.field_type=='many2one':
+            if self.field_type == 'many2one':
                 return self.related_external_data_sync_id.internal_odoo_id
             if self.internal_data_eval:
                 return ast.literal_eval(self.internal_data_eval)

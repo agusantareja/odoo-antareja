@@ -34,7 +34,7 @@ class ExternalDataSyncCron(models.Model):
             return result
         if 'active' in vals:
             for rec in self.with_context(__from_sync_cron=True):
-                if rec.sync_strategy_id and rec.active != rec.sync_strategy_id.sync_cron :
+                if rec.sync_strategy_id and rec.active != rec.sync_strategy_id.sync_cron:
                     rec.sync_strategy_id.write({
                         'sync_cron': rec.active
                     })

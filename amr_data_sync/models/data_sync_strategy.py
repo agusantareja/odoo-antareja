@@ -39,6 +39,7 @@ class ExternalDataSync(models.Model):
     server_sync_id = fields.Many2one(
         'external.server.sync'
     )
+    filter_last_update = fields.Boolean()
     # next_sync_datetime = fields.Datetime()
     # last_sync_datetime = fields.Datetime()
     # sync_cron = fields.Boolean()
@@ -227,11 +228,10 @@ class ExternalDataSync(models.Model):
         return result and result[0]
 
     def internal_lookup(self, item):
-
         Model = self.env[self.internal_model].sudo()
         if is_callable_method(Model, self.internal_lookup_method):
             method = getattr(Model, self.internal_lookup_method)
-            return method(item)
+            return method(item, sync_strategy=self)
 
         external_id = None
         display_name = None
@@ -245,8 +245,8 @@ class ExternalDataSync(models.Model):
             external_id = item
 
         data_lookup = self.env['external.data.lookup'].lookup_internal(
-            self.external_app_name,self.external_model,self.internal_model,
-            external_id,display_name
+            self.get_external_application_name(), self.external_model, self.internal_model,
+            external_id, display_name
         )
 
         if data_lookup:
@@ -361,13 +361,20 @@ class ExternalDataSync(models.Model):
         row_count = limit = 200
         domain = []
         if self.external_domain:
-            domain = ast.literal_eval(self.external_domain)
+            domain = ast.literal_eval(self.external_domain) or []
+        if self.filter_last_update:
+            last_sync = self.env['external.data.sync'].get_last_sync_datetime(self)
+            if last_sync:
+                _logger.info("Filter last update from %s", last_sync)
+                domain = [('write_date', '>=', last_sync.strftime('%Y-%m-%d %H:%M:%S'))] + domain
+
         context = {}
         if self.external_context:
             context = ast.literal_eval(self.external_context)
         total = server_sync.get_external_data(self.external_model, domain, count=True)
         fields_list = ['display_name', 'name', 'write_date', 'id'] + self.get_internal_lookup_fields()
 
+        self = self.ensure_internal_context()
         while total and row_count == limit:
             data = server_sync.get_external_data(
                 self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context)
@@ -377,9 +384,7 @@ class ExternalDataSync(models.Model):
             _logger.info("Count %s ,Offset %s, Total: %s", len(data), offset, total)
             for item in data:
                 offset = offset + 1
-                self.env['external.data.sync'].data_from_external(
-                    item, self
-                )
+                self.env['external.data.sync'].data_from_external(item, self)
 
         _logger.info("Offset %s = total %s", offset, total)
 
@@ -391,3 +396,12 @@ class ExternalDataSync(models.Model):
 
     def get_internal_context(self):
         return self.internal_context and ast.literal_eval(self.internal_context) or {}
+
+    def ensure_internal_context(self):
+        if self:
+            internal_context = self.get_internal_context()
+            if internal_context:
+                context = dict(self.env.context)
+                context.update(internal_context)
+                self = self.with_context(**context)
+        return self
