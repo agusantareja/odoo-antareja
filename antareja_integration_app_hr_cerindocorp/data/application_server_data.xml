@@ -7,23 +7,29 @@
         </record>
 
         <record model="application.server.auth" id="application_server_auth_default">
-            <field name="name">auth.default</field>
+            <field name="name">hr.auth.default</field>
             <field name="application_server_id" ref="application_server"/>
             <field name="auth_type">rest-token</field>
         </record>
 
         <record model="application.server.auth" id="application_server_auth_leave_token_hr">
-            <field name="name">auth.leave.token_hr</field>
+            <field name="name">hr.auth.leave.token_hr</field>
             <field name="application_server_id" ref="application_server"/>
             <field name="auth_type">rest-token</field>
             <field name="config_param_name">leave.token_hr</field>
         </record>
 
         <record model="application.server.path" id="application_server_path_approver_employee">
-            <field name="name">path.approver_employee</field>
+            <field name="name">hr.path.approver_employee</field>
             <field name="application_server_auth_id" ref="application_server_auth_leave_token_hr"/>
-            <field name="auth_type">rest-token</field>
             <field name="config_param_name">cni_employee_intra.rest_api_approver_employee</field>
         </record>
+
+        <record model="application.server.auth" id="application_server_auth_sync">
+            <field name="name">hr.auth.default.sync</field>
+            <field name="application_server_id" ref="application_server"/>
+            <field name="auth_type">odoo-rcp</field>
+        </record>
+
     </data>
 </odoo>
