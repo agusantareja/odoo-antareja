@@ -22,8 +22,6 @@ class ResCompany(models.Model):
             item_dict['name'] = item
 
         if item_dict:
-            if item_dict.get('id') in [1, 2]:
-                return self.sudo().browse(item_dict.get('id'))
             name = item_dict.get('name')
             if name:
                 return self.sudo().search([('name', '=', name)], limit=1)
