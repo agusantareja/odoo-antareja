@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record model="external.data.sync.strategy" id="external_data_sync_strategy_hr_job">
+        <record model="external.data.sync.strategy" id="external_data_sync_strategy_resource_resource">
             <field name="server_sync_id" ref="external_server_sync_intra_employee"/>
 <!--            <field name="external_app_name">hr.cerindocorp.id</field>-->
-            <field name="external_model">hr.job</field>
+            <field name="external_model">resource.resource</field>
 <!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
-            <field name="external_context">{'active_test': False}</field>
-            <field name="external_fields">name,active,state,description,requirements,department_id,company_id</field>
+<!--            <field name="external_context">{'active_test': False}</field>-->
+            <field name="external_fields">name,active,company_id,resource_type,time_efficiency,calendar_id,tz</field>
             <field name="sync_cron" eval="True"/>
-            <field name="internal_model">hr.job</field>
             <field name="strategy">external_update</field>
+            <field name="internal_model">resource.resource</field>
             <field name="internal_id_same_as_external" eval="True"/>
-<!--            <field name="internal_lookup_method">internal_lookup_for_job</field>-->
-<!--            <field name="internal_process_method">internal_process_for_job</field>-->
+<!--            <field name="internal_lookup_method">internal_lookup_for_resource</field>-->
+<!--            <field name="internal_process_method">internal_process_for_resource</field>-->
             <field name="internal_context">{'active_test': False}</field>
 <!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
         </record>

@@ -1,14 +1,14 @@
+from odoo.addons.amr_data_sync.tools.utils import insert_sql
 from odoo import models, fields, api, _
 from datetime import datetime, timedelta, date
 import logging
 import requests
 import json
 from odoo.exceptions import UserError, ValidationError
-from odoo.addons.amr_data_sync.tools.utils import insert_sql
 
 
-class HrJob(models.Model):
-    _inherit = "hr.job"
+class ResourceResource(models.Model):
+    _inherit = "resource.resource"
 
     def prepare_input_dict(self, item, input_dict=None, sync_strategy=None, **kwargs):
         """ Process data from external source to create or update res.partner as employee

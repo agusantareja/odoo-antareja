@@ -1,20 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!--
+        query = """
+        select
+        a.id
+        ,a.name
+        ,a.nip
+        ,birthday
+        ,a.day_month_employee
+        ,a.email as work_email
+        ,a.no_telp as mobile_phone
+        ,case
+            when c.subdepartment_id is not null
+                then c.subdepartment_id
+            else
+                a.department_id
+        end as department_id
+        ,a.job_id as job_id
+        ,a.active as active
+        ,a.resource_id
+        ,a.date_of_join
+        ,a.no_bpjs_kesehatan
+        ,a.no_bpjstk
+        ,a.company_id
+        ,a.acting as acting
+        ,e.name as point_allocation
+        ,CASE
+            WHEN f.date_end IS NULL THEN (
+                SELECT date_end
+                FROM hr_contract
+                WHERE state = 'close' AND employee_id = a.id
+                ORDER BY date_end DESC
+                LIMIT 1
+            )
+            else f.date_end
+        END AS exp_date_contract
+        ,hct.name as employee_category
+        ,a.resign_date as termination_date
+        ,a.hide_birthday as hide_birthday
+        ,k.name as bank_name
+        ,a.nama_rekening as nama_rekening
+        ,a.no_rekening as no_rekening
+        ,case when a.jenis_kelamin = 'laki-laki' then 'male'
+        when a.jenis_kelamin = 'perempuan' then 'female'
+        end as gender
+        ,concat('%s/web/image?model=hr.employee&field=image_128&id=',a.id) as image_url
+        ,a.previous_employee_id as previous_employee_id
+        ,a.departure_reason as departure_reason
+        ,a.is_cancel_terminate as is_cancel_terminate
+        ,a.dummy as dummy
+        ,a.no_ktp
+        ,a.no_npwp
+        ,a.ptkp
+        ,cj.name as classification_job
+        ,CASE
+            WHEN spl_admin IS NOT NULL THEN True
+            else False
+        end as spl_admin
+        from
+        hr_employee a
+        left join hr_department b on b.id=a.department_id
+        left join hr_job c on c.id = a.job_id
+        left join cni_hr_classification_job cj on cj.id = c.classification_job_id
+        left join resource_resource d on d.id = a.resource_id
+        left join hr_point_allocation e on e.id = a.point_allocation_id
+        left join res_bank k on k.id = a.bank_id
+        left join cni_spl_administrator spl_admin on spl_admin.employee_id = a.id
+        left join (select * from hr_contract where state in ('open','to_close') order by id desc) f on f.employee_id = a.id
+        left join hr_contract_type hct on hct.id = f.type_id """ % host
+        -->
         <record model="external.data.sync.strategy" id="external_data_sync_strategy_intra_employee">
     <!--        <field name="name">External Data Process Cron</field>-->
             <field name="server_sync_id" ref="external_server_sync_intra_employee"/>
-            <field name="external_app_name">hr.cerindocorp.id</field>
+<!--            <field name="external_app_name">hr.cerindocorp.id</field>-->
             <field name="external_model">hr.employee</field>
 <!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
-            <field name="external_context">{}</field>
-            <field name="external_fields">name,work_email,work_phone,job_id,department_id,mobile_phone,acting,nip,bank_name,nama_rekening,no_rekening</field>
+            <field name="external_context">{'__read_data_for_sync_external_application':True}</field>
+<!--            <field name="external_fields"></field>-->
             <field name="sync_cron" eval="True"/>
-            <field name="strategy">external_cu</field>
+            <field name="strategy">external_update</field>
+            <field name="internal_id_same_as_external" eval="True"/>
             <field name="internal_model">hr.employee</field>
-            <field name="internal_lookup_method">internal_lookup_for_employee</field>
-            <field name="internal_process_method">internal_process_for_employee</field>
-            <field name="internal_context">{'employee_id_offset':10000}</field>
+<!--            <field name="internal_lookup_method">internal_lookup_for_employee</field>-->
+<!--            <field name="internal_process_method">internal_process_for_employee</field>-->
+            <field name="internal_context">{'active_test': False}</field>
 <!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
         </record>
     </data>
