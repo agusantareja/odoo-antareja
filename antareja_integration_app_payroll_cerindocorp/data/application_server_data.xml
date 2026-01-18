@@ -7,7 +7,7 @@
         </record>
 
         <record model="application.server.auth" id="application_server_auth_default">
-            <field name="name">auth.default</field>
+            <field name="name">payroll.auth.default</field>
             <field name="application_server_id" ref="application_server"/>
             <field name="auth_type">rest-token</field>
         </record>
