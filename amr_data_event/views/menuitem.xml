@@ -5,7 +5,7 @@
                   sequence="10"
     />
     <menuitem id="menu_internal_data_event"
-              name="Event Config"
+              name="Event Data"
               parent="data_event_parent_menu"
               action="action_internal_data_event"
               sequence="1"
