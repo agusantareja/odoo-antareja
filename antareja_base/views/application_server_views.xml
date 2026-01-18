@@ -51,11 +51,12 @@
                             <field name="description"/>
                         </page>
                         <page string="Auth Methods">
-                            <field name="application_server_auth_ids" context="{'edit_from_server_form':True}">
+                            <field name="application_server_auth_ids" context="{'edit_from_server_form':True}" >
                                 <tree>
                                     <field name="application_server_id" invisible="1" />
                                     <field name="name" string="Name"/>
                                     <field name="auth_type"/>
+                                    <button name="action_open_view" type="object" string="More" class="oe_highlight" />
                                 </tree>
                             </field>
                         </page>

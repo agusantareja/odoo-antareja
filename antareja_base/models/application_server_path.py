@@ -45,3 +45,13 @@ class ApplicationServerPath(models.Model):
     def rest_post(self, params=None, headers=None, **kwargs):
         rec = self.ensure_one()
         return rec.application_server_auth_id.rest_post(rec.path, params=params, headers=headers, **kwargs)
+
+    def action_open_view(self):
+        self.ensure_one()
+        return {
+            'name': _('Server Path'),
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+        }
