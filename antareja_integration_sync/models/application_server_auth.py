@@ -15,6 +15,9 @@ def get_endpoint_model_name_path(path, model_name):
 class ApplicationServerAuth(models.Model):
     _inherit = 'application.server.auth'
 
+    def get_application_name(self):
+        return self.application_server_id.name
+
     def get_external_data(self, model_name, domain=None, fields=None, offset=None, limit=None, count=False,
                           object_id=None, context=None, path=None):
 
@@ -46,7 +49,7 @@ class ApplicationServerAuth(models.Model):
             is_single_object = False
             if object_id and isinstance(object_id, int):
                 path_model = f"{path_model}/{object_id}"
-                is_single_object=True
+                is_single_object = True
             else:
                 if object_id and isinstance(object_id, list):
                     params['ids'] = str(object_id)
