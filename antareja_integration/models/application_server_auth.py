@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
+from odoo.addons.amr_jsonrpc import jsonrpc, rest
 import requests
 import datetime
 import jwt
 import time
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+
+import base64
 import json
 import traceback
 import logging
@@ -18,22 +21,22 @@ class ApplicationServerAuth(models.Model):
 
     auth_type = fields.Selection(selection_add=[
         ('jwt-odoo-rcp', 'JWT Odoo RCP'),
-        ('odoo-rcp',),
+        ('jwt-rest-token', 'JWT rest-token'),
     ])
 
     rest_refresh = fields.Char()
 
     @api.model
     def rest_login_path(self):
-        return '/api/application/login'
+        return '/application/token'
 
     @api.model
     def rest_profile_path(self):
-        return '/api/application/profile'
+        return '/application/profile'
 
     @api.model
     def rest_refresh_path(self):
-        return '/api/application/refresh'
+        return '/application/token'
 
     def is_jwt(self):
         try:
@@ -54,33 +57,46 @@ class ApplicationServerAuth(models.Model):
         now = int(time.time())
         return now >= exp
 
-    def rest_login(self, login, password):
+    def rest_login(self, login, password, **kwargs):
         rec = self.ensure_one()
         url = rec.rest_url(rec.rest_login_path())
-        response = requests.post(url, data={'login': login, 'password': password})
-        response.raise_for_status()
-        json_result = response.json()
-        rest_token = json_result.get('access_token')
-        rest_refresh = json_result.get('refresh_token')
-        if rest_token:
-            rec.rest_token = rest_token
-        if rest_refresh:
-            rec.rest_refresh_token = rest_refresh
+        rest_token, rest_refresh = rest.request_token(url, login, password, **kwargs)
+        rec.rest_token = rest_token or rec.rest_token
+        rec.rest_refresh_token = rest_refresh or rec.rest_refresh_token
         return rest_token
 
-    def rest_post_refresh(self, refresh_token=None):
+    def rest_headers(self, headers=None):
+        if self.rest_token_in == 'basic':
+            return self.rest_basic_header(headers)
+        if self.rest_token_in == 'bearer':
+            return self.rest_bearer_header(headers)
+        if self.rest_token_in == 'header':
+            if headers is None:
+                headers = {}
+            headers[self.rest_token_key] = self.get_rest_token()
+        return headers
+
+    def rest_basic_header(self, headers=None):
+        username, password = self.get_username_password()
+        return rest.basic_auth_header(username, password, headers)
+
+    def rest_bearer_header(self, headers=None):
+        return rest.bearer_auth_header(self.ensure_token(), headers)
+
+    def rest_profile(self):
+        rec = self.ensure_one()
+        url = rec.rest_url(rec.rest_profile_path())
+        response = requests.get(url, rec.rest_bearer_header())
+        response.raise_for_status()
+        return response.json()
+
+    def rest_post_refresh(self, refresh_token=None, **kwargs):
         rec = self.ensure_one()
         refresh_token = refresh_token or rec.rest_refresh
         url = rec.rest_url(rec.rest_login_path())
-        response = requests.post(url, data={'refresh_token': refresh_token})
-        response.raise_for_status()
-        json_result = response.json()
-        rest_token = json_result.get('access_token')
-        rest_refresh = json_result.get('refresh_token')
-        if rest_token:
-            rec.rest_token = rest_token
-        if rest_refresh:
-            rec.rest_token_refresh = rest_refresh
+        rest_token, rest_refresh = rest.request_refresh_token(url, refresh_token)
+        rec.rest_token = rest_token or rec.rest_token
+        rec.rest_token_refresh = rest_refresh or rec.rest_token_refresh
         return rest_token
 
     def ensure_token(self):
@@ -91,8 +107,8 @@ class ApplicationServerAuth(models.Model):
 
     def jsonrpc_authenticate(self):
         rec = self.ensure_one()
-        db, uid, token = None, None, rec.ensure_token()
         if rec.auth_type == 'jwt-odoo-rcp':
+            db, uid, token = None, None, rec.ensure_token()
             if rec.is_jwt():
                 payload = jwt.decode(token, options={"verify_signature": False})
                 db = payload.get("db", None)
@@ -108,11 +124,31 @@ class ApplicationServerAuth(models.Model):
             if not db or not uid:
                 raise UserError(_("Invalid JWT Token"))
         else:
-            db, uid, token = super(ApplicationServerAuth, self).jsonrpc_authenticate()
+            db, username, password = self.get_odoo_db_username_password()
+            db, uid, token = jsonrpc.authenticate(self.get_jsonrpc_url(), db, username, password)
         return db, uid, token
 
+    def jsonrpc_execute_kw(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        return jsonrpc.execute_kw(self.get_jsonrpc_url(), model, method, args, kw=kw, db=db, uid=uid, password=password)
+
+    def jsonrpc_call(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        if not db or not uid or not password:
+            db, uid, password = self.jsonrpc_authenticate()
+        return jsonrpc.execute_kw(self.get_jsonrpc_url(), model, method, args, kw=kw, db=db, uid=uid, password=password)
+
     def action_login(self):
-        for rec in self:
-            username, password = rec.get_odoo_username_password()
-            rec.rest_login(username, rec.password)
-        return True
+        self.ensure_one()
+        try:
+            username, password = self.get_odoo_username_password()
+            self.rest_login(username, password)
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Info',
+                    'message': _("Token successful."),
+                    'type': 'info',
+                }
+            }
+        except Exception as e:
+            raise UserError(_("Get Token failed: %s") % str(e))
