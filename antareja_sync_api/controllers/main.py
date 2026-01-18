@@ -2,12 +2,13 @@
 
 from odoo import http
 from odoo.http import request
-from odoo.addons.antareja_base.tools.rest import modal_not_found,rest_api_unavailable,object_read,object_read_one
+from odoo.addons.antareja_base.tools.rest import modal_not_found, rest_api_unavailable, object_read, object_read_one
 from odoo.addons.antareja_token.tools.utils import check_token_authorization
 
 import logging
 
 _logger = logging.getLogger(__name__)
+
 
 def readable_fields(model_name, fields):
     if not fields:
