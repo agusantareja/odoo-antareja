@@ -5,8 +5,8 @@
         <field name="model">application.server.auth</field>
         <field name="inherit_id" ref="antareja_base.view_application_server_auth_form"/>
         <field name="arch" type="xml">
-            <notebook position="inside">
-                <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
+            <xpath expr="//page[@name='page_path']" position="after">
+                <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
                     <group>
                         <group string="JWT Token">
                             <field name="rest_token"/>
@@ -19,7 +19,7 @@
                         </group>
                     </group>
                 </page>
-            </notebook>
+            </xpath>
         </field>
     </record>
 
