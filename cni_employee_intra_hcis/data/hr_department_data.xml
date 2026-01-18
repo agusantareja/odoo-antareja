@@ -3,14 +3,19 @@
     <data noupdate="0">
         <record model="external.data.sync.strategy" id="external_data_sync_strategy_intra_department">
             <field name="server_sync_id" ref="external_server_sync_intra_employee"/>
-            <field name="external_app_name">hr.cerindocorp.id</field>
+<!--            <field name="external_app_name">hr.cerindocorp.id</field>-->
+<!--            <field name="external_company_name">PT. CERIA METALINDO PRIMA</field>-->
             <field name="external_model">hr.department</field>
 <!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
-            <field name="external_fields">name,parent_id,note,color</field>
-            <field name="strategy">external_cu</field>
+            <field name="external_fields">name,active,parent_id,note,color,company_id,kode,manager_id</field>
+            <field name="external_context">{}</field>
             <field name="internal_model">hr.department</field>
-            <field name="internal_lookup_method">internal_lookup_for_department</field>
-            <field name="sync_cron" eval="True"/>
+            <field name="strategy">external_update</field>
+            <field name="internal_id_same_as_external">True</field>
+<!--            <field name="internal_lookup_method">internal_lookup_for_department</field>-->
+<!--            <field name="internal_process_method">internal_process_for_department</field>-->
+            <field name="internal_context">{'active_test': False}</field>
+            <field name="sync_cron" eval="False"/>
 <!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
         </record>
     </data>
