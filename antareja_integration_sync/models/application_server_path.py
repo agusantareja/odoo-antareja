@@ -15,6 +15,9 @@ class ApplicationServerPath(models.Model):
     _inherit = 'application.server.path'
     # _inherit = 'ir.config_parameter.able.mixin'
 
+    def get_application_name(self):
+        return self.application_server_auth_id.get_application_name()
+
     def jsonrpc_call(self, model, method, args, kw=None, db=None, uid=None, password=None):
         return self.application_server_auth_id.jsonrpc_call(
             model, method, args, kw=kw, db=db, uid=uid, password=password
