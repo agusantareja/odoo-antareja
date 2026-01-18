@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-
-import ast
+from collections import defaultdict
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-import logging
 from odoo.tools.safe_eval import safe_eval
 from ..tools.utils import is_callable_method, get_callable_method
+from odoo.addons.amr_jsonrpc import jsonrpc, rest
+import ast
+import logging
 
 _logger = logging.getLogger(__name__)
 
 
-class ExternalDataSync(models.Model):
+class ExternalDataSyncStrategy(models.Model):
     _name = 'external.data.sync.strategy'
     _description = """
     Model strategy bagaimana objec di syncronkan dari server external
@@ -22,6 +23,7 @@ class ExternalDataSync(models.Model):
     )
     external_model = fields.Char()
     external_app_name = fields.Char()
+    external_company_name = fields.Char()
     external_domain = fields.Char()
     external_context = fields.Char()
     external_fields = fields.Char()
@@ -34,7 +36,8 @@ class ExternalDataSync(models.Model):
     relation_field_ignore = fields.Boolean()
 
     company_id = fields.Many2one(
-        'res.company'
+        'res.company',
+        help="Default Company"
     )
     server_sync_id = fields.Many2one(
         'external.server.sync'
@@ -47,13 +50,17 @@ class ExternalDataSync(models.Model):
         ('local_lookup', 'Local Lookup'),
         ('external_cud', 'Create Update Delete'),
         ('external_cu', 'Create Update'),
-        ('external_create', 'Create'),
+        ('external_create', 'Create Only'),
+        ('external_update', 'Update Only'),
     ], help="""
-    Lookup strategery
+    Lookup Strategy
     """)
-
+    # 'Update Only'
+    internal_id_same_as_external = fields.Boolean()
+    internal_id_offset = fields.Integer()
     external_sync = fields.Selection([
         ('jsonrpc', 'Json-RPC'),
+        ('rest', 'Rest'),
         ('method_call', 'Method Call'),
     ], default='jsonrpc')
 
@@ -85,6 +92,27 @@ class ExternalDataSync(models.Model):
     )
     sync_cron = fields.Boolean()
 
+    test_external_data_sync_id = fields.Many2one(
+        'external.data.sync',
+        ondelete='set null'
+    )
+
+    def action_test_execute_eval(self, external_data, prepare_dict):
+        if not self.test_external_data_sync_id:
+            raise UserError(_("Please select one data."))
+
+        self.execute_prepare_eval(external_data, prepare_dict)
+
+    def name_get(self):
+        result = []
+        for rec in self:
+            name = f"({rec.id}) [{rec.get_external_application_name()}] {rec.external_model} -> {rec.internal_model}"
+            result.append((rec.id, name))
+        return result
+
+    def get_external_sync(self):
+        return self.external_sync
+
     def get_external_application_name(self):
         return self.server_sync_id.get_application_name() or self.external_app_name
 
@@ -106,7 +134,7 @@ class ExternalDataSync(models.Model):
                     raise UserError(_("Server dengan ID %s tidak ditemukan") % vals['sync_strategy_id'])
                 vals['external_app_name'] = server.get_application_name()
 
-        result = super(ExternalDataSync, self).create(vals_list)
+        result = super(ExternalDataSyncStrategy, self).create(vals_list)
 
         if self._context.get('__from_sync_cron'):
             return result
@@ -140,7 +168,7 @@ class ExternalDataSync(models.Model):
                 raise UserError(_("Server dengan ID %s tidak ditemukan") % vals['sync_strategy_id'])
             vals['external_app_name'] = server.get_application_name()
 
-        result = super(ExternalDataSync, self).write(vals)
+        result = super(ExternalDataSyncStrategy, self).write(vals)
         if self._context.get('__from_sync_cron'):
             return result
         for rec in self:
@@ -166,7 +194,10 @@ class ExternalDataSync(models.Model):
         return self.strategy in ['external_cud']
 
     def is_update_able_from_external(self):
-        return self.strategy in ['external_cud', 'external_cu']
+        return self.strategy in ['external_cud', 'external_cu', 'external_update']
+
+    def is_update_only_from_external(self):
+        return self.strategy == 'external_update'
 
     def is_create_able_from_external(self):
         return self.strategy in ['external_cud', 'external_cu', 'external_create']
@@ -179,7 +210,8 @@ class ExternalDataSync(models.Model):
 
     def get_mapping_fields(self):
         mapping_list = self.line_mapping_ids.filtered(
-            lambda m: m.internal_field and m.mapping_strategy == 'field_mapping')
+            lambda m: m.internal_field
+        )
         return {
             m.internal_field: m for m in mapping_list
         }
@@ -216,23 +248,13 @@ class ExternalDataSync(models.Model):
         return self.sync_from_application_server()
 
     def get_external_one_data(self, object_id):
-        context = None
-        fields = None
-        if self.external_context:
-            context = ast.literal_eval(self.external_context)
-        if self.external_fields:
-            fields = self.get_external_fields()
-        result = self.ensure_one().get_server_sync().get_external_data(
-            self.external_model, fields=fields, object_id=object_id, context=context
-        )
-        return result and result[0]
+        ModelObject = self.sync_one_model_object(object_id)
+        result = ModelObject.read()
+        if result and isinstance(result, list):
+            return result[0]
+        return result
 
     def internal_lookup(self, item):
-        Model = self.env[self.internal_model].sudo()
-        if is_callable_method(Model, self.internal_lookup_method):
-            method = getattr(Model, self.internal_lookup_method)
-            return method(item, sync_strategy=self)
-
         external_id = None
         display_name = None
         if isinstance(item, dict):
@@ -243,6 +265,18 @@ class ExternalDataSync(models.Model):
             display_name = item[1]
         elif isinstance(item, int):
             external_id = item
+
+        Model = self.env[self.internal_model].sudo()
+        if self.strategy == 'external_update' and external_id:
+            if self.internal_id_same_as_external:
+                return Model.search([('id', '=', external_id)])
+            if self.internal_id_offset > 0:
+                return Model.search([('id', '=', external_id + self.internal_id_offset)])
+
+        Model = self.env[self.internal_model].sudo()
+        if is_callable_method(Model, self.internal_lookup_method):
+            method = getattr(Model, self.internal_lookup_method)
+            return method(item, sync_strategy=self)
 
         data_lookup = self.env['external.data.lookup'].lookup_internal(
             self.get_external_application_name(), self.external_model, self.internal_model,
@@ -301,6 +335,7 @@ class ExternalDataSync(models.Model):
 
         fields_write_able = model_object.check_field_access_rights('write', None)
 
+        related_data_process_after_mapping = {}
         for k, v in item.items():
             if k not in fields_write_able or k not in _fields or k in exclude_fields:
                 continue
@@ -320,9 +355,9 @@ class ExternalDataSync(models.Model):
                     _logger.info("Process relation field %s.%s", self.internal_model, k)
                 elif not f.required and self.relation_field_ignore:
                     continue
-                v = parent_object.get_related_data(f, v)
-                if not v or k in after_create_fields:
-                    continue
+                related_data_process_after_mapping[k] = (f, v)
+                continue
+
             elif f.type in ['date', 'datetime']:
                 if isinstance(v, str):
                     v = fields.Date.from_string(v) if f.type == 'date' else fields.Datetime.from_string(v)
@@ -331,14 +366,23 @@ class ExternalDataSync(models.Model):
 
         for k, m in mapping_fields.items():
             if k in fields_write_able and k in _fields:
-                input_dict[k] = m.mapping_data(item, model=model_object)
+                field = _fields[k]
+                input_dict[k] = m.mapping_data(item, model=model_object, parent_data_sync=parent_object, field=field)
+
+        for k, m in related_data_process_after_mapping.items():
+            f, v = m
+            if input_dict.get(f.name):
+                continue
+            v = parent_object.get_related_data(f, v)
+            if not v or k in after_create_fields:
+                continue
+            input_dict[k] = v
 
         if self.eval_script:
             try:
                 eval_context = {'env': self.env, 'model': model_object, 'external_data': item}
-                safe_eval(self.eval_script.strip(), eval_context, mode="exec",
-                          nocopy=True,
-                          filename=str(self))  # nocopy allows to return 'action'
+                # nocopy allows to return 'action'
+                safe_eval(self.eval_script.strip(), eval_context, mode="exec", nocopy=True)
                 eval_context.get('value')
             except Exception as e:
                 raise ValueError(f"Error evaluating script: {e}")
@@ -346,19 +390,30 @@ class ExternalDataSync(models.Model):
         return input_dict
 
     def sync_from_application_server(self):
-        if self.external_sync == 'jsonrpc':
-            self.jsonrcp_sync_from_application_server()
-        elif self.external_sync == 'method_call':
+        external_sync = self.get_external_sync()
+        if external_sync == 'method_call':
             self.method_call_sync_from_application_server()
         else:
-            raise NotImplementedError(f"External sync {self.external_sync} not implemented yet")
+            self.sync_list_model_object()
 
-    @api.model
-    def jsonrcp_sync_from_application_server(self):
-        self.ensure_one()
-        server_sync = self.get_server_sync()
-        offset = 0
-        row_count = limit = 200
+    def get_db_uid_username_password(self):
+        return self.server_sync_id.get_db_uid_username_password()
+
+    def jsonrpc_endpoint_url(self):
+        return self.server_sync_id.jsonrpc_endpoint_url()
+
+    def get_endpoint_url(self):
+        external_sync = self.get_external_sync()
+        if external_sync == 'jsonrpc':
+            return self.jsonrpc_endpoint_url()
+        return self.server_sync_id.get_endpoint_url()
+
+    def prepare_sync_list_dict(self):
+        # context
+        context = {}
+        if self.external_context:
+            context = ast.literal_eval(self.external_context)
+        # domain
         domain = []
         if self.external_domain:
             domain = ast.literal_eval(self.external_domain) or []
@@ -368,25 +423,85 @@ class ExternalDataSync(models.Model):
                 _logger.info("Filter last update from %s", last_sync)
                 domain = [('write_date', '>=', last_sync.strftime('%Y-%m-%d %H:%M:%S'))] + domain
 
-        context = {}
-        if self.external_context:
-            context = ast.literal_eval(self.external_context)
-        total = server_sync.get_external_data(self.external_model, domain, count=True)
         fields_list = ['display_name', 'name', 'write_date', 'id'] + self.get_internal_lookup_fields()
+        endpoint_url = self.get_endpoint_url()
+        config = {
+            'endpoint_url': endpoint_url,
+            'fields': fields_list,
+            'context': context,
+            'domain': domain,
+        }
+        config.update(self.get_auth_config())
+        return config
 
+    def get_auth_config(self, config=None):
+        auth_type = self.server_sync_id.auth_type
+        token_key = self.server_sync_id.token_key
+        access_token = self.server_sync_id.token_value
+        if auth_type == 'token':
+            auth_type = self.server_sync_id.token_in
+        db, uid, username, password = self.get_db_uid_username_password()
+        return {
+            'db': db,
+            'uid': uid,
+            'username': username,
+            'password': password,
+            'auth_mode': auth_type,
+            'token_key': token_key,
+            'access_token': access_token,
+            'token_endpoint_url': None
+        }
+
+    def prepare_sync_one_dict(self):
+        # context
+        context = self.get_external_context()
+        # domain
+        domain = []
+        if self.external_domain:
+            domain = ast.literal_eval(self.external_domain) or []
+        fields_list = None
+        if self.external_fields:
+            fields_list = self.get_external_fields()
+        endpoint_url = self.get_endpoint_url()
+        # todo fix
+        config = {
+            'endpoint_url': endpoint_url,
+            'fields': fields_list,
+            'context': context,
+            'domain': domain,
+        }
+        config.update(self.get_auth_config())
+        return config
+
+    def sync_model_object(self, **kwargs):
+        external_sync = self.get_external_sync()
+        if external_sync == 'jsonrpc':
+            return jsonrpc.model_object(self.external_model, **kwargs)
+        elif external_sync == 'rest':
+            return jsonrpc.model_object(self.external_model, **kwargs)
+        else:
+            raise NotImplementedError(f"External sync {external_sync} not implemented yet")
+
+    def sync_list_model_object(self):
+        self.ensure_one()
+        kwargs = self.prepare_sync_list_dict() or {}
+        return self.sync_model_object(**kwargs)
+
+    def sync_one_model_object(self, object_id):
+        self.ensure_one()
+        kwargs = self.prepare_sync_one_dict()
+        kwargs['ids'] = [object_id]
+        return self.sync_model_object(**kwargs)
+
+    def sync_from_application_server(self):
+        ModelObject = self.sync_list_model_object()
         self = self.ensure_internal_context()
-        while total and row_count == limit:
-            data = server_sync.get_external_data(
-                self.external_model, domain, fields=fields_list, offset=offset, limit=limit, context=context)
-            row_count = len(data) if data else 0
-            if row_count == 0:
-                break
-            _logger.info("Count %s ,Offset %s, Total: %s", len(data), offset, total)
-            for item in data:
-                offset = offset + 1
-                self.env['external.data.sync'].data_from_external(item, self)
 
-        _logger.info("Offset %s = total %s", offset, total)
+        def callback(item, **kwargs):
+            self.env['external.data.sync'].data_from_external(item, self)
+
+        ModelObject.external_data_callback(callback)
+
 
     @api.model
     def method_call_sync_from_application_server(self):
@@ -394,14 +509,81 @@ class ExternalDataSync(models.Model):
         func = get_callable_method(model, self.internal_call_method)
         return func(self)
 
+    def get_external_context(self):
+        return self.external_context and ast.literal_eval(self.external_context) or {}
+
     def get_internal_context(self):
         return self.internal_context and ast.literal_eval(self.internal_context) or {}
 
     def ensure_internal_context(self):
         if self:
+            set_contex = False
+            context = dict(self.env.context)
+            if self.company_id:
+                set_contex = True
+                context.update(default_company_id=self.company_id)
             internal_context = self.get_internal_context()
             if internal_context:
-                context = dict(self.env.context)
                 context.update(internal_context)
+            if set_contex:
                 self = self.with_context(**context)
         return self
+
+    def execute_prepare_eval(self, external_data, prepare_dict):
+
+        if not self.eval_script:
+            return prepare_dict
+        eval_script = self.eval_script.strip()
+        if not eval_script:
+            return prepare_dict
+        try:
+            model = self.env[self.internal_model]
+            eval_context = {
+                'env': self.env,
+                'model': model,
+                'external_data': external_data,
+                'sync_strategy': self,
+                'prepare': prepare_dict,
+            }
+            safe_eval(
+                eval_script,
+                eval_context, mode="exec",
+                nocopy=True,  # nocopy allows to return 'prepare'
+                filename=str(self)
+            )
+            return eval_context.get('prepare')
+        except Exception as e:
+            raise ValueError(f"Error evaluating script: {e}")
+
+    def reverse_mapping(self, internal, raise_not_found_exception=True):
+        sync_strategy = self.ensure_one()
+        # digunakan untuk mengirim data ke server external
+        if not internal:
+            return [0]
+
+        if not isinstance(internal, models.BaseModel):
+            _logger.error("Internal Object must")
+            if raise_not_found_exception:
+                raise ValueError("Internal Object must")
+            return [0]
+
+        domain = [('internal_odoo_id', 'in', internal.ids), ('sync_strategy_id', '=', sync_strategy.id)]
+
+        rows = self.search_read(
+            domain,
+            fields=['internal_odoo_id', 'external_odoo_id']
+        )
+
+        mapping = defaultdict(list)
+        for r in rows:
+            mapping[r['internal_odoo_id']].append(r['external_odoo_id'])
+
+        result_map = dict(mapping)
+
+        not_mapped_ids = set(internal.ids) - result_map.keys()
+        if not_mapped_ids:
+            _logger.error("found not mapped data")
+            if raise_not_found_exception:
+                raise ValueError("found not mapped data [%s]" % str(not_mapped_ids))
+
+        return result_map
