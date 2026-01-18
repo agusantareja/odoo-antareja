@@ -24,17 +24,12 @@ class InternalDataSync(models.Model):
         ('write', 'Write'),
         ('unlink', 'Delete'),
     ], required=True)
-    message_type= fields.Selection([
-        ('broadcast', 'Broadcast'),
-        ('direct_application', 'Direct Application'),
-    ], required=True)
-    target_application = fields.Char()
     changed_fields = fields.Char()
     state = fields.Selection([
         ('pending', 'Pending'),
         ('sent', 'Sent'),
         ('error', 'Error'),
-    ], default='pending', index=True)
+    ], default='sent', index=True)
     error_message = fields.Text()
 
     def send_events(self):

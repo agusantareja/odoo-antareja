@@ -11,6 +11,7 @@ class InternalDataSync(models.Model):
     _name = 'internal.data.event.config'
     _description = """
     """
+    _rec_name = 'model_id'
 
     model_id = fields.Many2one(
         'ir.model',
@@ -35,10 +36,10 @@ class InternalDataSync(models.Model):
     ]
 
     def get_fields_include(self):
-        return (self and self.fields_include and [x.trim() for x in self.fields_include.split(',')]) or []
+        return (self and self.fields_include and [x.strip() for x in self.fields_include.split(',')]) or []
 
     def get_fields_exclude(self):
-        return (self and self.fields_exclude and [x.trim() for x in self.fields_exclude.split(',')]) or []
+        return (self and self.fields_exclude and [x.strip() for x in self.fields_exclude.split(',')]) or []
 
     def is_event_sync(self, model_name):
         return self.search([
@@ -61,18 +62,18 @@ class InternalDataSync(models.Model):
             ('model_id.model', '=', model_name),
             ('active', '=', True),
             ('log_create', '=', True),
-        ], limit=1) and True
+        ], limit=1)
 
     def get_config_write(self, model_name):
         return self.search([
             ('model_id.model', '=', model_name),
             ('active', '=', True),
             ('log_write', '=', True),
-        ], limit=1) and True
+        ], limit=1)
 
     def get_config_unlink(self, model_name):
         return self.search([
             ('model_id.model', '=', model_name),
             ('active', '=', True),
             ('log_unlink', '=', True),
-        ], limit=1) and True
+        ], limit=1)
