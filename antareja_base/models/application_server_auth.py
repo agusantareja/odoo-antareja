@@ -114,6 +114,7 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
             db = result.get('db')
             if not db:
                 raise UserError('DB not found')
+            self.odoo_server_db=db
         except RequestException as e:
             raise UserError(str(e))
 
