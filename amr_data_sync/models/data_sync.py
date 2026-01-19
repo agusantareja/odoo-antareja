@@ -321,7 +321,7 @@ class ExternalDataSync(models.Model):
 
             if not self.is_create_able_from_external() and not self.is_update_able_from_external():
                 if internal_odoo_id and not existing:
-                    existing = ModelObject.search[('id','=',internal_odoo_id)]
+                    existing = ModelObject.search([('id','=',internal_odoo_id)])
                 if existing:
                     self.write_done_internal_odoo(existing)
                 else:
@@ -346,7 +346,7 @@ class ExternalDataSync(models.Model):
                         if not existing and internal_odoo_id:
                             existing = ModelObject.browse(internal_odoo_id)
                             if not existing:
-                                existing = ModelObject.search[('id','=',internal_odoo_id)]
+                                existing = ModelObject.search([('id','=',internal_odoo_id)])
                             if not existing and internal_odoo_id:
                                 _logger.warning(f"Data {self.internal_model} {internal_odoo_id} not found")
                         if existing and self.is_update_able_from_external():
