@@ -6,7 +6,7 @@
         - Integration to HCIS 
     """,
     'category': 'HR',
-    'depends': ['base', 'cni_employee_intra', 'antareja_integration', 'antareja_integration_app_hr_cerindocorp'],
+    'depends': ['base', 'cni_employee_intra', 'antareja_integration_sync', 'antareja_integration_app_hr_cerindocorp'],
     "installable": True,
     'data': [
         'data/external_server_sync_data.xml',

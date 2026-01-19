@@ -1,11 +1,6 @@
-from odoo.addons.amr_data_sync.tools.utils import insert_sql
-from odoo import models, fields, api, _
-from datetime import datetime, timedelta, date
-import logging
-import requests
-import json
-from odoo.exceptions import UserError, ValidationError
+# -*- coding: utf-8 -*-
 
+from odoo import models
 
 class ResourceResource(models.Model):
     _inherit = "resource.resource"

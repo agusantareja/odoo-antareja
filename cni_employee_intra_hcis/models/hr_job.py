@@ -1,10 +1,6 @@
-from odoo import models, fields, api, _
-from datetime import datetime, timedelta, date
-import logging
-import requests
-import json
-from odoo.exceptions import UserError, ValidationError
-from odoo.addons.amr_data_sync.tools.utils import insert_sql
+# -*- coding: utf-8 -*-
+
+from odoo import models
 
 
 class HrJob(models.Model):
