@@ -226,21 +226,25 @@ class ExternalDataSync(models.Model):
 
     def internal_lookup(self, item):
         Model = self.env[self.internal_model].sudo()
+        if self.internal_id_same_as_external:
+            external_id = self.get_internal_id_same_as_external(item)
+            return self.search([('id', '=', external_id)], limit=1)
+
         if is_callable_method(Model, self.internal_lookup_method):
             method = getattr(Model, self.internal_lookup_method)
             return method(item)
 
         internal_lookup_fields = self.get_internal_lookup_fields()
-        if not internal_lookup_fields:
-            internal_lookup_fields = ['name']
+        if internal_lookup_fields:
+            _fields = Model._fields
+            domain = []
+            for f in internal_lookup_fields:
+                if f in _fields and f in item:
+                    domain.append((f, '=', item[f]))
 
-        _fields = Model._fields
-        domain = []
-        for f in internal_lookup_fields:
-            if f in _fields and f in item:
-                domain.append((f, '=', item[f]))
+            return Model.search(domain, limit=1)
 
-        return Model.search(domain, limit=1)
+        return Model.browse()
 
     def lookup_strategy(self, internal_model, parent_sync_strategy=None, server_sync=None, external_app_name=None):
         if parent_sync_strategy:

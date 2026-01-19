@@ -188,7 +188,7 @@ class ExternalDataSync(models.Model):
         ]
         existing = self.search(domain, limit=1)
         if existing:
-            if not existing.is_force_update_from_external() and existing.external_last_update >= external_last_update and existing.internal_odoo_id:
+            if existing.external_last_update >= external_last_update and existing.internal_odoo_id:
                 _logger.info("Data tidak perlu di update karena data lebih baru atau sama.")
                 return existing
 
