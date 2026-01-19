@@ -1,12 +1,8 @@
-import base64
-from odoo import _, api, fields, models
-import requests
-import json
-import logging
-from datetime import datetime, timedelta, date
-from odoo.exceptions import Warning, UserError
-from odoo.addons.amr_data_sync.tools.utils import insert_sql
+# -*- coding: utf-8 -*-
 
+
+from odoo import models
+import logging
 _logger = logging.getLogger(__name__)
 
 
