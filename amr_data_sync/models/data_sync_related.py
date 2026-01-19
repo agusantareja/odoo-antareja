@@ -161,7 +161,7 @@ class ExternalDataSyncRelated(models.Model):
 
         create_dict = {
             'name': field_name,
-            'field_after_create': True,
+            'field_after_create': external_data_sync_id.internal_model==related_external_data_sync_id.internal_model,
             'internal_model': related_external_data_sync_id.internal_model,
             'external_data_sync_id': int(external_data_sync_id),
             'related_external_data_sync_id': related,
