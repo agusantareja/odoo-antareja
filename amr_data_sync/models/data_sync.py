@@ -339,11 +339,12 @@ class ExternalDataSync(models.Model):
                 existing = method(item, sync_strategy=sync_strategy, data_sync=self)
                 self.write_done_internal_odoo(existing)
             else:
-                payload = {}
                 with self.env.cr.savepoint():
                     input_dict = self.prepare_input_external(item)
-                if self.is_all_related_done():
-                    with self.env.cr.savepoint():
+                payload = {}
+                self.flush()
+                with self.env.cr.savepoint():
+                    if self.is_all_related_done():
                         if sync_strategy.internal_id_same_as_external and not existing:
                             existing = sync_strategy.internal_lookup(item)
                         if existing and self.is_update_able_from_external():
@@ -360,24 +361,23 @@ class ExternalDataSync(models.Model):
                             else:
                                 existing = ModelObject.with_context(internal_context).create([input_dict])[0]
                             payload.update(input_dict)
-
-                    if existing:
-                        after_data = self.process_field_after_create(existing) or {}
-                        if after_data:
-                            payload.update(after_data)
-                        self.write_done_internal_odoo(existing, payload)
+                        if existing:
+                            after_data = self.process_field_after_create(existing) or {}
+                            if after_data:
+                                payload.update(after_data)
+                            self.write_done_internal_odoo(existing, payload)
+                        else:
+                            _logger.info(f"No update or Create {item.get('id')}")
+                            self.write({
+                                'error_info': "Cannot update and create",
+                                'state': 'need_resolve',
+                                'last_processing_datetime': fields.Datetime.now(),
+                                'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
+                            })
                     else:
-                        _logger.info(f"No update or Create {item.get('id')}")
-                        self.write({
-                            'error_info': "Cannot update and create",
-                            'state': 'need_resolve',
-                            'last_processing_datetime': fields.Datetime.now(),
-                            'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
-                        })
-
-                else:
-                    _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s"
+                        _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s"
                                  , self.internal_model, self.external_model, self.external_odoo_id)
+
 
                 if is_callable_method(existing, 'external_data_sync_done'):
                     with self.env.cr.savepoint():
@@ -430,9 +430,9 @@ class ExternalDataSync(models.Model):
         )
         for t in to_process:
             try:
-                with self.env.cr.savepoint():
-                    t.process_data()
+                t.process_data()
             except Exception:
+                self.env.cr.rollback()
                 _logger.exception("error")
                 t.write({
                     'error_info': traceback.format_exc(),
@@ -440,9 +440,10 @@ class ExternalDataSync(models.Model):
                     'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
+            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
-        self.env.cr.commit()
+
         to_process = self.search(
             [('state', '!=', 'done'),
              '|',
@@ -452,9 +453,9 @@ class ExternalDataSync(models.Model):
         )
         for t in to_process:
             try:
-                with self.env.cr.savepoint():
-                    t.process_data()
+                t.process_data()
             except Exception:
+                self.env.cr.rollback()
                 _logger.exception("error")
                 t.write({
                     'error_info': traceback.format_exc(),
@@ -462,9 +463,10 @@ class ExternalDataSync(models.Model):
                     'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
+            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
-        self.env.cr.commit()
+
         sync_related = self.env['external.data.sync.related'].search(
             [('state', '!=', 'done'),
              '|',
@@ -473,11 +475,10 @@ class ExternalDataSync(models.Model):
             order='next_processing_datetime', limit=limit, )
         external_data_sync = self.browse()
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
-        self.env.cr.commit()
+
         for t in sync_related:
             try:
-                with self.env.cr.savepoint():
-                    t.process_data()
+                t.process_data()
                 if t.state == 'done' and t.external_data_sync_id:
                     external_data_sync |= t.external_data_sync_id
                 else:
@@ -485,25 +486,28 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                     })
             except Exception:
+                self.env.cr.rollback()
                 t.write({
-                    # 'error_info': traceback.format_exc(),
-                    # 'state': 'error',
-                    # 'last_error': fields.Datetime.now(),
+                    'error_info': traceback.format_exc(),
+                    'state': 'error',
+                    'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
                 continue
             if fields.Datetime.now() > limit_time:
                 break
-        self.env.cr.commit()
+            self.env.cr.commit()
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
         for t in external_data_sync:
             try:
-                with self.env.cr.savepoint():
-                    t.process_data()
+                t.process_data()
             except Exception:
+                self.env.cr.rollback()
                 continue
+            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
+
         return True
 
     def get_internal_context(self):
