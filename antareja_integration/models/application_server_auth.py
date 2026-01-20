@@ -4,13 +4,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.addons.amr_jsonrpc import jsonrpc, rest
 import requests
-import datetime
 import jwt
 import time
-
-import base64
-import json
-import traceback
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -129,9 +124,11 @@ class ApplicationServerAuth(models.Model):
         return db, uid, token
 
     def jsonrpc_execute_kw(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        """Deprecated gunakan remote_model_object"""
         return jsonrpc.execute_kw(self.get_jsonrpc_url(), model, method, args, kw=kw, db=db, uid=uid, password=password)
 
     def jsonrpc_call(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        """Deprecated gunakan remote_model_object"""
         if not db or not uid or not password:
             db, uid, password = self.jsonrpc_authenticate()
         return jsonrpc.execute_kw(self.get_jsonrpc_url(), model, method, args, kw=kw, db=db, uid=uid, password=password)
@@ -152,3 +149,39 @@ class ApplicationServerAuth(models.Model):
             }
         except Exception as e:
             raise UserError(_("Get Token failed: %s") % str(e))
+
+    def get_auth_config(self, config=None):
+        config= {}
+        auth_type = self.auth_type
+        token_key = self.rest_token_key
+        access_token = self.rest_token
+        refresh_token = self.rest_refresh
+        token_endpoint_url = self.rest_url(self.rest_login_path())
+        if self.auth_type in ['jwt-rest-token','rest-token']:
+            auth_type = self.rest_token_in
+        if self.auth_type in ['rest-token', 'rest-token']:
+            endpoint_url = self.get_jsonrpc_url()
+        else:
+            endpoint_url = self.rest_endpoint_url()
+        db, uid, username, password = self.get_db_uid_username_password()
+        config.update({
+            'db': db,
+            'uid': uid,
+            'username': username,
+            'password': password,
+            'auth_mode': auth_type,
+            'token_key': token_key,
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'endpoint_url':endpoint_url,
+            'token_endpoint_url': token_endpoint_url
+        })
+        return config
+
+    def remote_model_object(self, external_model, **kwargs):
+        config = self.get_auth_config()
+        config.update(kwargs)
+        if self.auth_type in ['jwt-rest-token','rest-token']:
+            return rest.model_object(external_model, **config)
+        else:
+            return jsonrpc.model_object(external_model, **config)
