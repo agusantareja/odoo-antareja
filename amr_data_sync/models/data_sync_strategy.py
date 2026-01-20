@@ -251,7 +251,7 @@ class ExternalDataSyncStrategy(models.Model):
     def get_exclude_fields(self):
         exclude_fields = ['self']
         env = self.env
-        if exclude_fields:
+        if self.exclude_fields:
             exclude_fields.extend([p.strip() for p in self.exclude_fields.split(",")])
 
         # todo ambil dari configurasi
