@@ -51,6 +51,11 @@ class ExternalDataSyncStrategy(models.Model):
     server_sync_id = fields.Many2one(
         'external.server.sync'
     )
+    company_ids = fields.Many2many(
+        'res.company',
+        help="Company Filter"
+    )
+    filter_company_by_name = fields.Boolean(default=True)
     filter_last_update = fields.Boolean()
     # next_sync_datetime = fields.Datetime()
     # last_sync_datetime = fields.Datetime()
@@ -246,6 +251,9 @@ class ExternalDataSyncStrategy(models.Model):
     def get_exclude_fields(self):
         exclude_fields = ['self']
         env = self.env
+        if exclude_fields:
+            exclude_fields.extend([p.strip() for p in self.exclude_fields.split(",")])
+
         # todo ambil dari configurasi
         exclude_fields.extend(env['mail.thread']._fields.keys())
         exclude_fields.extend(env['mail.activity.mixin']._fields.keys())
@@ -275,7 +283,7 @@ class ExternalDataSyncStrategy(models.Model):
             return result[0]
         return result
 
-    def internal_lookup(self, item):
+    def internal_lookup(self, item,):
         item_data = convert_from_external_data(item)
         external_id = item_data.get('id')
         display_name = item_data.get('display_name')
@@ -443,6 +451,14 @@ class ExternalDataSyncStrategy(models.Model):
         domain = []
         if self.external_domain:
             domain = ast.literal_eval(self.external_domain) or []
+
+        if self.company_ids:
+            if self.filter_company_by_name:
+                list_name =self.company_ids.mapped("name")
+                domain.append(('company_id.name', 'in', list_name))
+            else:
+                domain.append(('company_id','in',self.company_ids))
+
         if self.filter_last_update:
             last_sync = self.env['external.data.sync'].get_last_sync_datetime(self)
             if last_sync:
@@ -498,6 +514,10 @@ class ExternalDataSyncStrategy(models.Model):
         }
         config.update(self.get_auth_config())
         return config
+
+    def internal_model_object(self):
+        if self.internal_model:
+            return self.env[self.internal_model]
 
     def remote_model_object(self, external_model, **kwargs):
         external_sync = self.get_external_sync()
@@ -633,4 +653,4 @@ class ExternalDataSyncStrategy(models.Model):
 
     def get_or_create_relation_from_external(self, list_of_int_or_dict, sync_related):
         # Create for many2many or one2many
-        pass
+        return [self.env['external.data.sync'].data_from_external(item, self) for item in list_of_int_or_dict]
