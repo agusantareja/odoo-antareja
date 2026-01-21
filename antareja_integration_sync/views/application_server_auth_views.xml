@@ -6,15 +6,15 @@
         <field name="inherit_id" ref="antareja_base.view_application_server_auth_form"/>
         <field name="arch" type="xml">
             <notebook position="inside">
-                <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
+                <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
                     <group>
                         <group string="JWT Token">
                             <field name="rest_token"/>
                             <field name="rest_refresh"/>
                         </group>
                         <group string="Get Token">
-                            <field name="odoo_username"/>
-                            <field name="odoo_password"/>
+                            <field name="username"/>
+                            <field name="password"/>
                             <button string="Get Token" type="object" name="action_login"/>
                         </group>
                     </group>

@@ -20,8 +20,35 @@ class ExternalServerSync(models.Model):
     application_server_auth_id = fields.Many2one('application.server.auth', string="Application Server Auth")
     application_server_path_id = fields.Many2one('application.server.path', string="Application Server Path")
 
+    def get_application_name(self):
+        if self.external_mode == 'server_auth':
+            return self.application_server_auth_id.get_application_name()
+        if self.external_mode == 'server_path':
+            return self.application_server_path_id.get_application_name()
+        return super(ExternalServerSync, self).get_application_name()
+
     def get_sync_path(self):
         return "/api/sync/data"
+
+    def get_base_url(self):
+        application_server = None
+        if self.external_mode == 'server_auth':
+            application_server = self.application_server_auth_id.application_server_id
+        elif self.external_mode == 'server_path':
+            application_server = self.application_server_path_id.application_server_auth_id.application_server_id
+        if application_server:
+            return application_server.get_endpoint_url()
+        return super(ExternalServerSync, self).get_base_url()
+
+    def get_db_uid_username_password(self):
+        rec = self.ensure_one()
+        if rec.external_mode == 'server_auth':
+            return rec.application_server_auth_id.get_db_uid_username_password()
+
+        if rec.external_mode == 'server_path':
+            return rec.application_server_path_id.application_server_auth_id.get_db_uid_username_password()
+
+        return super(ExternalServerSync, self).get_db_uid_username_password()
 
     def get_db_name_uid_password(self):
         rec = self.ensure_one()
@@ -54,11 +81,14 @@ class ExternalServerSync(models.Model):
     def get_external_data(self, model_name, domain=None, fields=None, offset=None, limit=None, count=False,
                           object_id=None, context=None):
         rec = self.ensure_one()
+        if not self.get_application_name():
+            raise UserError(_("Application Server is not set for External Server Sync '%s'") % rec.name)
+
         if rec.external_mode == 'server_auth':
             return rec.application_server_auth_id.get_external_data(
                 model_name, domain=domain, fields=fields, offset=offset,
                 limit=limit, count=count, object_id=object_id,
-                context=context,  path=rec.get_sync_path()
+                context=context, path=rec.get_sync_path()
             )
 
         if rec.external_mode == 'server_path':
@@ -72,3 +102,16 @@ class ExternalServerSync(models.Model):
             model_name, domain=domain, fields=fields, offset=offset, limit=limit,
             count=count, object_id=object_id, context=context
         )
+
+    def get_auth_config(self):
+        config = super(ExternalServerSync, self).get_auth_config()
+        application_server_auth = None
+        if self.external_mode == 'server_auth':
+            application_server_auth = self.application_server_auth_id
+
+        if self.external_mode == 'server_path':
+            application_server_auth = self.application_server_path_id.application_server_auth_id
+
+        if application_server_auth:
+            config['token_endpoint_url'] = application_server_auth.rest_url(application_server_auth.rest_login_path())
+        return config
