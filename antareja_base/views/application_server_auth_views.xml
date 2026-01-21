@@ -28,16 +28,13 @@
                     </div>
                     <group>
                         <group>
-                            <field name="application_server_id"/>
+                            <field name="auth_type"/>
                         </group>
                         <group>
-                            <field name="auth_type"/>
+                            <field name="application_server_id"  readonly="context.get('edit_from_server_form')" />
                         </group>
                     </group>
                     <notebook>
-                        <page string="Path" attrs="{'invisible':[('auth_type','!=','rest-token')]}">
-                            <field name="application_server_path_ids" context="{'edit_from_parent':True, 'default_application_server_id':parent.id}"/>
-                        </page>
                         <page string="Auth Rest" attrs="{'invisible':[('auth_type','!=','rest-token')]}">
                             <group>
                                 <group>
@@ -57,13 +54,19 @@
                             <group>
                                 <group>
                                     <field name="odoo_server_db"/>
+                                    <button string="Get db name" type="object" name="action_get_odoo_db_name"/>
                                     <field name="odoo_server_uid"/>
+                                    <button string="Get UID" type="object" name="action_get_odoo_server_uid"/>
                                 </group>
                                 <group>
                                     <field name="username"/>
                                     <field name="password"/>
+                                    <button string="Test" type="object" name="action_test_connection"/>
                                 </group>
                             </group>
+                        </page>
+                        <page string="Path" attrs="{'invisible':[('auth_type','!=','rest-token')]}" name="page_path">
+                            <field name="application_server_path_ids" context="{'edit_from_server_auth_form':True,'default_application_server_id': id,}"/>
                         </page>
                     </notebook>
                 </sheet>

@@ -29,8 +29,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="application_server_auth_id"/>
-                            <field name="application_server_id"/>
+                            <field name="application_server_auth_id" readonly="context.get('edit_from_server_auth_form')"/>
+                            <field name="application_server_id" />
                         </group>
                         <group>
                             <field name="path" string="Path" attrs="{'invisible':[('config_param_name','!=','')]}"/>

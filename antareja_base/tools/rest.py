@@ -11,6 +11,7 @@ from datetime import datetime, date
 from odoo.fields import Datetime, Date, Many2many, One2many
 from odoo.http import request
 from odoo.exceptions import AccessError
+
 _logger = logging.getLogger(__name__)
 
 
@@ -22,7 +23,7 @@ class JSONEncoder(json.JSONEncoder):
             return Datetime.to_string(obj)
         if isinstance(obj, date):
             return Date.to_string(obj)
-        return json.JSONEncoder.default(self, obj)
+        return super().default(obj)
 
 
 def get_body_json():
@@ -55,7 +56,7 @@ def invalid_response(status, error, info=""):
         content_type='application/json; charset=utf-8',
         response=json.dumps({
             'error': error,
-            'error_descrip': info,
+            'error_description': info,
         }),
     )
 
@@ -170,7 +171,7 @@ def eval_json_to_data(modelname, json_data, create=True):
     return values
 
 
-def object_read(model_name, params, status_code, filter_fields=None, __from_sync_data_api=True):
+def object_read(model_name, params, status_code, filter_fields=None, __from_sync_data_api=True, sudo_read=False):
     domain = []
     fields = []
     offset = 0
@@ -186,6 +187,8 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         context.update({'__from_sync_data_api': __from_sync_data_api})
 
     model = request.env[model_name].with_context(context)
+    if sudo_read:
+        model = model.sudo(sudo_read)
 
     if 'count' in params:
         count = ast.literal_eval(params['count']) or False
@@ -193,7 +196,7 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         count = False
 
     if count:
-        data_count = model.search_count(domain=domain)
+        data_count = model.search_count(domain)
         return valid_response(status=status_code, data={
             'count': data_count,
         })
@@ -208,7 +211,8 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
         order = params['order']
 
     if filter_fields:
-            fields = filter_fields(model_name, fields)
+        fields = filter_fields(model_name, fields)
+
     try:
         data = model.search_read(
             domain=domain, fields=fields, offset=offset, limit=limit, order=order
@@ -230,7 +234,9 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
             500, "Process error please contact Administrator", "Error: %s" % str(e)
         )
 
-def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True):
+
+def object_read_one(model_name, rec_id, params, status_code, filter_fields=None, __from_sync_data_api=True,
+                    sudo_read=False):
     fields = []
     if 'fields' in params:
         fields += ast.literal_eval(params['fields'])
@@ -252,6 +258,8 @@ def object_read_one(model_name, rec_id, params, status_code, filter_fields=None,
         fields = filter_fields(model_name, fields)
 
     model = request.env[model_name].with_context(context)
+    if sudo_read:
+        model = model.sudo(sudo_read)
     try:
         data = model.search_read(domain=[('id', '=', rec_id)], fields=fields)
         if data:
@@ -263,7 +271,6 @@ def object_read_one(model_name, rec_id, params, status_code, filter_fields=None,
         return invalid_response(
             403, "you don't have access to read records for " "this model", "Error: %s" % e.name
         )
-
 
 
 def object_create_one(model_name, data, status_code):

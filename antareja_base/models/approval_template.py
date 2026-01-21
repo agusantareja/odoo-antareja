@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, tools
+# v16 from odoo import tools,Command
+from odoo import models, fields, api,tools,Command
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import *
+from odoo.tools import float_compare
 from odoo.tools.safe_eval import safe_eval, test_python_expr
+from pytz import timezone
+from ..tools.utils import safe_call_method
 
-from ..tools.utils import *
 import base64
 import logging
-
-from pytz import timezone
 
 _logger = logging.getLogger(__name__)
 
@@ -113,6 +113,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
             'transaction_object': transaction_object,
             'approval_template': self,
         }
+        # v16, time,datetime,dateutil,Command
         return {
             'env': self.env,
             'uid': self._uid,
@@ -139,6 +140,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
                 raise ValidationError(msg)
 
     def _run_action_code_multi(self, eval_context):
+        #v16 filename=str(self))
         safe_eval(self.code.strip(), eval_context, mode="exec", nocopy=True,
                   filename=str(self))  # nocopy allows to return 'action'
         return eval_context.get('response')

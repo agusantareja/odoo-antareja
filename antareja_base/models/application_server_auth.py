@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from requests import RequestException
 from odoo import models, fields, api, _
-import requests
-import base64
-import logging
+from odoo.exceptions import UserError
 
+import requests
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -21,9 +22,10 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         ('body', 'Body')
     ], default='header')
     rest_token_key = fields.Char(
-        default='access_token'
+        default='basic'
     )
     rest_token = fields.Char()
+    rest_refresh = fields.Char()
 
     def rest_endpoint_url(self):
         raise NotImplemented
@@ -38,30 +40,8 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
             path = f'/{path}'
         return f"{rest_endpoint}{path}"
 
+    @api.model
     def rest_headers(self, headers=None):
-        if self.rest_token_in == 'basic':
-            return self.rest_basic_header(headers)
-        if self.rest_token_in == 'bearer':
-            return self.rest_bearer_header(headers)
-        if self.rest_token_in == 'header':
-            if headers is None:
-                headers = {}
-            headers[self.rest_token_key] = self.get_rest_token()
-        return headers
-
-    def rest_basic_header(self, headers=None):
-        if headers is None:
-            headers = {}
-        username, password = self.get_username_password()
-        token = f"{username}:{password}"
-        encoded = base64.b64encode(token.encode()).decode()
-        headers['Authorization'] = f"Basic {encoded}"
-        return headers
-
-    def rest_bearer_header(self, headers=None):
-        if headers is None:
-            headers = {}
-        headers['Authorization'] = f'Bearer {self.ensure_token()}'
         return headers
 
     def rest_params(self, params):
@@ -74,11 +54,7 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         return self.get_rest_token()
 
     def rest_profile(self):
-        rec = self.ensure_one()
-        url = rec.rest_url(rec.rest_profile_path())
-        response = requests.get(url, rec.rest_bearer_header())
-        response.raise_for_status()
-        return response.json()
+        raise NotImplemented
 
     def rest_get(self, path="", params=None, headers=None, **kwargs):
         rec = self.ensure_one()
@@ -108,66 +84,87 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
     def get_odoo_server_db(self):
         return self.odoo_server_db
 
+    def get_odoo_server_uid(self):
+        return self.odoo_server_uid
+
+    def get_db_uid_username_password(self):
+        raise NotImplemented
+
     def get_odoo_username_password(self):
         raise NotImplemented
+
+    @api.model
+    def get_jsonrpc_db_name(self):
+        return '/sync/db_name'
 
     @api.model
     def get_jsonrpc_path(self):
         return '/jsonrpc'
 
-    def jsonrpc_authenticate(self):
-        db = self.odoo_server_db
-        uid = self.odoo_server_uid
-        username, password = self.get_odoo_username_password()
-        if not uid:
-            # 1. Authenticate
-            auth_payload = {
-                "jsonrpc": "2.0",
-                "method": "call",
-                "params": {
-                    "service": "common",
-                    "method": "authenticate",
-                    "args": [db, username, password, {}]
-                },
-                "id": 1,
+    @api.model
+    def get_jsonrpc_url(self):
+        return self.rest_url(self.get_jsonrpc_path())
+
+    def action_get_odoo_db_name(self):
+        url = self.rest_url(self.get_jsonrpc_db_name())
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            result = response.json()
+            db = result.get('db')
+            if not db:
+                raise UserError('DB not found')
+            self.odoo_server_db=db
+        except RequestException as e:
+            raise UserError(str(e))
+
+    def action_get_odoo_server_uid(self):
+        try:
+            db, uid, password = self.jsonrpc_authenticate()
+            if uid:
+                self.write({'odoo_server_uid': uid})
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Info',
+                        'message': _("Get UID successful. (DB: %s, UID: %s)") % (db, uid),
+                        'type': 'info',
+                    }
+                }
+            else:
+                raise UserError(_("Authentication failed. Please check your credentials."))
+        except Exception as e:
+            raise UserError(_("Connection failed: %s") % str(e))
+
+    def action_test_connection(self):
+        try:
+            db, uid, password = self.jsonrpc_authenticate()
+            if not uid:
+                raise UserError(_("Authentication failed. Please check your credentials."))
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Info',
+                    'message': _("Connection successful. (DB: %s, UID: %s)") % (db, uid),
+                    'type': 'info',
+                }
             }
-            res = self.rest_post(self.get_jsonrpc_path(), json=auth_payload).json()
-            uid = res.get("result")
-        return db, uid, password
+        except Exception as e:
+            raise UserError(_("Connection failed: %s") % str(e))
+
+    def jsonrpc_post(self, obj_payload):
+        raise NotImplemented
+
+    def jsonrpc_authenticate(self):
+        raise NotImplemented
+
+    def jsonrpc_execute_kw(self, model, method, args, kw=None, db=None, uid=None, password=None):
+        raise NotImplemented
 
     def jsonrpc_call(self, model, method, args, kw=None, db=None, uid=None, password=None):
-        if not db or not uid or not password:
-            db, uid, password = self.jsonrpc_authenticate()
-        args = [
-            db,
-            uid,
-            password,
-            model,
-            method,
-            args,
-            kw
-        ]
-        obj_payload = {
-            "jsonrpc": "2.0",
-            "method": "call",
-            "params": {
-                "service": "object",
-                "method": "execute_kw",
-                "args": args,
-            },
-            "id": 2,
-        }
-        try:
-            response = self.rest_post(self.get_jsonrpc_path(), json=obj_payload)
-            response.raise_for_status()
-            json_data = response.json()
-            if "error" in json_data:
-                raise Exception(f"Odoo Error: {json_data['error']}")
-            return json_data.get("result")
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Network Error: {str(e)}")
-        except Exception as e:
-            raise Exception(f"Unexpected Error: {str(e)}")
+        raise NotImplemented
 
 
 class ApplicationServerAuth(models.Model):
@@ -198,6 +195,17 @@ class ApplicationServerAuth(models.Model):
     def get_odoo_username_password(self):
         return self.username, self.password
 
+    def get_odoo_db_username_password(self):
+        db = self.get_odoo_server_db()
+        username, password = self.get_odoo_username_password()
+        return db, username, password
+
+    def get_db_uid_username_password(self):
+        db = self.get_odoo_server_db()
+        uid = self.get_odoo_server_uid()
+        username, password = self.get_odoo_username_password()
+        return db, uid, username, password
+
     def get_rest_token(self):
         return self.get_value_config_param(value_without_config_param=self.rest_token)
 
@@ -206,3 +214,15 @@ class ApplicationServerAuth(models.Model):
         endpoint_url = self.application_server_id.get_endpoint_url()
         _logger.info(f"Endpoint URL : {endpoint_url}")
         return self.application_server_id.get_endpoint_url()
+
+    def action_open_view(self):
+        self.ensure_one()
+        context = dict(self.env.context, default_application_server_id=self.id)
+        return {
+            'name': _('Server Auth'),
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'context': context
+        }

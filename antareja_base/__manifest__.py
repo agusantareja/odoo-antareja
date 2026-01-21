@@ -10,14 +10,14 @@
         Notification
         Task Approval
         Authentication
-        Resilience for API Call
+        Reporting
         Jwt
         Authority
     """,
     'author': "Agus Muhammad Ramdan",
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
-    'version': '16.0.0.0.1',
+    'version': '16.0.0.2.1',
     # any module necessary for this one to work correctly
     'depends': ['base', 'base_setup', 'mail'],
     # always loaded
@@ -32,6 +32,7 @@
         'views/approval_template_views.xml',
         'views/approval_instance_views.xml',
         'views/res_config_settings_views.xml',
+        'views/menuitem.xml',
         'wizard/popup_reject.xml',
     ],
     'demo': [],
