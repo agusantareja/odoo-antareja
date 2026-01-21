@@ -54,6 +54,7 @@ class NotificationMobileTemplate(models.Model):
         notification = {}
         for field in fields:
             Template = Template.with_context(safe=field in {'title'})
+            #v16
             notification[field] = Template._render_template(getattr(template, field), template.model, [res_id])[res_id]
         data ={
             'source_application': self.get_application_name(),

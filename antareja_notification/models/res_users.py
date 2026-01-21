@@ -12,6 +12,7 @@ class ResUsers(models.Model):
 
     def send_odoobot_message(self, message):
         """Kirim pesan lewat OdooBot ke user ini"""
+        #v16
         odoobot = self.env.ref('base.partner_root')
         for user in self:
             if self._uid != user.id:

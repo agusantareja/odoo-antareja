@@ -107,6 +107,7 @@ class NotificationTemplate(models.Model):
 
         self.ensure_one()
         if self.template_email and kwargs.get('send_notification_email', True):
+            #v16
             values = self.template_email.with_context(notification_to_user=notification_to_user).generate_email(
                 res_id, ['subject', 'body_html',
                          'email_from',
