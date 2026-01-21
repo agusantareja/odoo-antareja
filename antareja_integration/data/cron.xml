@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record model="ir.cron" id="api_call_retry_cron">
-        <field name="name">External Data Sync Cron</field>
+        <field name="name">Call Retry Sync Cron</field>
         <field name="model_id" ref="model_api_call_retry"/>
         <field name="state">code</field>
         <field name="code">model.cron_retry()</field>
