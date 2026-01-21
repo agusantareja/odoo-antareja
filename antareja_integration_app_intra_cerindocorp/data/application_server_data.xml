@@ -15,7 +15,7 @@
         <record model="application.server.auth" id="application_server_auth_sync">
             <field name="name">auth.sync</field>
             <field name="application_server_id" ref="application_server"/>
-            <field name="auth_type">rest-token</field>
+            <field name="auth_type">odoo-rcp</field>
         </record>
     </data>
 </odoo>
