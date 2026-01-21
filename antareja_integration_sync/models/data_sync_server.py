@@ -114,21 +114,4 @@ class ExternalServerSync(models.Model):
 
         if application_server_auth:
             config['token_endpoint_url'] = application_server_auth.rest_url(application_server_auth.rest_login_path())
-        # config['token_endpoint_url']
-        # auth_type = self.server_sync_id.auth_type
-        # token_key = self.server_sync_id.token_key
-        # access_token = self.server_sync_id.token_value
-        # if auth_type == 'token':
-        #     auth_type = self.server_sync_id.token_in
-        # db, uid, username, password = self.get_db_uid_username_password()
         return config
-        # return {
-        #     'db': db,
-        #     'uid': uid,
-        #     'username': username,
-        #     'password': password,
-        #     'auth_mode': auth_type,
-        #     'token_key': token_key,
-        #     'access_token': access_token,
-        #     'token_endpoint_url': None
-        # }
