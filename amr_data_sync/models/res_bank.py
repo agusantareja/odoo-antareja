@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
-import requests
-from odoo import models, fields, api
-from odoo.addons.base.models.ir_fields import exclude_ref_fields
-from odoo.exceptions import UserError
-from odoo.tools import image_process
-import json
+
+from odoo import models
 import logging
-from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
 
-class ResPartnerUsers(models.Model):
-    _inherit = 'res.partner'
+class Bank(models.Model):
+    _name = 'res.bank'
+    _inherit = [_name, 'internal.data.name.mixin']
 
     def lookup_internal_from_external_data(self, item, **kwargs):
         item_dict = {}
@@ -26,7 +22,7 @@ class ResPartnerUsers(models.Model):
 
         if item_dict:
             domain = []
-            if item_dict.get('email'):
-                domain.append(('email', '=', item_dict.get('email')))
+            if item_dict.get('name'):
+                domain.append(('name', '=', item_dict.get('name')))
                 return self.sudo().search(domain, limit=1)
         return self.browse()

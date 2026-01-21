@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields
+from odoo import models, fields, _
 from datetime import datetime
 from odoo.tools.safe_eval import safe_eval
 
-from ..tools.utils import is_callable_method,has_kwargs
+from ..tools.utils import is_callable_method, has_kwargs
 
 
 class ExternalDataMapping(models.Model):
@@ -26,11 +26,17 @@ class ExternalDataMapping(models.Model):
         required=True,
         ondelete='cascade'
     )
-    name = fields.Char()
+    relation_strategy_id = fields.Many2one(
+        'external.data.sync.strategy',
+        string='Relation Strategy',
+        ondelete='cascade'
+    )
+    name = fields.Char('Name')
     description = fields.Text()
     internal_field = fields.Char()
     mapping_strategy = fields.Selection([
         ('field_mapping', 'Field Mapping'),
+        ('many2one', 'Many 2 One'),
         ('constant', 'Constant'),
         ('function', "Function"),
         ('eval_script', "Eval"), ],
@@ -62,11 +68,27 @@ class ExternalDataMapping(models.Model):
             else:
                 rec.constant_simple_value = False
 
+    def mapping_data(self, external_data, model=None, parent_data_sync=None, field=None):
 
-    def mapping_data(self, external_data, model=None):
-        if self.mapping_strategy == 'field_mapping':
-            if self.key_name in external_data:
-                return external_data[self.key_name]
+        if self.mapping_strategy == 'many2one':
+            related_external_data_sync_id = self.env['external.data.sync'].get_or_create(
+                external_data, self.relation_strategy_id
+            )
+            if parent_data_sync:
+                field_name = self.internal_field or self.key_name
+                related = parent_data_sync.related_ids.create_or_get_related(
+                    parent_data_sync, field_name, 'many2one',
+                    related_sync_strategy_id=self.relation_strategy_id,
+                    related_external_data_sync_id=related_external_data_sync_id,
+                    field_required=field and field.required
+                )
+                if related:
+                    return related.get_data_relation()
+
+        elif self.mapping_strategy == 'field_mapping':
+            key_name = self.key_name or self.internal_field
+            if key_name in external_data:
+                return external_data[key_name]
             else:
                 return None
         elif self.mapping_strategy == 'constant':
@@ -94,8 +116,12 @@ class ExternalDataMapping(models.Model):
                 return datetime.strptime(self.constant_value, '%Y-%m-%d').date()
             elif self.constant_value_type == 'datetime':
                 return datetime.strptime(self.constant_value, '%Y-%m-%d %H:%M:%S')
-        elif self.mapping_strategy == 'function' and is_callable_method(model, self.function_name):
-            func = getattr(model, self.function_name)
+        elif self.mapping_strategy == 'function':
+            if field.relational and field.comodel_name and field.comodel_name in self.env \
+                    and is_callable_method(self.env[field.comodel_name], self.function_name):
+                func = getattr(self.env[field.comodel_name], self.function_name)
+            else:
+                func = getattr(model, self.function_name)
             if has_kwargs(func):
                 return func(
                     external_data=external_data,
@@ -104,16 +130,30 @@ class ExternalDataMapping(models.Model):
             else:
                 return func()
         elif self.mapping_strategy == 'eval_script':
+            eval_script = self.eval_script and self.eval_script.strip()
+            if not eval_script:
+                return None
             try:
-                eval_context = {'env': self.env, 'model': model,
+                eval_context = {'env': self.env,
+                                'model': model,
                                 'external_data': external_data,
-                                'sync_strategy': self.sync_strategy_id
+                                'sync_strategy': self.sync_strategy_id,
+                                'field': field
                                 }
-                safe_eval(self.eval_script.strip(), eval_context, mode="exec",
-                          nocopy=True,
-                          filename=str(self))  # nocopy allows to return 'value'
+                safe_eval(eval_script, eval_context, mode="exec", nocopy=True)
+                # nocopy allows to return 'value'
                 return eval_context.get('value')
             except Exception as e:
                 raise ValueError(f"Error evaluating script: {e}")
         else:
             raise ValueError("Invalid mapping strategy")
+
+    def action_open_view(self):
+        self.ensure_one()
+        return {
+            'name': _('Internal Data'),
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+        }
