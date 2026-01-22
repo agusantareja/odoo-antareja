@@ -1,0 +1,124 @@
+<odoo>
+  <data>
+	  <record id="cni_vendor_approval_form" model="ir.ui.view">
+		<field name="name">cni.vendor.approval</field>
+		<field name="model">vendor.approval</field>
+		<!--field name="inherit_id" ref="base.view_partner_form"/-->
+		<field name="inherit_id" ref="metalindo_vendor.metalindo_view_partner_form_inherit"/>
+		<field name="arch" type="xml">
+			<sheet position="before">
+				<header>
+					<button string="Reject" name="button_reject" type="object"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'waiting')]}"/>
+					<button string="Approve" name="button_approve" type="object" class="oe_highlight"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'waiting')]}"/>
+					<button string="Cancel Approval" name="button_cancel" type="object"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'approved'), ('state_action', '!=', False)]}"/>
+					<button string="Cancel Rejection" name="button_cancel" type="object"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'reject'), ('state_action', '!=', False)]}"/>
+					
+					<button string="Request Blacklist" name="button_request_blacklist" type="object"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'approved'), ('state_action', '!=', False)]}"/>
+					<button string="Reject" name="button_reject_blacklist" type="object"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state_action', '!=', 'blackwait')]}"/>
+					<button string="Blacklist" name="button_blacklist" type="object" class="oe_highlight"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state_action', '!=', 'blackwait')]}"/>
+
+					<button string="Request Whitelist" name="button_request_whitelist" type="object"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'blacklist'), ('state_action', '!=', False)]}"/>
+					<button string="Reject" name="button_reject_whitelist" type="object"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state_action', '!=', 'whitewait')]}"/>
+					<button string="Whitelist" name="button_whitelist" type="object" class="oe_highlight"
+						groups="metalindo_approval.group_metalindo_vendor_approval"
+						attrs="{'invisible': ['|', ('active', '=', False), ('state_action', '!=', 'whitewait')]}"/>
+					<!--
+					<field name="state" widget="statusbar" readonly="1"
+						attrs="{'invisible': ['|', '|', ('active', '=', False)]}"/>
+					-->
+					<field name="state" widget="statusbar" readonly="1"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state_action', '!=', False)]}"/>
+					<field name="state_action" widget="statusbar" readonly="1"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state_action', '=', False)]}"/>
+					<!--
+					<field name="state_whitelist" widget="statusbar" readonly="1"
+						attrs="{'invisible': ['|', '|', ('active', '=', False), ('state_whitelist', '=', False), ('state_whitelist', '=', 'whitelist')]}"/>
+					-->
+					
+				</header>
+			</sheet>
+
+			<xpath expr="//widget[@name='web_ribbon']" position="after">
+				<widget name="web_ribbon" title="Blacklist" bg_color="bg-dark" attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'blacklist')]}"/>
+				<widget name="web_ribbon" title="Reject" bg_color="bg-warning" attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'reject')]}"/>
+			</xpath>
+
+			<xpath expr="//field[@name='name']" position="attributes">
+				<attribute  name="attrs">{'required': [('type', '=', 'contact')], 'readonly': [('state', '!=', 'waiting')]}</attribute>
+			</xpath>
+			<xpath expr="//field[@name='company_type']" position="attributes">
+				<attribute  name="attrs">{'readonly': [('state', '!=', 'waiting')]}</attribute>
+			</xpath>
+			<xpath expr="//field[@name='vat']" position="attributes">
+				<attribute name="attrs">{'readonly': [('state', '!=', 'waiting')]}</attribute>
+			</xpath>
+
+			<notebook position="inside">
+				<page name="approval_page" string="Approval">
+					<group>
+						<group>
+							<field name="create_uid" readonly="1"/>
+							<field name="create_date" readonly="1"/>
+							<field name="approve_by" readonly="1"/>
+							<field name="approve_date" readonly="1"/>
+						</group>
+						<group>
+							<field name="reject_by" readonly="1"/>
+							<field name="reject_date" readonly="1"/>
+							<field name="cancel_by" readonly="1"/>
+							<field name="cancel_date" readonly="1"/>
+						</group>
+					</group>
+				</page>
+				<page name="blacklist_page" string="Blacklist" attrs="{'invisible': [('blacklist_reason', '=', False)]}">
+					<group>
+						<group>
+							<field name="blacklist_reason" readonly="1"/>
+							<field name="request_blacklist_by" readonly="1"/>
+							<field name="request_blacklist_date" readonly="1"/>
+						</group>
+						<group>
+							<field name="blacklist_by" readonly="1"/>
+							<field name="blacklist_date" readonly="1"/>
+							<field name="reject_blacklist_by" readonly="1"/>
+							<field name="reject_blacklist_date" readonly="1"/>
+						</group>
+					</group>
+				</page>
+				<page name="whitelist_page" string="Whitelist" attrs="{'invisible': [('whitelist_reason', '=', False)]}">
+					<group>
+						<group>
+							<field name="whitelist_reason" readonly="1"/>
+							<field name="request_whitelist_by" readonly="1"/>
+							<field name="request_whitelist_date" readonly="1"/>
+						</group>
+						<group>
+							<field name="whitelist_by" readonly="1"/>
+							<field name="whitelist_date" readonly="1"/>
+							<field name="reject_whitelist_by" readonly="1"/>
+							<field name="reject_whitelist_date" readonly="1"/>
+						</group>
+					</group>
+				</page>
+			</notebook>
+
+		  </field>
+	  </record>
+  </data>
+</odoo>

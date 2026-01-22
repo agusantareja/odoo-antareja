@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="matrix_approval_addition_deletion_revision" model="cni.matrix.approval">
+            <field name="form_id" ref="model_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+        </record>
+
+        <record id="matrix_approval_line_1" model="cni.matrix.approval.line">
+            <field name="group_id" ref="metalindo_inventory.group_metalindo_inventory_adr_mir_mr"/>
+            <field name="seq">0</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">5</field>
+        </record>
+
+        <record id="matrix_approval_line_2" model="cni.matrix.approval.line">
+            <field name="seq">1</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_3" model="cni.matrix.approval.line">
+            <field name="seq">2</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_4" model="cni.matrix.approval.line">
+            <field name="seq">3</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">50000000</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_5" model="cni.matrix.approval.line">
+            <field name="seq">4</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">100000000</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_6" model="cni.matrix.approval.line">
+            <field name="seq">5</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">500000000</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_7" model="cni.matrix.approval.line">
+            <field name="seq">6</field>
+            <field name="group_id" ref="metalindo_inventory.group_metalindo_inventory_cataloger"/>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_8" model="cni.matrix.approval.line">
+            <field name="seq">7</field>
+            <field name="group_id" ref="metalindo_inventory.group_metalindo_inventory_spv_cataloguer"/>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_9" model="cni.matrix.approval.line">
+            <field name="seq">8</field>
+            <field name="group_id" ref="metalindo_inventory.group_metalindo_suptent_inventory"/>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+
+        <record id="matrix_approval_line_10" model="cni.matrix.approval.line">
+            <field name="seq">9</field>
+            <field name="approval_id" ref="matrix_approval_addition_deletion_revision"/>
+            <field name="currency_id" ref="base.IDR"/>
+            <field name="limit">0</field>
+            <field name="approval_type">2</field>
+        </record>
+    </data>
+</odoo>

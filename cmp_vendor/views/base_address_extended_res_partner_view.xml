@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="address_street_extended_city_form_inherit" model="ir.ui.view">
+			<field name="name">metalindo.vendor.address_street_extended_city_form.inherit</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="base_address_extended.address_street_extended_city_form"/>
+			<field name="arch" type="xml">
+				<field name="city" position="before">
+					<field name="supplier_readonly" invisible="1"/>
+				</field>
+				<xpath expr="//field[@name='city']" position="attributes">
+					<attribute name="attrs">
+						{
+							'invisible': [
+								('country_enforce_cities', '=', True),
+								'|', ('city_id', '!=', False), ('city', 'in', ('', False))
+							],
+							'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;' , ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+						}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='city_id']" position="attributes">
+					<attribute name="attrs">
+						{
+							'invisible': [('country_enforce_cities', '=', False)],
+							'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+						}
+					</attribute>
+					<!-- dari filter_city_id_on_view_partner_form -->
+					<attribute name="domain">
+							[('country_id', '=', country_id), ('state_id', '=', state_id)]
+					</attribute>
+				</xpath>
+			</field>
+		</record>
+	</data>
+<!--	<record id="filter_city_id_on_view_partner_form" model="ir.ui.view">-->
+<!--				<field name="name">filter.city_id.on.view_partner_form</field>-->
+<!--				<field name="model">res.partner</field>-->
+<!--				<field name="inherit_id" ref="base_address_extended.address_street_extended_city_form"/>-->
+<!--				<field name="arch" type="xml">-->
+<!--					<xpath expr="//field[@name='city_id']" position="attributes">-->
+<!--						<attribute name="domain" separator=")" remove="]" add=", ('state_id', '=', state_id)]"/>-->
+<!--					</xpath>-->
+<!--				</field>-->
+<!--			</record>-->
+</odoo>

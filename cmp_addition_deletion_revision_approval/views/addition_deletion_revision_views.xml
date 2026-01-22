@@ -1,0 +1,184 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="cmp_warning_information_addition_deletion_revision_form">
+            <field name="name">cmp.warning.information.addition.deletion.revision.form</field>
+            <field name="model">addition.deletion.revision</field>
+            <field name="priority">1000</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="alert alert-danger" role="alert">
+                            <table width="100%">
+                                <tr>
+                                    <td>
+                                        <field name="warning_information" readonly="1" nolabel="1"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <footer>
+                            <button name="button_approve_approval" string="Approve" type="object" class="btn btn-primary" context="{'action': 'from_wizard'}"/>
+                            <button string="Cancel" class="btn btn-secondary" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="cmp_approval_addition_deletion_revision_form" model="ir.ui.view">
+            <field name="name">cmp.approval.addition.deletion.revision.form</field>
+            <field name="model">addition.deletion.revision</field>
+            <field name="inherit_id" ref="metalindo_inventory.metalindo_addition_deletion_revision_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <!-- Kalo di button RFA ini ditambah attrs invisible: originator_id != uid, muncul malformed string -->
+                    <button string="Request Approval" name="button_request_approval" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('archive', '=', True), ('adr_status', '!=', 'draft')]}"/>
+                    <field name="is_approver" invisible="1"/>
+                    <button string="Reject" name="%(metalindo_approval.cni_reject_approval_wizard_action)d" type="action" attrs="{'invisible': ['|', ('adr_status','!=','waiting'), ('is_approver','=',False)]}" context="{'model_name':'addition.deletion.revision','update_value':{'adr_status':'draft'}}" />
+                </xpath>
+                <xpath expr="//sheet" position="after">
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="can_edit" groups="base.group_no_one"/>
+                    <field name="mandatory" groups="base.group_no_one"/>
+                    <field name="line_readonly" invisible="1"/>
+                    <field name="spv_cataloger_approved" invisible="1"/>
+                </xpath>
+                <xpath expr="//button[@name='action_approve_request']" position="replace">
+                    <button string="Approve" name="button_approve_approval" type="object" class="oe_highlight" attrs="{'invisible': ['|', '|', ('archive', '=', True), ('adr_status', '!=', 'waiting'), ('is_approver','=',False)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='adr_status']" position="attributes">
+                    <attribute name="statusbar_visible">draft,waiting,done</attribute>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Approval">
+                        <field name="approval_ids" readonly="1">
+                            <tree string="Approval" default_order="seq">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="seq" invisible="1"/>
+                                <field name="group_id" />
+                                <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="sts"/>
+                                <field name="reason"/>
+                                <field name="pelaksana_id"/>
+                                <field name="tanggal"/>
+                                <field name="can_edit" groups="base.group_no_one"/>
+                                <field name="mandatory" groups="base.group_no_one"/>
+                                <field name="reject_to_id" groups="base.group_no_one"/>
+                            </tree>
+                            <form string="Approval">
+                                <group>
+                                    <group>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="seq" invisible="1"/>
+                                        <field name="group_id"/>
+                                        <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="sts"/>
+                                    </group>
+                                    <group>
+                                        <field name="reason"/>
+                                        <field name="pelaksana_id"/>
+                                        <field name="tanggal"/>
+                                        <field name="can_edit" groups="base.group_no_one"/>
+                                        <field name="mandatory" groups="base.group_no_one"/>
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+                <xpath expr="//header" position="after">
+                    <div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('adr_status', '!=', 'waiting'), ('flag_reject', '=', True)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="alert_waiting_approval" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="alert alert-danger" role="alert" attrs="{'invisible': ['|', ('adr_status', 'not in', ['draft', 'waiting']), ('flag_reject', '=', False)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="note_reject" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <field name="flag_reject" invisible="1"/>
+                    <div class="alert alert-info" role="alert" attrs="{'invisible': [('adr_status', '!=', 'approved')]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="alert_waiting_finalized" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="alert alert-info" role="alert" attrs="{'invisible': [('adr_status', '!=', 'final')]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="alert_waiting_hs_code" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('line_readonly', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='reason']" position="attributes">
+                    <attribute name="attrs">{'readonly': ['|', ('archive', '=', True), ('adr_status', 'in', ('waiting','done','hscode'))]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='refer_to']" position="attributes">
+                    <attribute name="attrs">{'readonly': ['|', ('archive', '=', True), ('adr_status', 'in', ('waiting','done','hscode'))]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='analytic_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': ['|', ('archive', '=', True), ('adr_status', 'in', ('waiting','done','hscode'))]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='currency_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': ['|', ('archive', '=', True), ('adr_status', 'in', ('waiting','done','hscode'))]}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="cmp_approval_addition_deletion_revision_search" model="ir.ui.view">
+            <field name="name">cmp.approval.addition.deletion.revision.search</field>
+            <field name="model">addition.deletion.revision</field>
+            <field name="inherit_id" ref="metalindo_inventory.metalindo_addition_deletion_revision_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='adr_approved']" position="before">
+                    <filter string="To Do" name="todo" domain="[('todo', '=', True)]"/>
+                    <filter string="Waiting for Approval" name="adr_waiting" domain="[('adr_status', '=', 'waiting')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='adr_done']" position="after">
+                    <group expand="0" string="Group By">
+                        <filter string="Approval Group Status" name="approval_group_status" context="{'group_by': 'approval_group_status'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="metalindo_inventory.metalindo_addition_deletion_revision_action" model="ir.actions.act_window">
+            <field name="context">{'search_default_todo': 1}</field>
+        </record>
+    </data>
+</odoo>

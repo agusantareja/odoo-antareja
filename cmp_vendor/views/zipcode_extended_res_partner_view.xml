@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="address_street_extended_city_form_inherit" model="ir.ui.view">
+			<field name="name">metalindo.vendor.view_partner_form.inherit</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="zipcode_extended.address_street_extended_city_form_inherit"/>
+			<field name="arch" type="xml">
+				<field name="zip" position="before">
+					<field name="supplier_readonly" invisible="1"/>
+				</field>
+				<xpath expr="//field[@name='zip']" position="attributes">
+					<attribute name="attrs">
+						{
+                            'invisible': [
+                                ('country_enforce_cities', '=', True),
+                                '|', ('zipcode_id', '!=', False), ('zip', 'in', ('',False))
+                            ],
+                            'readonly': [
+								'|', ('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False)
+							]
+                        }
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='zipcode_id']" position="attributes">
+					<attribute name="attrs">
+						{
+                            'invisible': [('country_enforce_cities', '=', False)],
+                            'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False)
+							]
+                        }
+					</attribute>
+				</xpath>
+			</field>
+		</record>
+	</data>
+
+</odoo>

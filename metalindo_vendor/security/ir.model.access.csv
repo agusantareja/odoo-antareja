@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vendor_code_user,metalindo.vendor.code.user,model_vendor_code,base.group_user,1,1,1,1
+access_res_city_user,res.city.user,base_address_extended.model_res_city,base.group_user,1,0,0,0
+access_vendor_document_user,vendor.document.user,model_vendor_document,purchase.group_purchase_user,1,1,1,1
+access_vendor_document_type_user,vendor.document.type.user,model_vendor_document_type,purchase.group_purchase_user,1,1,1,1

@@ -1,0 +1,63 @@
+<odoo>
+		<record id="cni_vendor_blacklist_wizard" model="ir.ui.view">
+			<field name="name">cni.vendor.blacklist.wizard</field>
+			<field name="model">vendor.blacklist.wizard</field>
+			<field name="arch" type="xml">
+				<form string="Vendor Blacklist">
+					<field name="vendor_id" invisible="1"/>
+					<field name="blacklist_reason" required="1"/>
+					<footer>
+						<button name="action_blacklist" string="Blacklist" type="object" class="btn-primary"/>
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<!-- The <act_window> tag is deprecated, use a <record> tag		
+		<act_window name="Vendor Blacklist Reason"
+			res_model="vendor.blacklist.wizard"
+			binding_model="res.partner"
+			view_mode="form"
+			target="new"
+			id="cni_vendor_blacklist_wizard_action"
+			/>
+		-->
+		<record id="cni_vendor_blacklist_wizard_action" model="ir.actions.act_window">
+			<field name="name">Vendor Blacklist Reason</field>
+			<field name="res_model">vendor.blacklist.wizard</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
+			<field name="binding_model_id" ref="model_res_partner" />
+		</record>
+
+		<record id="cni_vendor_whitelist_wizard" model="ir.ui.view">
+			<field name="name">cni.vendor.whitelist.wizard</field>
+			<field name="model">vendor.whitelist.wizard</field>
+			<field name="arch" type="xml">
+				<form string="Vendor Whitelist">
+					<field name="vendor_id" invisible="1"/>
+					<field name="whitelist_reason" required="1"/>
+					<footer>
+						<button name="action_whitelist" string="Whitelist" type="object" class="btn-primary"/>
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<!-- The <act_window> tag is deprecated, use a <record> tag
+		<act_window name="Vendor Whitelist Reason"
+			res_model="vendor.whitelist.wizard"
+			binding_model="res.partner"
+			view_mode="form"
+			target="new"
+			id="cni_vendor_whitelist_wizard_action"
+			/>
+		-->
+		<record id="cni_vendor_whitelist_wizard_action" model="ir.actions.act_window">
+			<field name="name">Vendor Whitelist Reason</field>
+			<field name="res_model">vendor.whitelist.wizard</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
+			<field name="binding_model_id" ref="model_res_partner" />
+		</record>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Group kategory ini untuk group yang di buat khusus saat job tersebut mempunyai employee user -->
+        <record model="ir.module.category" id="category_employee_job">
+          <field name="name">Group Job</field>
+          <field name="description">Group related with Employee job</field>
+          <field name="sequence">100</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="approval_template" model="approval.template">
+            <field name="model_id" ref="model_res_partner"/>
+            <field name="approval_task_line_model_id" ref="metalindo_approval.model_cni_approval_transaction"/>
+            <field name="state_field">state</field>
+            <field name="state_waiting_approvals">waiting</field>
+            <field name="state_reject">draft</field>
+            <field name="state_approved">approved</field>
+            <field name="view_name">vendor approval</field>
+            <field name="notification_approval_id" ref="cmp_metalindo_vendor_approval.notification_template_approval_task"/>
+            <field name="code">
+response['transaction_requester']=user
+            </field>
+            <field name="invoke_validate_request_approval">_prevent_empty_address_fields</field>
+            <field name="invoke_approval_start">event_approval_start</field>
+            <field name="invoke_approval_done">event_approval_done</field>
+        </record>
+    </data>
+</odoo>

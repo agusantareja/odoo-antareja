@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="whatsapp_api_end_point" model="whatsapp.api">
+            <field name="name">WhatsApp API (Send Message)</field>
+            <field name="endpoint">http://whatsapp-bot.asia-southeast2-a.c.ps-id-cmprima-trial04072022.internal:8006/api/send/whatsapp/notif</field>
+            <field name="header">{"X-API-Token": "INSERT_API_TOKEN_HERE"}</field>
+        </record>
+
+        <record id="whatsapp_api_end_point_param_phone" model="whatsapp.api.param">
+            <field name="name">phone</field>
+            <field name="api_id" ref="whatsapp_api_end_point"/>
+        </record>
+
+        <record id="whatsapp_api_end_point_param_message" model="whatsapp.api.param">
+            <field name="name">message</field>
+            <field name="api_id" ref="whatsapp_api_end_point"/>
+        </record>
+
+        <record id="whatsapp_api_end_point_param_ref" model="whatsapp.api.param">
+            <field name="name">ref</field>
+            <field name="api_id" ref="whatsapp_api_end_point"/>
+        </record>
+
+        <record id="whatsapp_api_end_point_param_scope" model="whatsapp.api.param">
+            <field name="name">scope</field>
+            <field name="api_id" ref="whatsapp_api_end_point"/>
+        </record>
+    </data>
+</odoo>

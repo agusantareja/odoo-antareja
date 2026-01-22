@@ -14,6 +14,9 @@
     'category': 'API',
     'version': '16.0.0.0.2',
     'depends': ['base', 'antareja_base', ],
+    'external_dependencies': {
+        'python': ['pyjwt'],
+    },
     # always loaded
     'data': [
         'security/ir.model.access.csv',

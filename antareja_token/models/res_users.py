@@ -34,9 +34,9 @@ class ResUsers(models.Model):
     def get_access_token(self, create=False):
         return self.env['antareja.token'].get_access_token(user=self, create=create)
 
-    def _check_credentials(self, password):
+    def _check_credentials(self, password, env):
         try:
-            return super(ResUsers, self)._check_credentials(password)
+            return super(ResUsers, self)._check_credentials(password,env)
         except AccessDenied:
             payload = self.env['antareja.token'].validate(password)
             if not payload or payload.get('uid') != self.env.uid:

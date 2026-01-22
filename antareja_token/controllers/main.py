@@ -4,7 +4,7 @@ import logging
 import werkzeug
 from odoo import http, fields
 from odoo.http import request
-from werkzeug import url_encode
+from werkzeug.urls import url_encode
 from ..tools.utils import set_session, get_bearer_token
 from odoo.addons.antareja_base.tools.rest import valid_response, invalid_response
 

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="metalindo_vendor_code_button" model="ir.actions.act_window">
+            <field name="name">Vendors</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="base.view_res_partner_filter"/>
+            <field name="view_id" ref="base.res_partner_kanban_view"/>
+            <field name="context">{
+                'search_default_code_id': [active_id],
+                'default_code_id': active_id,
+            }</field>
+        </record>
+
+        <record model="ir.ui.view" id="metalindo_vendor_code_tree">
+            <field name="name">metalindo.vendor.code.tree</field>
+            <field name="model">vendor.code</field>
+            <field name="arch" type="xml">
+                <tree string="Vendor Code" editable="top">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="partner_count"/>
+                    <button name="action_show_vendor" type="object" string="Show Vendor" class="oe_small_button_tree"/>
+                    <field name="company_id" string="Company" groups="base.group_multi_company" options="{'no_create': True}"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="metalindo_vendor_code_form">
+            <field name="name">metalindo.vendor.code.form</field>
+            <field name="model">vendor.code</field>
+            <field name="arch" type="xml">
+                <form string="Vendor Code">
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(metalindo_vendor_code_button)d" class="oe_stat_button" icon="fa-coffee" type="action">
+                            <field string="Vendor" name="partner_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Vendor Prefix Code"/>
+                        <h1>
+                            <field name="code"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" string="Company" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_partner_form_inherit">
+            <field name="name">metalindo.vendor.view_partner_form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="30"/>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='vat']" position="after">
+                    <field name="code_id" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                    <field name="vendor_code" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                    <field name="supplier_rank" invisible="1"/>
+                    <!-- Sudah ada di metalindo_maintenance
+                    <field name="is_manufacturer" invisible="1"/> -->
+                    <!--
+                    <field name="supplier_rank" invisible="1"/> <== ini error kalo dimunculkan, apa kena replace di interitance sebelumnya? 
+
+                    <field name="npwp" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                    -->
+                    <field name="nib" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='vat']" position="attributes">
+                    <attribute name="string">VAT/NPWP</attribute>
+                    <!-- <attribute name="required">1</attribute> -->
+                </xpath>
+
+                <!-- <xpath expr="//field[@name='email']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath> -->
+
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <label for="tkdn" string="TKDN"/>
+                    <div class="o_row">
+                        <field name="tkdn"/>
+                        <field name="tkdn_persen" widget="percentage"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='category_id']" position="attributes">
+                    <attribute name="placeholder">e.g. "Contractor", "Manufacturer", "UMKM", ...</attribute>
+                </xpath>
+
+                <xpath expr="//page[@name='sales_purchases']" position="attributes">
+                    <attribute name="string">Purchase</attribute>
+                    <attribute name="attrs">{'invisible': [('supplier_rank', '=', 0)]}</attribute>
+                </xpath>
+
+                <xpath expr="//group[@name='misc']//field[@name='company_registry']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//group[@name='misc']//field[@name='ref']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//sheet//field[@name='company_type']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//page[@name='internal_notes']" position="before">
+                    <page name="documents" string="Documents">
+                        <field name="document_ids">
+                            <tree editable="bottom" default_order="still_valid desc">
+                                <!-- <field name="type"/> -->
+                                <field name="type_id"/>
+                                <field
+                                    name="attachment_ids"
+                                    widget="many2many_binary"
+                                    options="{'accepted_file_extensions': 'application/pdf,image/*'}"
+                                />
+                                <field name="notes"/>
+                                <field name="still_valid"/>
+                            </tree>
+                            <form>
+                                <sheet>
+                                    <group name="info">
+                                        <group>
+                                            <field name="type"/>
+                                        </group>
+                                        <group>
+                                            <field name="still_valid"/>
+                                        </group>
+                                    </group>
+                                    <separator string="Files"/>
+                                    <group name="files">
+                                        <field
+                                            name="attachment_ids"
+                                            nolabel="1"
+                                            colspan="2"
+                                            widget="many2many_binary"
+                                            options="{'accepted_file_extensions': 'application/pdf,image/*'}"
+                                        />
+                                    </group>
+                                    <separator string="Notes"/>
+                                    <group name="notes">
+                                        <field name="notes" nolabel="1" colspan="2"/>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="metalindo_vendor_code_action">
+            <field name="name">Vendor Code</field>
+            <field name="res_model">vendor.code</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="metalindo_vendor_code_tree"/>
+        </record>
+
+        <menuitem name="Vendor Code" id="menu_metalindo_vendor_code" parent="purchase.menu_purchase_config"
+              action="metalindo_vendor_code_action" sequence="1"/>
+
+        <record id="metalindo_vendor_code_search" model="ir.ui.view">
+            <field name="name">metalindo.manufacturer.view.search</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="arch" type="xml">
+                <!-- Sudah ada di metalindo_maintenance
+                <xpath expr="//filter[@name='inactive']" position="before">
+                   <filter string="Manufacturers" name="manufacturer" domain="[('is_manufacturer','=', True)]"/>
+                </xpath> -->
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field string='Vendor Code' name="code_id" />
+                </xpath>
+                <xpath expr="//filter[@name='group_country']" position="after">
+                    <filter string='Vendor Code' name="vendor_code" domain="[]" context="{'group_by': 'code_id'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Sudah ada di metalindo_maintenance
+        <record id="metalindo_equipment_manufacturer_action" model="ir.actions.act_window">
+            <field name="name">Manufacturers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_manufacturer': 1, 'res_partner_search_mode': 'supplier', 'default_is_company': True,'default_is_manufacturer': True}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new manufacturer in your address book
+              </p><p>
+                Odoo helps you easily track all activities related to a manufacturer.
+              </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_metalindo_equipment_manufacturer" name="Manufacturers"
+            parent="maintenance.menu_maintenance_configuration"
+            action="metalindo_equipment_manufacturer_action" sequence="4"/>
+
+        <menuitem id="menu_metalindo_equipment_manufacturer_inventory" name="Manufacturers"
+            parent="stock.menu_stock_config_settings"
+            action="metalindo_equipment_manufacturer_action" sequence="4"/> -->
+
+
+        
+        <!-- Filter `city_id` by the selected `state_id` -->
+        <!-- Move to cmp_vendor -->
+<!--        <record id="filter_city_id_on_view_partner_form" model="ir.ui.view">-->
+<!--            <field name="name">filter.city_id.on.view_partner_form</field>-->
+<!--            <field name="model">res.partner</field>-->
+<!--            <field name="inherit_id" ref="base_address_extended.address_street_extended_city_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='city_id']" position="attributes">-->
+<!--                    <attribute name="domain" separator=")" remove="]" add=", ('state_id', '=', state_id)]"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!-- The "Sales" section is not needed by us so hide them -->
+<!--        <record id="remove_sales_section" model="ir.ui.view">-->
+<!--            <field name="name">metalindo.vendor.remove.sales.section.from.partner.form</field>-->
+<!--            <field name="model">res.partner</field>-->
+<!--            <field name="inherit_id" ref="base.view_partner_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//group[@name='sale']" position="attributes">-->
+<!--                    <attribute name="invisible">True</attribute>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+        <record id="remove_sales_section" model="ir.ui.view">
+            <field name="name">metalindo.vendor.remove.sales.section.from.partner.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="metalindo_vendor.view_partner_form_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='sale']" position="berfore">
+                    <field name="is_supplier" invisible="1"/>
+                </xpath>
+                <xpath expr="//group[@name='sale']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('is_supplier', '=', False)]}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account.res_partner_action_supplier" model="ir.actions.act_window">
+<!--            <field name="name">Vendors</field>-->
+<!--            <field name="type">ir.actions.act_window</field>-->
+<!--            <field name="res_model">res.partner</field>-->
+<!--            <field name="view_mode">kanban,tree,form</field>-->
+<!--            <field name="context">{'search_default_supplier': 1,'res_partner_search_mode': 'supplier', 'default_is_company': True, 'default_supplier_rank': 1}</field>-->
+<!--            <field name="help" type="html">-->
+<!--              <p class="o_view_nocontent_smiling_face">-->
+<!--                Create a new supplier in your address book-->
+<!--              </p><p>-->
+<!--                Odoo helps you easily track all activities related to a supplier.-->
+<!--              </p>-->
+<!--            </field>-->
+            <field name="domain">[('is_supplier','=',True)]</field>
+        </record>
+
+        <record id="res_partner_action_supplier_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="base.res_partner_kanban_view"/>
+            <field name="act_window_id" ref="account.res_partner_action_supplier"/>
+        </record>
+
+        <record id="res_partner_action_supplier_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="metalindo_vendor.view_partner_form_inherit"/>
+            <field name="act_window_id" ref="account.res_partner_action_supplier"/>
+        </record>
+    </data>
+</odoo>

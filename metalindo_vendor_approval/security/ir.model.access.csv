@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+vendor_blacklist_request_access,vendor_blacklist_request_access,model_vendor_blacklist_wizard,purchase.group_purchase_user,1,1,1,1
+vendor_whitelist_request_access,vendor_whitelist_request_access,model_vendor_whitelist_wizard,purchase.group_purchase_user,1,1,1,1
+vendor_change_request_access,vendor_change_request_access,model_vendor_change_wizard,purchase.group_purchase_user,1,1,1,1
+access_vendor_document_approval,vendor_document_approval,metalindo_vendor.model_vendor_document,group_metalindo_vendor_approval,1,0,0,0

@@ -1,0 +1,16 @@
+<odoo>
+  <data>
+    <record id="cni_approval_addition_deletion_revision_form_approval" model="ir.ui.view">
+      <field name="name">cni.approval.addition.deletion.revision.form</field>
+      <field name="model">addition.deletion.revision</field>
+      <field name="inherit_id" ref="metalindo_inventory.metalindo_addition_deletion_revision_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='name']" position="after">
+          <field name="current_approval_id" groups="base.group_no_one"/>
+          <field name="current_group_id" groups="base.group_no_one"/>
+          <field name="current_approval_user_id" groups="base.group_no_one"/>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

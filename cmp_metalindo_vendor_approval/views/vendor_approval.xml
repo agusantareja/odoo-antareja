@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="view_partner_form_inherit" model="ir.ui.view">
+			<field name="name">vendor approval</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="metalindo_vendor_approval.view_partner_form_inherit"/>
+			<field name="arch" type="xml">
+				<header position="inside">
+					<button name="action_ensure_approval_instance"
+                            string="Ensure Approval Instance"
+                            type="object"
+                            class="btn-secondary"
+							groups="base.group_no_one"
+					/>
+				</header>
+			</field>
+		</record>
+	</data>
+</odoo>

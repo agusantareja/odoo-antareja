@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="view_partner_form_inherit" model="ir.ui.view">
+			<field name="name">vendor approval</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="metalindo_vendor.view_partner_form_inherit"/>
+			<field name="arch" type="xml">
+				<sheet position="before">
+					<header>
+						<field name="supplier_readonly" invisible="1"/>
+						<field name="approval_type" invisible="1"/>
+						<field name="is_approver" invisible="1"/>
+						<field name="supplier_rank" invisible="1"/>
+						<div
+							class="h-100 d-flex align-items-center justify-content-center me-2"
+							attrs="{'invisible': ['|', ('supplier_rank', '=', 0),('approval_type', '=', False)]}"
+						>
+							<field name="approval_type_label" readonly="1" class="mb-0"/>
+						</div>
+
+						<button
+							string="Request Approval"
+							name="button_request_approval"
+							type="object"
+							class="oe_highlight"
+							attrs="{'invisible': ['|', '|', '|', ('supplier_rank', '=', 0), ('active', '=', False), ('state', '!=', 'draft'), ('is_company', '=', False)]}"
+						/>
+						<button
+							string="Request Change"
+							name="button_request_change"
+							type="object"
+							attrs="{'invisible': ['|', '|', '|', ('supplier_rank', '=', 0), ('active', '=', False), ('is_company', '=', False), ('state', '!=', 'approved')]}"
+						/>
+						<button
+							string="Request Blacklist"
+							name="button_request_blacklist"
+							type="object"
+							attrs="{'invisible': ['|', '|', '|', ('supplier_rank', '=', 0), ('active', '=', False), ('is_company', '=', False), ('state', '!=', 'approved')]}"
+						/>
+						<button
+							string="Request Whitelist"
+							name="button_request_whitelist"
+							type="object"
+							attrs="{'invisible': ['|', '|', '|', ('supplier_rank', '=', 0), ('active', '=', False), ('is_company', '=', False), ('state', '!=', 'blacklisted')]}"
+						/>
+
+						<button
+							string="Approve"
+							name="button_approve_approval"
+							type="object"
+							class="oe_highlight"
+							attrs="{'invisible': ['|', '|', '|', '|', ('supplier_rank', '=', 0), ('active', '=', False), ('state', '!=', 'waiting'), ('is_approver', '=', False), ('is_company', '=', False)]}"
+						/>
+						<!--
+							State transition after final rejection is handled by the `metalindo_approval`
+							module directly, unlike approval, hence we have to provide separate reject
+							buttons for different `approval_type`s.
+						-->
+						<!-- Reject button for vendor registration (approval_type == 'registration') -->
+						<button
+							string="Reject"
+							name="reject_approval_wizard_action"
+							type="object"
+							attrs="{
+								'invisible': [
+									'|',
+									'|',
+									'|',
+									'|', 
+									'|', 
+									('supplier_rank', '=', 0),
+									('active', '=', False),
+									('is_company', '=', False),
+									('state', '!=', 'waiting'),
+									('approval_type', '!=', 'registration'),
+									('is_approver', '=', False)
+								]
+							}"
+						/>
+						<!-- Reject button for vendor change (approval_type == 'change') -->
+						<button
+							string="Reject"
+							name="%(metalindo_approval.cni_reject_approval_wizard_action)d"
+							type="action"
+							context="{'model_name': 'res.partner', 'update_value': {'state': 'draft'}}"
+							attrs="{
+								'invisible': [
+									'|',
+									'|',
+									'|',
+									'|',
+									'|', 
+									('supplier_rank', '=', 0),
+									('active', '=', False),
+									('is_company', '=', False),
+									('state', '!=', 'waiting'),
+									('approval_type', '!=', 'change'),
+									('is_approver', '=', False)
+								]
+							}"
+						/>
+						<!-- Reject button for vendor blacklist (approval_type == 'blacklist') -->
+						<button
+							string="Reject"
+							name="%(metalindo_approval.cni_reject_approval_wizard_action)d"
+							type="action"
+							context="{
+								'model_name': 'res.partner',
+								'update_value': {
+									'state': 'approved',
+									'approval_type': False
+								}
+							}"
+							attrs="{
+								'invisible': [
+									'|',
+									'|',
+									'|',
+									'|',
+									'|', 
+									('supplier_rank', '=', 0),
+									('active', '=', False),
+									('is_company', '=', False),
+									('state', '!=', 'waiting'),
+									('approval_type', '!=', 'blacklist'),
+									('is_approver', '=', False)
+								]
+							}"
+						/>
+						<!-- Reject button for vendor whitelist (approval_type == 'whitelist') -->
+						<button
+							string="Reject"
+							name="%(metalindo_approval.cni_reject_approval_wizard_action)d"
+							type="action"
+							context="{
+								'model_name': 'res.partner',
+								'update_value': {
+									'state': 'blacklisted',
+									'approval_type': False
+								}
+							}"
+							attrs="{
+								'invisible': [
+									'|',
+									'|',
+									'|',
+									'|',
+									'|', 
+									('supplier_rank', '=', 0),
+									('active', '=', False),
+									('is_company', '=', False),
+									('state', '!=', 'waiting'),
+									('approval_type', '!=', 'whitelist'),
+									('is_approver', '=', False)
+								]
+							}"
+						/>
+						<!-- We'll remove this button for now to avoid having the vendor approval stuck at 'waiting' -->
+						<!-- <button
+							string="Cancel Approval"
+							name="button_cancel"
+							type="object"
+							groups="group_metalindo_vendor_approval"
+							attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'approved'), ('is_company', '=', False)]}"
+						/> -->
+						<!-- We'll remove this button for now since its usefulness is questionable -->
+						<!-- <button
+							string="Cancel Rejection"
+							name="button_cancel"
+							type="object"
+							groups="group_metalindo_vendor_approval"
+							attrs="{'invisible': ['|', '|', ('active', '=', False), ('state', '!=', 'reject'), ('is_company', '=', False)]}"
+						/> -->
+
+						<field
+							name="state"
+							widget="statusbar"
+							readonly="1"
+							statusbar_visible="draft,waiting,approved,blacklisted"
+							attrs="{'invisible': [('supplier_rank', '=', 0)]}"
+						/>
+					</header>
+					<field name="flag_reject" invisible="1" />
+					<div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('state', '!=', 'waiting'), ('flag_reject', '=', True)]}">
+						<table width="100%">
+							<tr>
+								<td width="98%">
+									<field name="alert_waiting_approval" readonly="1" />
+								</td>
+								<td>
+									<a class="close" data-bs-dismiss="alert" href="#">x</a>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="alert alert-danger" role="alert" attrs="{'invisible': [('flag_reject', '=', False)]}">
+						<table width="100%">
+						<tr>
+							<td width="98%">
+								<field name="note_reject" readonly="1" />
+							</td>
+							<td>
+								<a class="close" data-bs-dismiss="alert" href="#">x</a>
+							</td>
+						</tr>
+						</table>
+					</div>
+				</sheet>
+
+				<xpath expr="//widget[@name='web_ribbon']" position="after">
+					<widget name="web_ribbon" title="Blacklist" bg_color="bg-dark" attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'blacklist')]}"/>
+					<widget name="web_ribbon" title="Reject" bg_color="bg-warning" attrs="{'invisible': ['|', ('active', '=', False), ('state', '!=', 'reject')]}"/>
+				</xpath>
+
+				<xpath expr="//field[@name='name'][@id='company']" position="attributes">
+					<attribute  name="attrs" remove="}" add=", 'readonly': [('state', '!=', 'draft')]}" separator="]"/>
+				</xpath>
+				<xpath expr="//field[@name='company_type']" position="attributes">
+					<attribute name="attrs">
+						{
+							'readonly': [
+								'|', ('state', '!=', 'draft'), ('approval_type', '=', 'change')
+							]
+						}
+					</attribute>
+				</xpath>
+<!--				<xpath expr="//field[@name='vat']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{'readonly': ['|', ('parent_id','!=',False), ('supplier_readonly', '=', True)]}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='image_1920']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>-->
+<!--				</xpath>-->
+				<xpath expr="//field[@name='code_id']" position="attributes">
+					<attribute name="attrs">{'invisible': [('is_company', '=', False)],'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='nib']" position="attributes">
+					<attribute name="attrs">{'invisible': [('is_company', '=', False)],'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+<!--				<xpath expr="//field[@name='street']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='street2']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='state_id']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='zip']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--                            'invisible': [-->
+<!--                                ('country_enforce_cities', '=', True),-->
+<!--                                '|', ('zipcode_id', '!=', False), ('zip', 'in', ('',False))-->
+<!--                            ],-->
+<!--                            'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--                        }-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='zipcode_id']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--                            'invisible': [('country_enforce_cities', '=', False)],-->
+<!--                            'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--                        }-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='country_id']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'readonly': [-->
+<!--								'|', ('supplier_readonly', '=', True),-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+
+<!--				<xpath expr="//field[@name='phone']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='mobile']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True),]}</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='email']" position="attributes">-->
+<!--					<attribute-->
+<!--						name="attrs"-->
+<!--						remove="}"-->
+<!--						add=", 'readonly': [ ('supplier_readonly', '=', True),]}"-->
+<!--						separator="]"-->
+<!--					/>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='website']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [ ('supplier_readonly', '=', True),]}</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='category_id']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [ ('supplier_readonly', '=', True),]}</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='child_ids']" position="attributes">-->
+<!--					<attribute name="attrs">{'readonly': [('is_company', '=', True), ('state', '=', 'blacklisted')]}</attribute>-->
+<!--				</xpath>-->
+
+				<!-- For vendor documents -->
+				<!-- <xpath expr="//field[@name='document_ids']" position="attributes">
+					<attribute name="attrs">
+						{'readonly': [('is_company', '=', True), ('state', '!=', 'draft')]}
+					</attribute>
+				</xpath> -->
+				<xpath expr="//field[@name='document_ids']/tree" position="inside">
+					<field name="state" invisible="1"/>
+				</xpath>
+				<!-- <xpath
+					expr="//field[@name='document_ids']/tree//field[@name='type']"
+					position="attributes"
+				>
+					<attribute name="attrs">
+						{'readonly': [('state', '=', 'approved')]}
+					</attribute>
+				</xpath> -->
+				<!-- <xpath
+					expr="//field[@name='document_ids']/tree//field[@name='attachment_ids']"
+					position="attributes"
+				>
+					<attribute name="attrs">
+						{'readonly': [('state', '=', 'approved')]}
+					</attribute>
+				</xpath> -->
+				<!-- <xpath
+					expr="//field[@name='document_ids']/tree//field[@name='notes']"
+					position="attributes"
+				>
+					<attribute name="attrs">
+						{'readonly': [('state', '=', 'approved')]}
+					</attribute>
+				</xpath> -->
+
+				<notebook position="inside">
+					<page string="Approval" attrs="{'invisible': [('supplier_rank', '=', 0)]}">
+						<field name="approval_ids" readonly="1">
+							<tree string="Approval">
+								<field name="currency_id" invisible="1" />
+								<field name="group_id" />
+								<field name="sts" />
+								<field name="reason" />
+								<field name="pelaksana_id" />
+								<field name="tanggal" />
+							</tree>
+							<form string="Approval">
+								<group>
+									<group>
+										<field name="group_id" />
+										<field name="sts" />
+										<field name="reason" />
+									</group>
+									<group>
+										<field name="pelaksana_id" />
+										<field name="tanggal" />
+									</group>
+								</group>
+							</form>
+						</field>
+					</page>
+					<page
+						name="change_page"
+						string="Change Request"
+						attrs="{'invisible': [('change_reason', '=', False)]}"
+					>
+						<group>
+							<field name="request_change_by" readonly="1"/>
+							<field name="request_change_date" readonly="1"/>
+							<field
+								name="change_reason"
+								attrs="{
+									'readonly': [
+										'|',
+										('state', '!=', 'draft'),
+										('approval_type', '!=', 'change')
+									]
+								}"
+							/>
+						</group>
+					</page>
+					<page
+						name="blacklist_page"
+						string="Blacklist Request"
+						attrs="{'invisible': [('blacklist_reason', '=', False)]}"
+					>
+						<group>
+							<field name="request_blacklist_by" readonly="1"/>
+							<field name="request_blacklist_date" readonly="1"/>
+							<field name="blacklist_reason" readonly="1"/>
+						</group>
+					</page>
+					<page
+						name="whitelist_page"
+						string="Whitelist Request"
+						attrs="{'invisible': [('whitelist_reason', '=', False)]}"
+					>
+						<group>
+							<field name="request_whitelist_by" readonly="1"/>
+							<field name="request_whitelist_date" readonly="1"/>
+							<field name="whitelist_reason" readonly="1"/>
+						</group>
+					</page>
+				</notebook>
+
+			</field>
+		</record>
+
+		<!-- Sambungan dari pembuatan field-field vendor menjadi read-only ketika state != draft -->
+		<!-- Untuk city dan city_id (berasal dari modul base_address_extended) -->
+		<!-- move to addons metalindo_vendor -->
+<!--		<record id="address_street_extended_city_form_inherit" model="ir.ui.view">-->
+<!--			<field name="name">metalindo.vendor.approval.address_street_extended_city_form.inherit</field>-->
+<!--			<field name="model">res.partner</field>-->
+<!--			<field name="inherit_id" ref="base_address_extended.address_street_extended_city_form"/>-->
+<!--			<field name="arch" type="xml">-->
+<!--				<xpath expr="//field[@name='city']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'invisible': [-->
+<!--								('country_enforce_cities', '=', True),-->
+<!--								'|', ('city_id', '!=', False), ('city', 'in', ('', False))-->
+<!--							],-->
+<!--							'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='city_id']" position="attributes">-->
+<!--					<attribute name="attrs">-->
+<!--						{-->
+<!--							'invisible': [('country_enforce_cities', '=', False)],-->
+<!--							'readonly': [-->
+<!--								'|',-->
+<!--								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),-->
+<!--								'&amp;', ('is_company', '=', True), ('state', '!=', 'draft')-->
+<!--							]-->
+<!--						}-->
+<!--					</attribute>-->
+<!--				</xpath>-->
+<!--			</field>-->
+<!--		</record>-->
+		<!-- Untuk l10n_id_pkp (berasal dari modul l10n_id_efaktur) -->
+<!--		<record id="res_partner_tax_form_view_inherit" model="ir.ui.view">-->
+<!--			<field name="name">metalindo.vendor.approval.res_partner_tax_form_view.inherit</field>-->
+<!--			<field name="model">res.partner</field>-->
+<!--			<field name="inherit_id" ref="l10n_id_efaktur.res_partner_tax_form_view"/>-->
+<!--			<field name="arch" type="xml">-->
+<!--				<xpath expr="//field[@name='l10n_id_pkp']" position="attributes">-->
+<!--					<attribute-->
+<!--						name="attrs"-->
+<!--						remove="}"-->
+<!--						add=", 'readonly': [('is_company', '=', True), ('state', '!=', 'draft')]}"-->
+<!--						separator="]"-->
+<!--					/>-->
+<!--				</xpath>-->
+<!--			</field>-->
+<!--		</record>-->
+		<!-- Untuk code_id dan nib (berasal dari modul metalindo_vendor) -->
+<!--		<record id="view_partner_form_code_id_nib_readonly" model="ir.ui.view">-->
+<!--			<field name="name">metalindo.vendor.approval.view_partner_form.code_id.nib.readonly</field>-->
+<!--			<field name="model">res.partner</field>-->
+<!--			<field name="inherit_id" ref="metalindo_vendor.view_partner_form_inherit"/>-->
+<!--			<field name="arch" type="xml">-->
+<!--				<xpath expr="//field[@name='code_id']" position="attributes">-->
+<!--					&lt;!&ndash; <attribute-->
+<!--						name="attrs"-->
+<!--						remove="}"-->
+<!--						add=", 'readonly': [('is_company', '=', True), ('state', '!=', 'draft')]}"-->
+<!--						separator="]"-->
+<!--					/> &ndash;&gt;-->
+<!--					<attribute name="attrs">{'invisible': ['|', ('supplier_rank', '=', 0), ('is_company', '=', False)], 'readonly': [('is_company', '=', True), ('state', '!=', 'draft')]}</attribute>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='nib']" position="attributes">-->
+<!--					<attribute-->
+<!--						name="attrs"-->
+<!--						remove="}"-->
+<!--						add=", 'readonly': [('is_company', '=', True), ('state', '!=', 'draft')]}"-->
+<!--						separator="]"-->
+<!--					/>-->
+<!--				</xpath>-->
+<!--				<xpath expr="//field[@name='vendor_code']" position="attributes">-->
+<!--					<attribute name="attrs">{'invisible': ['|', ('supplier_rank', '=', 0), ('is_company', '=', False)]}</attribute>-->
+<!--				</xpath>-->
+<!--			</field>-->
+<!--		</record>-->
+	</data>
+</odoo>

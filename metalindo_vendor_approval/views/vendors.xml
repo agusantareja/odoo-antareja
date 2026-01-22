@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Creating new root menu item "Vendors" for vendor management -->
+        <record id="view_res_partner_filter_inherit" model="ir.ui.view">
+            <field name="name">metalindo.vendor.approval.view_res_partner_filter.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//separator" position="after">
+                    <filter
+                        name="approval_type_registration"
+                        string="Vendor Registration"
+                        domain="[('approval_type', '=', 'registration')]"
+                    />
+                    <filter
+                        name="approval_type_change"
+                        string="Vendor Change"
+                        domain="[('approval_type', '=', 'change')]"
+                    />
+                    <filter
+                        name="approval_type_blacklist"
+                        string="Vendor Blacklist"
+                        domain="[('approval_type', '=', 'blacklist')]"
+                    />
+                    <filter
+                        name="approval_type_whitelist"
+                        string="Vendor Whitelist"
+                        domain="[('approval_type', '=', 'whitelist')]"
+                    />
+                    <separator/>
+                </xpath>
+                <xpath expr="//group[@name='group_by']" position="inside">
+                    <filter string='Approval' name="groupby_approval" context="{'group_by': 'state'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_partner_kanban_view_inherit" model="ir.ui.view">
+            <field name="name">metalindo.vendor.approval.res_partner_kanban_view.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+            <!--
+                Setting the priority to 1 here is needed to make sure that the `approval_type` label
+                below is displayed in the bottom-left corner of the kanban card
+            -->
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <xpath expr="/kanban" position="attributes">
+                    <attribute name="quick_create">false</attribute>
+                    <attribute name="records_draggable">false</attribute>
+                </xpath>
+                <!-- Error prone use of @class
+                <xpath expr="//div[@class='oe_kanban_bottom_left']" position="inside">
+                -->
+                <xpath expr="//div[hasclass('oe_kanban_bottom_left')]" position="inside">
+                    <field name="supplier_rank" invisible="1"/>
+                    <field
+                        name="approval_type"
+                        readonly="1"
+                        widget="label_selection"
+                        attrs="{'invisible': ['|', ('supplier_rank', '=', 0), ('approval_type', '=', False)]}"
+                        options="{
+                            'classes': {
+                                'registration': 'info rounded-pill py-1 px-2 mva_approval_type_label',
+                                'blacklist': 'danger rounded-pill py-1 px-2 mva_approval_type_label',
+                                'whitelist': 'success rounded-pill py-1 px-2 mva_approval_type_label',
+                                'change': 'secondary rounded-pill py-1 px-2 mva_approval_type_label'
+                            }
+                        }"
+                    />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_partner_tree_inherit" model="ir.ui.view">
+            <field name="name">metalindo.vendor.approval.view_partner_tree.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='country_id']" position="after">
+                    <field
+                        name="approval_type"
+                        optional="show"
+                        readonly="1"
+                        widget="label_selection"
+                        invisible="not context.get('default_supplier_rank')"
+                        options="{
+                            'classes': {
+                                'registration': 'info rounded-pill py-1 px-2 mva_approval_type_label',
+                                'blacklist': 'danger rounded-pill py-1 px-2 mva_approval_type_label',
+                                'whitelist': 'success rounded-pill py-1 px-2 mva_approval_type_label',
+                                'change': 'secondary rounded-pill py-1 px-2 mva_approval_type_label'
+                            }
+                        }"
+                    />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="vendors_action" model="ir.actions.act_window">
+            <field name="name">Vendors</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_res_partner_filter_inherit"/>
+            <field name="view_id" ref="res_partner_kanban_view_inherit"/>
+            <field name="domain">[('is_company', '=', True),('active','=',True),('supplier_rank', '&gt;', 0),]</field>
+            <field name="context">
+                {
+                    'search_default_groupby_approval': 1,
+                    'default_is_company': True,
+                    'default_supplier_rank': 1,
+                }
+            </field>
+        </record>
+
+        <record id="res_partner_action_supplier_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="res_partner_kanban_view_inherit"/>
+            <field name="act_window_id" ref="vendors_action"/>
+        </record>
+
+        <record id="res_partner_action_supplier_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="metalindo_vendor.view_partner_form_inherit"/>
+            <field name="act_window_id" ref="vendors_action"/>
+        </record>
+        <menuitem
+            id="vendors_root_menu"
+            name="Vendors"
+            sequence="21"
+            action="vendors_action"
+            groups="purchase.group_purchase_manager"
+            web_icon="metalindo_vendor_approval,static/description/menu_vendors.png"
+        />
+
+        <!--
+            Adding a new domain to the action of the menu "Purchase > Orders > Vendors" for filtering out
+            non-approved vendors
+        -->
+        <record id="account.res_partner_action_supplier" model="ir.actions.act_window">
+            <field name="domain">[('supplier_select_able', '=', True)]</field>
+        </record>
+
+        <record id="res_partner_view_search" model="ir.ui.view">
+            <field name="name">metalindo.manufacturer.view.search</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.res_partner_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='supplier']" position="replace">
+                    <filter string="Vendor Bills" name="supplier" domain="[('supplier_select_able', '=', True)]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

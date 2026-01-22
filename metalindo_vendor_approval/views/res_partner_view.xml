@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<!-- read only fields on partner form view -->
+		<record id="view_partner_form_approval" model="ir.ui.view">
+			<field name="name">view_partner_form</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="base.view_partner_form"/>
+			<field name="arch" type="xml">
+				<div name="button_box">
+					<field name="supplier_readonly" invisible="1"/>
+					<field name="state" invisible="1"/>
+				</div>
+				<xpath expr="//field[@name='name'][@id='company']" position="attributes">
+					<attribute  name="attrs" remove="}" add=", 'readonly': [('supplier_readonly', '=', True)]}" separator="]"/>
+				</xpath>
+				<xpath expr="//field[@name='company_type']" position="attributes">
+					<attribute name="attrs">{'readonly': ['|',('supplier_readonly', '=', True),('supplier_rank', '>', 0)]}</attribute>
+				</xpath>
+
+				<xpath expr="//field[@name='vat']" position="attributes">
+					<attribute name="attrs">
+						{'readonly': ['|', ('parent_id','!=',False), ('supplier_readonly', '=', True)]}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='image_1920']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+
+				<xpath expr="//field[@name='street']" position="attributes">
+					<attribute name="attrs">
+						{
+							'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+						}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='street2']" position="attributes">
+					<attribute name="attrs">
+						{
+							'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+						}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='state_id']" position="attributes">
+					<attribute name="attrs">
+						{
+							'readonly': [
+								'|', ('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False)
+							]
+						}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='zip']" position="attributes">
+					<attribute name="attrs">
+						{
+                            'invisible': [
+                                ('country_enforce_cities', '=', True),
+                                '|', ('zipcode_id', '!=', False), ('zip', 'in', ('',False))
+                            ],
+                            'readonly': [
+								'|',('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+                        }
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='city']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='country_id']" position="attributes">
+					<attribute name="attrs">
+						{
+							'readonly': [
+								'|', ('supplier_readonly', '=', True),
+								'&amp;', ('type', '=', 'contact'), ('parent_id', '!=', False),
+							]
+						}
+					</attribute>
+				</xpath>
+				<xpath expr="//field[@name='phone']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='mobile']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='email']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='website']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='category_id']" position="attributes">
+					<attribute name="attrs">{'readonly': [('supplier_readonly', '=', True)]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='child_ids']" position="attributes">
+					<attribute name="attrs">{'readonly': [('is_company', '=', True), ('state', '=', 'blacklisted')]}</attribute>
+				</xpath>
+			</field>
+		</record>
+
+	</data>
+</odoo>

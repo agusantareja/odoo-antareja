@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="approval_template" model="approval.template">
+            <field name="model_id" ref="model_addition_deletion_revision"/>
+            <field name="approval_task_line_model_id" ref="metalindo_approval.model_cni_approval_transaction"/>
+            <field name="state_field">adr_status</field>
+            <field name="state_waiting_approvals">waiting</field>
+            <field name="view_name">addition deletion revision</field>
+            <field name="notification_approval_id" ref="notification_template_approval_task"/>
+            <field name="code">
+# response['approval_line'] bila ingin custom approval line
+# transaction_value nilai dari value
+#response['transaction_value']=transaction_object.total_value
+response['transaction_currency']=transaction_object.currency_id
+response['transaction_requester']=user
+            </field>
+<!--            <field name="invoke_validate_request_approval">validate_request_approval</field>-->
+            <field name="invoke_approval_start">event_approval_start</field>
+            <field name="invoke_approval_done">event_approval_done</field>
+            <field name="invoke_before_approve">event_before_approve</field>
+            <field name="invoke_after_approve">event_after_approve</field>
+            <field name="invoke_before_reject">event_before_reject</field>
+            <field name="invoke_after_reject">event_after_reject</field>
+        </record>
+    </data>
+</odoo>

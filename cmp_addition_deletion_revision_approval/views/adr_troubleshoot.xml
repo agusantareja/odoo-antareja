@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="adr_troubleshoot_form">
+        <field name="name">adr.troubleshoot.form</field>
+        <field name="model">addition.deletion.revision</field>
+        <field name="priority">1000</field>
+        <field name="arch" type="xml">
+            <form string="Addition Deletion Revision Troubleshoot">
+                <header>
+                    <button string="Request Approval" name="button_request_approval" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('archive', '=', True), ('adr_status', '!=', 'draft')]}"/>
+                    <field name="is_approver" invisible="1"/>
+                    <button string="Reject" name="%(metalindo_approval.cni_reject_approval_wizard_action)d" type="action" attrs="{'invisible': ['|', ('adr_status','!=','waiting'), ('is_approver','=',False)]}" context="{'model_name':'addition.deletion.revision','update_value':{'adr_status':'draft'}}" />
+                    <button string="Approve" name="button_approve_approval" type="object" class="oe_highlight" attrs="{'invisible': ['|', '|', ('archive', '=', True), ('adr_status', '!=', 'waiting'), ('is_approver','=',False)]}"/>
+                    <field name="adr_status" widget="statusbar" options="{'clickable':1}"/>
+                </header>
+                <div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('adr_status', '!=', 'waiting'), ('flag_reject', '=', True)]}">
+                    <table width="100%">
+                        <tr>
+                            <td width="98%">
+                                <field name="alert_waiting_approval"/>
+                            </td>
+                            <td>
+                                <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="alert alert-danger" role="alert" attrs="{'invisible': ['|', ('adr_status', 'not in', ['draft', 'waiting']), ('flag_reject', '=', False)]}">
+                    <table width="100%">
+                        <tr>
+                            <td width="98%">
+                                <field name="note_reject"/>
+                            </td>
+                            <td>
+                                <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <field name="flag_reject" invisible="1"/>
+                <div class="alert alert-info" role="alert" attrs="{'invisible': [('adr_status', '!=', 'approved')]}">
+                    <table width="100%">
+                        <tr>
+                            <td width="98%">
+                                <field name="alert_waiting_finalized"/>
+                            </td>
+                            <td>
+                                <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="alert alert-info" role="alert" attrs="{'invisible': [('adr_status', '!=', 'final')]}">
+                    <table width="100%">
+                        <tr>
+                            <td width="98%">
+                                <field name="alert_waiting_hs_code"/>
+                            </td>
+                            <td>
+                                <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <sheet>
+                    <widget name="web_ribbon" title="Reject" bg_color="bg-danger" attrs="{'invisible': [('archive', '=', False)]}"/>
+                    <widget name="web_ribbon" title="Done" attrs="{'invisible': [('adr_status', '!=', 'done')]}"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="can_edit"/>
+                            <field name="mandatory"/>
+                            <field name="company_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="adr_date" force_save="1"/>
+                            <field name="originator_id" force_save="1"/>
+                            <field name="reason" widget="text"/>
+                            <field name="refer_to"/>
+                            <field name="archive" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="req_type" widget="selection" required="1"/>
+                            <field name="analytic_id" required="1"/>
+                            <label for="currency_id" string="Est. Total Value" class="oe_long_label"/>
+                            <div class="o_row">
+                                <field name="currency_id"/>
+                                <field name="total_value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </div>
+                            <field name="is_cni_active" invisible="1"/>
+                            <field name="is_cmp_active" invisible="1"/>
+                            <field name="is_cmi_active" invisible="1"/>
+                            <field name="is_pra_active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="page_stock_item" string="Stock Item">
+                            <field name="line_ids" widget="one2many" mode="tree,form" context="{'default_adr_id': active_id, 'default_company_id': company_id}" attrs="{'readonly': ['|', ('archive', '=', True), ('adr_status', 'in', ('done', 'hscode'))]}">
+                                <tree>
+                                    <field name="adr_id" invisible="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="product_template_id" optional="show"/>
+                                    <field name="standard_name" optional="show"/>
+                                    <field name="name" optional="show"/>
+                                    <field name="product_desc"/>
+                                    <field name="asset_number" optional="show"/>
+                                    <field name="manufacturs" optional="show"/>
+                                    <field name="part_numbers" optional="show"/>
+                                    <field name="part_category_id" optional="show"/>
+                                    <field name="line_value" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
+                                    <field name="product_uom_id" optional="show"/>
+                                    <field name="product_hscode_id" optional="hide"/>
+                                    <field name="company_id" string="Company" optional="hide"/>
+                                    <field name="qty_installed" invisible="1"/>
+                                    <field name="consignment_vendor" optional="hide"/>
+                                    <field name="repairable" invisible="1"/>
+                                    <field name="placement" optional="hide"/>
+                                    <field name="inspection" optional="hide"/>
+                                    <field name="product_hazard_id" optional="hide"/>
+                                    <field name="product_msds_id" optional="hide"/>
+                                    <field name="is_production_related" optional="hide"/>
+                                    <field name="product_criticality_id" optional="hide"/>
+                                    <field name="limited_user" optional="hide"/>
+                                    <field name="auto_update" optional="hide"/>
+                                </tree>
+                                <form string="Addition Deletion Revision Line">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="adr_id" invisible="1"/>
+                                                <field name="adr_req_type" invisible="1"/>
+                                                <field name="adr_status" invisible="1"/>
+                                                <field name="product_template_id" options="{'no_create': True}"/>
+                                                <field name="standard_name"/>
+                                                <field name="request_description"/>
+                                                <field name="name"/>
+                                                <field name="product_desc"/>
+                                                <field name="asset_number"/>
+                                                <field name="placement"/>
+                                                <field name="inspection"/>
+                                                <field name="product_hazard_id"/>
+                                                <field name="product_msds_id"/>
+                                                <field name="is_production_related" />
+                                                <field name="limited_user"/>
+                                                <field name="material_group_id" required="1"/>
+                                                <field name="concession_category_id"/>
+                                                <field name="repairable" invisible="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="part_category_id" options="{'no_create': True}"/>
+                                                <field name="group_class_id" options="{'no_create': True}" invisible="1"/>
+                                                <field name="product_uom_id"/>
+                                                <field name="purchase_uom_id" invisible="1"/>
+                                                <field name="product_class_id"/>
+                                                <field name="product_type_id"/>
+                                                <field name="product_criticality_id"/>
+                                                <field name="product_hscode_id" attrs="{'required': [('adr_req_type', 'in', ('add', 'rev')), ('adr_status', '=', 'final')]}"/>
+                                                <field name="currency_id"/>
+                                                <field name="unit_price" string="Est. Unit Price"/>
+                                                <field name="area_code_id" required="1"/>
+                                                <field name="equipment_code_id" required="1"/>
+                                                <field name="equipment_ids" widget="many2many_tags" options="{'no_create': True}" />
+                                                <label for="shelf_life"/>
+                                                <div>
+                                                    <field name="shelf_life" class="oe_inline"/>
+                                                    months
+                                                </div>
+
+                                                <label for="est_annual_usage"/>
+                                                <div class="o_row">
+                                                    <field name="est_annual_usage"/>
+                                                    <field name="est_annual_usage_uom_id" class="oe_inline"/>
+                                                </div>
+
+                                                <label for="est_monthly_usage"/>
+                                                <div class="o_row">
+                                                    <field name="est_monthly_usage"/>
+                                                    <field name="est_monthly_usage_uom_id" class="oe_inline"/>
+                                                </div>
+                                                <label for="est_first_purchase_qty"/>
+                                                <div class="o_row">
+                                                    <field name="est_first_purchase_qty"/>
+                                                    <field name="est_first_purchase_qty_uom_id" class="oe_inline"/>
+                                                </div>
+                                                <field name="est_first_purchase_period"/>
+                                                <field name="qty_installed" invisible="1"/>
+                                                <field name="company_id" string="Company" invisible="1" options="{'no_create': True}"/>
+                                            </group>
+                                        </group>
+                                        <notebook>
+                                            <page name="page_part_number" string="Part Number">
+                                                <field name="adr_part_number_ids" context="{'default_adr_line_id': id}"/>
+                                            </page>
+                                            <page name="procurement" string="Procurement" attrs="{'invisible': [('adr_status', '=', 'draft')]}">
+                                                <group>
+                                                    <field name="minimum_order_qty"/>
+                                                    <field name="vendor"/>
+                                                    <label for="lead_time"/>
+                                                    <div>
+                                                        <field name="lead_time" class="oe_inline"/>
+                                                            days
+                                                    </div>
+                                                </group>
+                                            </page>
+                                            <page name="inventory_setting" string="Inventory Setting" attrs="{'invisible': [('adr_status', '=', 'draft')]}">
+                                                <group>
+                                                    <group>
+                                                        <field name="qty_min" string="Reordering Point (ROP)"/>
+                                                        <field name="qty_max" string="Reordering Quantity (ROQ)"/>
+                                                    </group>
+                                                    <group>
+                                                        <field name="auto_update"/>
+                                                        <field name="qty_additional" string="Additional Order" invisible="1"/>
+                                                        <field name="bin_location_id" invisible="1"/>
+                                                    </group>
+                                                </group>
+                                            </page>
+                                            <page name="page_image" string="Photo">
+                                                <group>
+                                                    <field name="image_1920" string="Photo 1" widget="image"/>
+                                                    <field name="image1" string="Photo 2" widget="image"/>
+                                                    <field name="image2" string="Photo 3" widget="image"/>
+                                                    <field name="image3" string="Photo 4" widget="image"/>
+                                                    <field name="image4" string="Photo 5" widget="image"/>
+                                                </group>
+                                            </page>
+                                        </notebook>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Audit Trail" name="page_audit">
+                            <group>
+                                <group>
+                                    <field name="approved_by" invisible="1" force_save="1" />
+                                    <field name="approved_date" invisible="1" force_save="1" />
+                                    <field name="finalized_by" force_save="1" />
+                                    <field name="finalized_date" force_save="1" />
+                                </group>
+                                <group>
+                                    <field name="done_by" force_save="1" />
+                                    <field name="done_date" force_save="1" />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Approval">
+                        <field name="approval_ids">
+                            <tree string="Approval" default_order="seq">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="seq" invisible="1"/>
+                                <field name="group_id" />
+                                <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="sts"/>
+                                <field name="reason"/>
+                                <field name="pelaksana_id"/>
+                                <field name="tanggal"/>
+                                <field name="can_edit"/>
+                                <field name="mandatory"/>
+                                <field name="reject_to_id"/>
+                            </tree>
+                            <form string="Approval">
+                                <group>
+                                    <group>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="seq" invisible="1"/>
+                                        <field name="group_id"/>
+                                        <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="sts"/>
+                                    </group>
+                                    <group>
+                                        <field name="reason"/>
+                                        <field name="pelaksana_id"/>
+                                        <field name="tanggal"/>
+                                        <field name="can_edit"/>
+                                        <field name="mandatory"/>
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="adr_troubleshoot_action">
+        <field name="name">Addition Deletion Revision Troubleshoot</field>
+        <field name="res_model">addition.deletion.revision</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('metalindo_inventory.metalindo_addition_deletion_revision_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('adr_troubleshoot_form')})]"/>
+        <field name="search_view_id" ref="metalindo_inventory.metalindo_addition_deletion_revision_search"/>
+    </record>
+
+    <menuitem name="ADR Troubleshoot" id="menu_metalindo_adr_troubleshoot" parent="base.menu_custom" action="adr_troubleshoot_action" sequence="100"/>
+</odoo>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <function model="res.city" name="_uppercase_all_names"/>
+        <function model="res.country.state" name="_uppercase_all_names"/>
+        <function model="res.country" name="_uppercase_all_names"/>
+    </data>
+</odoo>
