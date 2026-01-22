@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_external_event_line_tree" model="ir.ui.view">
+        <field name="name">external.event.line.tree</field>
+        <field name="model">external.event.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="auth_id" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_external_event_line_form" model="ir.ui.view">
+        <field name="name">external.event.line.form</field>
+        <field name="model">external.event.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_clear" string="Clear" type="object" class="oe_highlight"/>
+
+
+                    <button name="action_search_1" string="Search 1" type="object" class="oe_highlight"/>
+                    <button name="action_search_2" string="Search 2" type="object" class="oe_highlight"/>
+                    <button name="action_search_3" string="Search 3" type="object" class="oe_highlight"/>
+
+                    <button name="action_read_1" string="Read 1" type="object" class="oe_highlight"/>
+                    <button name="action_read_2" string="Read 2" type="object" class="oe_highlight"/>
+                    <button name="action_read_3" string="Read 3" type="object" class="oe_highlight"/>
+
+                    <button name="action_search_read_1" string="Search Read 1" type="object" class="oe_highlight"/>
+                    <button name="action_search_read_2" string="Search Read 2" type="object" class="oe_highlight"/>
+                    <button name="action_search_read_3" string="Search Read 3" type="object" class="oe_highlight"/>
+
+                    <button name="action_create_1" string="Create 1" type="object" class="oe_highlight"/>
+                    <button name="action_create_2" string="Create 2" type="object" class="oe_highlight"/>
+                    <button name="action_create_3" string="Create 3" type="object" class="oe_highlight"/>
+
+                    <button name="action_write_1" string="Write 1" type="object" class="oe_highlight"/>
+                    <button name="action_write_2" string="Write 2" type="object" class="oe_highlight"/>
+                    <button name="action_write_3" string="Write 3" type="object" class="oe_highlight"/>
+
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="auth_id" />
+                        <field name="payload"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_external_event_line" model="ir.actions.act_window">
+        <field name="name">External Event Lines</field>
+        <field name="res_model">external.event.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_demo_root"
+              name="AMR JSON-RPC Demo"/>
+
+    <menuitem id="menu_external_event_line"
+              name="Event Lines"
+              parent="menu_demo_root"
+              action="action_external_event_line"/>
+</odoo>
