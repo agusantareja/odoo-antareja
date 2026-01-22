@@ -21,6 +21,9 @@ class ApplicationServerAuth(models.Model):
 
     rest_refresh = fields.Char()
 
+    def get_db_name(self):
+        return self.odoo_server_db
+
     @api.model
     def rest_login_path(self):
         return '/application/token'
@@ -151,18 +154,18 @@ class ApplicationServerAuth(models.Model):
             raise UserError(_("Get Token failed: %s") % str(e))
 
     def get_auth_config(self, config=None):
-        config= {}
+        config = {}
         auth_type = self.auth_type
         token_key = self.rest_token_key
         access_token = self.rest_token
         refresh_token = self.rest_refresh
         token_endpoint_url = self.rest_url(self.rest_login_path())
-        if self.auth_type in ['jwt-rest-token','rest-token']:
+        if self.auth_type in ['jwt-rest-token', 'rest-token']:
             auth_type = self.rest_token_in
         if self.auth_type in ['rest-token', 'rest-token']:
-            endpoint_url = self.get_jsonrpc_url()
-        else:
             endpoint_url = self.rest_endpoint_url()
+        else:
+            endpoint_url = self.get_jsonrpc_url()
         db, uid, username, password = self.get_db_uid_username_password()
         config.update({
             'db': db,
@@ -173,7 +176,7 @@ class ApplicationServerAuth(models.Model):
             'token_key': token_key,
             'access_token': access_token,
             'refresh_token': refresh_token,
-            'endpoint_url':endpoint_url,
+            'endpoint_url': endpoint_url,
             'token_endpoint_url': token_endpoint_url
         })
         return config
@@ -181,7 +184,7 @@ class ApplicationServerAuth(models.Model):
     def remote_model_object(self, external_model, **kwargs):
         config = self.get_auth_config()
         config.update(kwargs)
-        if self.auth_type in ['jwt-rest-token','rest-token']:
+        if self.auth_type in ['jwt-rest-token', 'rest-token']:
             return rest.model_object(external_model, **config)
         else:
             return jsonrpc.model_object(external_model, **config)
