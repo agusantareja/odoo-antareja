@@ -360,7 +360,7 @@ class ExternalDataSync(models.Model):
                 input_dict = self.prepare_input_external(item)
                 existing = sync_strategy.call_internal_process_method(existing, item, input_dict, self) or existing
                 all_related_done = self.is_all_related_done()
-                if self.is_all_related_done():
+                if all_related_done:
                     existing = self.save_data(existing, item, input_dict) or existing
                 else:
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
