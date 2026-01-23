@@ -326,6 +326,7 @@ class ExternalDataSync(models.Model):
     @savepoint
     def process_data(self):
         all_related_done = False
+        input_dict = {}
         try:
             # try with exception
             with self.env.cr.savepoint():
@@ -371,20 +372,23 @@ class ExternalDataSync(models.Model):
         except Exception as ex:
             all_related_done = False
             # todo clear cache odoo
-            self.write_error(traceback.format_exc())
+            self.write_error(traceback.format_exc(),input_dict)
         finally:
             if all_related_done and self.state == 'process':
                 self.state = 'need_resolve'
 
     @savepoint
-    def write_error(self, stack_trace):
-        self.write({
+    def write_error(self, stack_trace, payload=None):
+        error_data = {
             'error_info': stack_trace,
             'state': 'error',
             'last_error': fields.Datetime.now(),
             'last_processing_datetime': fields.Datetime.now(),
             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-        })
+        }
+        if payload:
+            error_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
+        self.write(error_data)
 
     def action_process_data(self):
         for rec in self:
