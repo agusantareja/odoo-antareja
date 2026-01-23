@@ -186,7 +186,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             return users
         approval_task_lin = self.get_next_approval_task_line()
         if approval_task_lin:
-            return approval_task_lin.get_users_approval_notification(**kwargs)
+            return approval_task_lin.get_users_for_notification(**kwargs)
         return self.env['res.users']
 
     def request_approval(self):

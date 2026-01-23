@@ -134,6 +134,14 @@ class AbstractApprovalType(models.AbstractModel):
         else:
             return record.get_users().get_users_for_approval(company=record.company_id)
 
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users')
+        if users:
+            return users.get_users_for_notification(company=record.company_id)
+        else:
+            return record.get_users().get_users_for_notification(company=record.company_id)
+
 
 class AbstractApprovalAccess(models.AbstractModel):
     _name = "abstract.approval.access"
