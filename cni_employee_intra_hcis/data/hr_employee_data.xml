@@ -76,8 +76,11 @@
 <!--            <field name="external_app_name">hr.cerindocorp.id</field>-->
             <field name="external_model">hr.employee</field>
 <!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
-            <field name="external_context">{'__read_data_for_sync_external_application':True}</field>
-<!--            <field name="external_fields"></field>-->
+            <field name="external_context">{'__read_data_for_sync_external_application':True,'active_test': False}</field>
+<!--            <field name="external_fields">id,name,nip,birthday,day_month_employee,work_email,mobile_phone,department_id,job_id,active,resource_id,date_of_join,no_bpjs_kesehatan,no_bpjstk,company_id,acting,point_allocation,exp_date_contract,employee_category,termination_date,hide_birthday,bank_name,nama_rekening,no_rekening,gender,image_url,previous_employee_id,departure_reason,is_cancel_terminate,dummy,no_ktp,no_npwp,ptkp,classification_job,spl_admin
+</field>-->
+            <field name="external_fields">id,name,nip,birthday,day_month_employee,work_email,mobile_phone,department_intra_id,department_id,job_id,resource_id,active,date_of_join,company_id,acting,exp_date_contract,classification_job,bank_name,gender,spl_admin,image_url,no_bpjs_kesehatan,no_bpjstk,hide_birthday,previous_employee_id,departure_reason,is_cancel_terminate,dummy,no_ktp,no_npwp,ptkp,point_allocation_id,bank_id,resign_date,jenis_kelamin,image_128</field>
+            <!-- department_id,job_id,resource_id,company_id,point_allocation_id,bank_id,resign_date,jenis_kelamin,image_128-->
             <field name="sync_cron" eval="True"/>
             <field name="strategy">external_update</field>
             <field name="internal_id_same_as_external" eval="True"/>
