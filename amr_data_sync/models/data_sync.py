@@ -326,6 +326,7 @@ class ExternalDataSync(models.Model):
     @savepoint
     def process_data(self):
         all_related_done = False
+        input_dict = {}
         try:
             # try with exception
             with self.env.cr.savepoint():
@@ -360,31 +361,41 @@ class ExternalDataSync(models.Model):
                 input_dict = self.prepare_input_external(item)
                 existing = sync_strategy.call_internal_process_method(existing, item, input_dict, self) or existing
                 all_related_done = self.is_all_related_done()
-                if self.is_all_related_done():
+                if all_related_done:
                     existing = self.save_data(existing, item, input_dict) or existing
+                    self.write_done_internal_odoo(existing, input_dict)
                 else:
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
                                  self.internal_model, self.external_model, self.external_odoo_id)
 
-                sync_strategy.event_external_data_sync_done(existing, item, input_dict)
 
         except Exception as ex:
             all_related_done = False
             # todo clear cache odoo
-            self.write_error(traceback.format_exc())
+            self.write_error(traceback.format_exc(),input_dict)
         finally:
             if all_related_done and self.state == 'process':
                 self.state = 'need_resolve'
 
+        if existing and all_related_done:
+            after_data = self.process_field_after_create(existing) or {}
+            if after_data:
+                input_dict.update(after_data)
+                self.write_done_internal_odoo(existing, input_dict)
+            sync_strategy.event_external_data_sync_done(existing, item, input_dict)
+
     @savepoint
-    def write_error(self, stack_trace):
-        self.write({
+    def write_error(self, stack_trace, payload=None):
+        error_data = {
             'error_info': stack_trace,
             'state': 'error',
             'last_error': fields.Datetime.now(),
             'last_processing_datetime': fields.Datetime.now(),
             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-        })
+        }
+        if payload:
+            error_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
+        self.write(error_data)
 
     def action_process_data(self):
         for rec in self:
