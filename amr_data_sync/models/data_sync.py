@@ -363,11 +363,11 @@ class ExternalDataSync(models.Model):
                 all_related_done = self.is_all_related_done()
                 if all_related_done:
                     existing = self.save_data(existing, item, input_dict) or existing
+                    self.write_done_internal_odoo(existing, input_dict)
                 else:
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
                                  self.internal_model, self.external_model, self.external_odoo_id)
 
-                sync_strategy.event_external_data_sync_done(existing, item, input_dict)
 
         except Exception as ex:
             all_related_done = False
@@ -376,6 +376,13 @@ class ExternalDataSync(models.Model):
         finally:
             if all_related_done and self.state == 'process':
                 self.state = 'need_resolve'
+
+        if existing and all_related_done:
+            after_data = self.process_field_after_create(existing) or {}
+            if after_data:
+                input_dict.update(after_data)
+                self.write_done_internal_odoo(existing, input_dict)
+            sync_strategy.event_external_data_sync_done(existing, item, input_dict)
 
     @savepoint
     def write_error(self, stack_trace, payload=None):
