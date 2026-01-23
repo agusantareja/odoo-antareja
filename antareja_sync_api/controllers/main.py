@@ -1,11 +1,11 @@
+# -*- coding: utf-8 -*-
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
 from odoo import http
-from odoo.addons.antareja_base.tools.rest import *
-from odoo.addons.antareja_token.tools.utils import *
+from odoo.http import request
+from odoo.addons.antareja_base.tools.rest import modal_not_found, rest_api_unavailable, object_read, object_read_one
+from odoo.addons.antareja_token.tools.utils import check_token_authorization
+
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -22,18 +22,23 @@ class ControllerSync(http.Controller):
 
     @http.route([
         '/api/sync/data/<model_name>',
-        '/api/sync/data/<model_name>/<id>'
+        '/api/sync/data/<model_name>/<int:id>'
     ], type='http', auth="none", methods=['GET'], csrf=False)
     @check_token_authorization(setup_session=True)
-    def rest_api_sync_data(self, model_name=False, id=False, **post):
+    def rest_api_sync_data(self, model_name, id=None, **kwargs):
         Model = request.env['ir.model']
         Model_id = Model.sudo().search([('model', '=', model_name)], limit=1)
-        if Model_id:
-            if Model_id.is_read_sync_api():
-                if id:
-                    return object_read_one(model_name, id, post, status_code=200, filter_fields=readable_fields)
-                else:
-                    return object_read(model_name, post, status_code=200, filter_fields=readable_fields)
-            else:
-                return rest_api_unavailable(model_name)
-        return modal_not_found(model_name)
+        if not Model_id:
+            return modal_not_found(model_name)
+        if Model_id.excluded_read_sync_api() or not Model_id.is_read_sync_api():
+            return rest_api_unavailable(model_name)
+        if id:
+            return object_read_one(
+                model_name, id, kwargs,
+                status_code=200, filter_fields=readable_fields, sudo_read=Model_id.sudo_read_sync_api()
+            )
+        else:
+            return object_read(
+                model_name, kwargs,
+                status_code=200, filter_fields=readable_fields, sudo_read=Model_id.sudo_read_sync_api()
+            )
