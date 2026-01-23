@@ -6,14 +6,14 @@
 <!--            <field name="external_app_name">hr.cerindocorp.id</field>-->
             <field name="external_model">hr.job</field>
 <!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
+            <field name="filter_last_update" eval="True"/>
             <field name="external_context">{'active_test': False}</field>
             <field name="external_fields">name,active,state,description,requirements,department_id,company_id</field>
             <field name="sync_cron" eval="True"/>
             <field name="internal_model">hr.job</field>
             <field name="strategy">external_update</field>
             <field name="internal_id_same_as_external" eval="True"/>
-<!--            <field name="internal_lookup_method">internal_lookup_for_job</field>-->
-<!--            <field name="internal_process_method">internal_process_for_job</field>-->
+            <field name="exclude_fields">name,active,state,description,requirements,company_id</field>
             <field name="internal_context">{'active_test': False}</field>
 <!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
         </record>
