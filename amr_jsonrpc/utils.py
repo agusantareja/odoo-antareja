@@ -33,7 +33,6 @@ def savepoint(_func=None, *,
                 with self.env.cr.savepoint():
                     return func(self, *args, **kwargs)
             except Exception as e:
-                self.env.cache.invalidate()
                 logger.warning("[SAFEPOINT] %s failed: %s", func.__name__, e, exc_info=True)
                 if rethrow:
                     raise
@@ -58,10 +57,10 @@ def call_with_savepoint(self, method_name, args=None, kwargs=None, logger=_logge
     """
 
     if not isinstance(self, models.BaseModel):
-        return self
+        return None
 
     if not method_name or not isinstance(method_name, str):
-        return self
+        return None
 
     if not hasattr(self, method_name):
         raise AttributeError(f"Method {method_name} not found")
@@ -110,8 +109,7 @@ def call_with_savepoint(self, method_name, args=None, kwargs=None, logger=_logge
         with self.env.cr.savepoint():
             return method(*final_args, **final_kwargs)
     except Exception as e:
-        self.env.cache.invalidate()
         logger.warning("[SAFEPOINT] %s failed: %s", method_name, e, exc_info=True)
         if rethrow:
             raise
-    return self
+    return None
