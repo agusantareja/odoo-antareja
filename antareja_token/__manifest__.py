@@ -17,7 +17,6 @@
     'external_dependencies': {
         'python': ['pyjwt'],
     },
-    # always loaded
     'data': [
         'security/ir.model.access.csv',
         'views/antareja_token_audience_views.xml',

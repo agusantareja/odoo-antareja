@@ -12,35 +12,8 @@ from odoo.addons.antareja_base.tools.rest import invalid_response
 
 _logger = logging.getLogger(__name__)
 
-"""
-2025-08-28 03:03:45,369 28428 INFO DEV_13_INTRA_2_OCNI-00797 odoo.addons.base.models.ir_http: Exception during request Authentication. 
-Traceback (most recent call last):
-  File "{odoo_home}\odoo\addons\base\models\ir_http.py", line 115, in _authenticate
-    request.session.check_security()
-  File "{odoo_home}\odoo\http.py", line 1055, in check_security
-    if not security.check_session(self, env):
-  File "{odoo_home}\odoo\service\security.py", line 27, in check_session
-    if expected and odoo.tools.misc.consteq(expected, session.session_token ):
-TypeError: unsupported operand types(s) or combination of types: 'str' and 'NoneType'
 
-"""
-# _original_check_security = OpenERPSession.check_security
-#
-#
-# def custom_check_security(self):
-#     if request and request.httprequest and request.httprequest.path:
-#         path = request.httprequest.path
-#         if path and self.uid and not self.session_token:
-#             _logger.warning("Session tanpa token dianggap expired API route %s", path)
-#             raise SessionExpiredException("Session expired")
-#
-#     _original_check_security(self)
-#
-#
-# # Replace method
-# OpenERPSession.check_security = custom_check_security
-
-
+#v16 handle session berbeda dengan 13
 def set_session(login, uid, session_token=None):
     session = request.session
     session.rotate = True
@@ -118,9 +91,9 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
                 # ambbil semua kemungkin token yang ada
                 token_list = [get_bearer_token()]
                 header_names = []
-                if header_names:
+                if header_name:
                     if isinstance(header_name,str):
-                        header_names=[header_names]
+                        header_names=[header_name]
                     elif isinstance(header_name,(list, tuple)):
                         header_names =header_name
                 for name in header_names:
