@@ -66,6 +66,11 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         approval_instance = rec.approval_instance_id.create_or_get(rec)
         return approval_instance.action_reject()
 
+    def reject_from_popup_reject(self,**kwargs):
+        rec = self.ensure_one()
+        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        return approval_instance.reject_from_popup_reject(**kwargs)
+
     def action_clear_approval(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
@@ -82,13 +87,13 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         return approval_instance and approval_instance.get_next_approval_task_line()
 
     def get_users_approval_notification(self, **kwargs):
-        return self.get_next_approval_task_line().get_users_approval_notification(**kwargs)
+        return self.get_next_approval_task_line().get_users_for_notification(**kwargs)
 
     def send_approval_notification(self, **kwargs):
         rec = self.ensure_one()
         notification_template = kwargs.get(
             "notification_template") or rec.approval_instance_id.get_notification_approval()
-        users = kwargs.get("users") or rec.get_users_approval_notification()
+        users = kwargs.get("users") or rec.get_users_for_notification()
         if notification_template:
             notification_template.send_notification_to_users(users, rec.id, **kwargs)
 
@@ -99,3 +104,8 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         self.ensure_one()
         self.env['approval.instance'].create_or_get(self).unregister_approval_task_line(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
+
+    def is_status_waiting_approval(self):
+        rec = self.ensure_one()
+        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        return approval_instance.is_status_waiting_approval()

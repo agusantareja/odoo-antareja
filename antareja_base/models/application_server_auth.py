@@ -213,7 +213,7 @@ class ApplicationServerAuth(models.Model):
         self.ensure_one()
         endpoint_url = self.application_server_id.get_endpoint_url()
         _logger.info(f"Endpoint URL : {endpoint_url}")
-        return self.application_server_id.get_endpoint_url()
+        return endpoint_url
 
     def action_open_view(self):
         self.ensure_one()
