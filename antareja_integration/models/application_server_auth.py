@@ -12,14 +12,16 @@ _logger = logging.getLogger(__name__)
 
 
 class ApplicationServerAuth(models.Model):
-    _inherit = 'application.server.auth'
-
+    _name = 'application.server.auth'
+    _inherit = [_name, 'client.auth.mixin']
     auth_type = fields.Selection(selection_add=[
         ('jwt-odoo-rcp', 'JWT Odoo RCP'),
         ('jwt-rest-token', 'JWT rest-token'),
     ])
 
     rest_refresh = fields.Char()
+    access_token = fields.Char(related="rest_token", store=True)
+    refresh_token = fields.Char(related="rest_refresh", store=True)
 
     def get_db_name(self):
         return self.odoo_server_db
@@ -35,6 +37,12 @@ class ApplicationServerAuth(models.Model):
     @api.model
     def rest_refresh_path(self):
         return '/application/token'
+
+    def get_token_endpoint_url(self):
+        return self.rest_url(self.rest_login_path())
+
+    def get_endpoint_url(self):
+        return self.application_server_id.get_endpoint_url()
 
     def is_jwt(self):
         try:
