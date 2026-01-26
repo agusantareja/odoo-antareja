@@ -2,7 +2,7 @@
 
 from odoo import models, fields, _
 from odoo.exceptions import UserError
-from odoo.addons.amr_jsonrpc import jsonrpc, client
+from odoo.addons.amr_jsonrpc import client
 import requests
 import logging
 
