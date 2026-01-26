@@ -109,7 +109,7 @@ class ExternalServerSync(models.Model):
         config = super(ExternalServerSync, self).get_auth_config()
         auth = self.get_application_server_auth()
         if auth:
-            config['token_endpoint_url'] = auth.rest_url(auth.rest_login_path())
+            config = auth.get_auth_config(config)
         return config
 
     def get_odoo_client(self, **kwargs):
