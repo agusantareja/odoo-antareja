@@ -37,7 +37,7 @@ class ExternalServerSync(models.Model):
     def _compute_external_app_name(self):
         for rec in self:
             if rec.application_server_auth_id:
-                rec.app_name = rec.application_server_auth_id.name
+                rec.app_name = rec.application_server_auth_id.get_application_name()
             # kalau server_sync_id kosong → JANGAN override
             # biarkan nilai manual tetap
 
