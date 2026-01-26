@@ -10,16 +10,26 @@ _logger = logging.getLogger(__name__)
 
 class ExternalServerSync(models.Model):
     _inherit = 'external.server.sync'
-    app_name = fields.Char(
-        compute='_compute_external_app_name',
-        inverse='_inverse_external_app_name',
-        store=True)
+
     external_mode = fields.Selection([
         ('standard', 'Standard API'),
         ('server_auth', 'Server Authentication '),
         ('server_path', 'Server Path '),
     ], default='standard')
-
+    app_name = fields.Char(
+        compute='_compute_external_app_name',
+        inverse='_inverse_external_app_name',
+        store=True)
+    base_url = fields.Char(
+        compute='_compute_external_app_name',
+        inverse='_inverse_base_url',
+        store=True)
+    application_server_id = fields.Many2one(
+        'application.server',
+        compute = '_compute_external_app_name',
+        readonly=True,
+        store = True
+    )
     application_server_auth_id = fields.Many2one(
         'application.server.auth',
         compute='_compute_server_auth',
@@ -37,7 +47,9 @@ class ExternalServerSync(models.Model):
     def _compute_external_app_name(self):
         for rec in self:
             if rec.application_server_auth_id:
+                rec.application_server_id = rec.application_server_auth_id.application_server_id
                 rec.app_name = rec.application_server_auth_id.get_application_name()
+                rec.base_url = rec.application_server_auth_id.get_endpoint_url()
             # kalau server_sync_id kosong → JANGAN override
             # biarkan nilai manual tetap
 
@@ -46,6 +58,11 @@ class ExternalServerSync(models.Model):
         for rec in self:
             # inverse wajib ada supaya field editable
             pass
+    def _inverse_base_url(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
+
 
     @api.depends('external_mode', 'application_server_path_id')
     def _compute_server_auth(self):
@@ -67,9 +84,9 @@ class ExternalServerSync(models.Model):
 
     def get_application_server_auth(self):
         if self.external_mode == 'server_auth':
-            return self.application_server_auth_id.application_server_id
+            return self.application_server_auth_id
         elif self.external_mode == 'server_path':
-            return self.application_server_path_id.application_server_auth_id.application_server_id
+            return self.application_server_path_id.application_server_auth_id
 
     def get_application_name(self):
         auth = self.get_application_server_auth()
