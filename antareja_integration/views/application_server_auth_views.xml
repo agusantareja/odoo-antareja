@@ -14,8 +14,7 @@
                         </group>
                         <group string="Get Token">
                             <field name="username"/>
-                            <field name="password"/>
-                            <button string="Get Token" type="object" name="action_login"/>
+                            <button string="Get Token" type="object" name="action_open_token_wizard"/>
                         </group>
                     </group>
                 </page>
