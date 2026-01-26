@@ -36,7 +36,7 @@ class ExternalServerSync(models.Model):
     @api.depends('external_mode', 'application_server_auth_id', 'application_server_auth_id.name')
     def _compute_external_app_name(self):
         for rec in self:
-            if rec.server_sync_id:
+            if rec.application_server_auth_id:
                 rec.app_name = rec.application_server_auth_id.name
             # kalau server_sync_id kosong → JANGAN override
             # biarkan nilai manual tetap
@@ -68,6 +68,7 @@ class ExternalServerSync(models.Model):
             return self.application_server_path_id.get_application_name()
         return super(ExternalServerSync, self).get_application_name()
 
+    @api.model
     def get_sync_path(self):
         return "/api/sync/data"
 
