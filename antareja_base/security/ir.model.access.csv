@@ -17,3 +17,5 @@ access_application_server_path_user,Read Path,model_application_server_path,base
 
 access_api_call_retry,api.call.retry,model_api_call_retry,base.group_user,1,1,1,1
 access_api_call_log,api.call.log Read Create,model_api_call_log,base.group_user,1,0,1,0
+
+access_popup_reject_message_wizard,popup.reject.message.wizard Wizard,model_popup_reject_message_wizard,base.group_user,1,1,1,1

@@ -482,6 +482,10 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             if have_method(transaction_object, 'event_after_approve'):
                 safe_call_method(transaction_object, 'event_after_approve')
 
+    def reject_method_legacy(self,reason=None, **kwargs):
+        raise NotImplemented
+        #return approval_task_line_next, approval_task_line_between
+
     def do_reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
         if not self.access_approval:
@@ -500,6 +504,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 approval_task_line_between = self.get_approval_start_task(approval_task_line_next)
             elif self.reject_to_method == 'to_previous':
                 approval_task_line_next = self.get_previous_approval_task_line()
+            elif self.reject_to_method == 'legacy':
+                approval_task_line_next,approval_task_line_between = self.reject_method_legacy(reason,**kwargs)
             else:
                 approval_task_line_next = kwargs.get('approval_task_line_next')
                 approval_task_line_between = kwargs.get('approve_task_line_between') or self.get_approval_start_task(
@@ -507,6 +513,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             is_approval_done = not approval_task_line_next
         if is_approval_done:
             kw['is_approval_done'] = True
+            kw['is_rejected'] = True
         else:
             kw['approval_task_line_next'] = approval_task_line_next
         kw['approve_task_task_between'] = approval_task_line_between

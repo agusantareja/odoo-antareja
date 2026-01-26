@@ -436,11 +436,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
             approval_instance.register_approval_task_line(**kw)
-            # approval_task_line.send_approval_notification(
-            #     approval_template=approval_template,
-            #     approval_instance=approval_instance,
-            #     notification_template=approval_template.notification_approval_id
-            # )
 
         return self
 
