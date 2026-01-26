@@ -15,6 +15,7 @@
                             <field name="external_mode"/>
                             <field name="application_server_auth_id" attrs="{'invisible': [('external_mode', '!=', 'server_auth')]}" />
                             <field name="application_server_path_id" attrs="{'invisible': [('external_mode', '!=', 'server_path')]}" />
+                            <field name="app_name" readonly="1" attrs="{'invisible': [('external_mode', '=', 'standard')]}"/>
                         </group>
                     </group>
                 </xpath>
