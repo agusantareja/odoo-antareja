@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from odoo import models, fields, _
+from odoo import models, fields,api, _
 from odoo.exceptions import UserError
 import logging
 
@@ -10,15 +10,56 @@ _logger = logging.getLogger(__name__)
 
 class ExternalServerSync(models.Model):
     _inherit = 'external.server.sync'
-
+    app_name = fields.Char(
+        compute='_compute_external_app_name',
+        inverse='_inverse_external_app_name',
+        store=True)
     external_mode = fields.Selection([
         ('standard', 'Standard API'),
         ('server_auth', 'Server Authentication '),
         ('server_path', 'Server Path '),
     ], default='standard')
 
-    application_server_auth_id = fields.Many2one('application.server.auth', string="Application Server Auth")
-    application_server_path_id = fields.Many2one('application.server.path', string="Application Server Path")
+    application_server_auth_id = fields.Many2one(
+        'application.server.auth',
+        compute='_compute_server_auth',
+        inverse='_inverse_server_auth',
+        store=True,
+        string="Application Server Auth"
+
+    )
+    application_server_path_id = fields.Many2one(
+        'application.server.path',
+        string="Application Server Path"
+    )
+
+    @api.depends('external_mode', 'application_server_auth_id', 'application_server_auth_id.name')
+    def _compute_external_app_name(self):
+        for rec in self:
+            if rec.server_sync_id:
+                rec.app_name = rec.application_server_auth_id.name
+            # kalau server_sync_id kosong → JANGAN override
+            # biarkan nilai manual tetap
+
+    # ===== INVERSE =====
+    def _inverse_external_app_name(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
+
+    @api.depends('external_mode', 'application_server_path_id')
+    def _compute_server_auth(self):
+        for rec in self:
+            if rec.external_mode == 'server_path' and rec.application_server_path_id:
+                rec.application_server_auth_id = rec.application_server_path_id.application_server_auth_id
+            # kalau server_sync_id kosong → JANGAN override
+            # biarkan nilai manual tetap
+
+    # ===== INVERSE =====
+    def _inverse_server_auth(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
 
     def get_application_name(self):
         if self.external_mode == 'server_auth':
@@ -30,7 +71,7 @@ class ExternalServerSync(models.Model):
     def get_sync_path(self):
         return "/api/sync/data"
 
-    def get_base_url(self):
+    def get_endpoint_url(self):
         application_server = None
         if self.external_mode == 'server_auth':
             application_server = self.application_server_auth_id.application_server_id
@@ -38,7 +79,7 @@ class ExternalServerSync(models.Model):
             application_server = self.application_server_path_id.application_server_auth_id.application_server_id
         if application_server:
             return application_server.get_endpoint_url()
-        return super(ExternalServerSync, self).get_base_url()
+        return super(ExternalServerSync, self).get_endpoint_url()
 
     def get_db_uid_username_password(self):
         rec = self.ensure_one()

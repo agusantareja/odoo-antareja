@@ -1,28 +1,4 @@
 <odoo>
-
-    <record id="view_application_server_auth_form" model="ir.ui.view">
-        <field name="name">application.server.auth.form</field>
-        <field name="model">application.server.auth</field>
-        <field name="inherit_id" ref="antareja_base.view_application_server_auth_form"/>
-        <field name="arch" type="xml">
-            <notebook position="inside">
-                <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
-                    <group>
-                        <group string="JWT Token">
-                            <field name="rest_token"/>
-                            <field name="rest_refresh"/>
-                        </group>
-                        <group string="Get Token">
-                            <field name="username"/>
-                            <field name="password"/>
-                            <button string="Get Token" type="object" name="action_login"/>
-                        </group>
-                    </group>
-                </page>
-            </notebook>
-        </field>
-    </record>
-
     <!-- Action -->
     <record id="action_application_server_auth" model="ir.actions.act_window">
         <field name="name">Application Server Auth</field>
@@ -35,5 +11,4 @@
             </p>
         </field>
     </record>
-
 </odoo>
