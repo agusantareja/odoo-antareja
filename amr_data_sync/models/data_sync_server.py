@@ -2,7 +2,7 @@
 
 from odoo import models, fields, _
 from odoo.exceptions import UserError
-from odoo.addons.amr_jsonrpc import jsonrpc, client
+from odoo.addons.amr_jsonrpc import client
 import requests
 import logging
 
@@ -72,99 +72,6 @@ class ExternalServerSync(models.Model):
 
     def get_path(self):
         return self.path
-
-    # def get_db_name_endpoint_url(self):
-    #     return f"{self.get_endpoint_url()}{self.get_odoo_db_name_path()}"
-
-    # def get_endpoint_model_name_url(self, model_name):
-    #     return f"{self.get_endpoint_url()}/{model_name}"
-
-    # def get_headers_request(self):
-    #     return {
-    #         self.token_key: self.token_value,
-    #         "Accept": "application/json"
-    #     }
-
-    # def get_model_name_data(self, model_name, ref_id):
-    #     url = self.get_endpoint_model_name_url(model_name) + f"/{ref_id}"
-    #     headers = self.get_headers_request()
-    #     response = requests.get(url, headers=headers)
-    #     if response.status_code != 200:
-    #         raise UserError(f"Failed to fetch data: {response.status_code} - {response.text}")
-    #
-    #     return response.json()[0]
-
-    # def get_db_name(self):
-    #     return self.odoo_server_db
-    #
-    # def get_odoo_uid(self):
-    #     return self.odoo_server_uid
-    #
-    # def get_username(self):
-    #     return self.username
-    #
-    # def get_password(self):
-    #     return self.password
-
-    # def get_db_uid_username_password(self):
-    #     return self.get_db_name(), self.get_odoo_uid(), self.get_username(), self.get_password()
-
-    # def get_db_username_password(self):
-    #     return self.get_db_name(), self.get_username(), self.get_password()
-
-    # def get_db_name_uid_password(self):
-    #     odoo_server_db = self.get_db_name()
-    #     odoo_server_uid = self.get_odoo_uid()
-    #     if odoo_server_db and odoo_server_uid:
-    #         return odoo_server_db, odoo_server_uid, self.basic_auth_password
-    #     return self.sync_authenticate()
-
-    # def sync_authenticate(self):
-    #     url = f"{self.base_url}/api/sync/authenticate"
-    #     response = requests.post(url, data={
-    #         'login': self.basic_auth_username,
-    #         'password': self.basic_auth_password,
-    #     })
-    #     response.raise_for_status()
-    #     json_data = response.json()
-    #     odoo_server_db = json_data.get('db')
-    #     odoo_server_uid = json_data.get('uid')
-    #     return odoo_server_db, odoo_server_uid, self.basic_auth_password
-
-    # def action_get_db_name(self):
-    #     self.get_db_name()
-
-    # def action_authenticate(self):
-    #     try:
-    #         if self.odoo_server_db:
-    #             self.jsonrpc_authenticate()
-    #         else:
-    #             self.sync_authenticate()
-    #     except Exception as e:
-    #         _logger.error("Authentication failed: %s", str(e))
-    #         raise UserError(_("Authentication failed: %s") % str(e))
-    #
-    #     return {
-    #         'type': 'ir.actions.client',
-    #         'tag': 'display_notification',
-    #         'params': {
-    #             'title': 'Sukses',
-    #             'message': 'Auntentikasi berhasil.',
-    #             'type': 'success',  # bisa: success / warning / danger / info
-    #             'sticky': False,  # True = tidak hilang otomatis
-    #         }
-    #     }
-
-    # def jsonrpc_path(self):
-    #     return "/jsonrpc"
-
-    # def jsonrpc_endpoint_url(self):
-    #     return self.get_base_url() + self.jsonrpc_path()
-
-    # def jsonrpc_authenticate(self):
-    #     db, username, password = self.get_db_username_password()
-    #     url = self.jsonrpc_endpoint_url()
-    #     return jsonrpc.authenticate(url, db, username, password)
 
     def get_odoo_client(self, **kwargs):
         return self.create_auth_client(**kwargs)
