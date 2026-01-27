@@ -88,14 +88,14 @@ class ExternalServerSync(models.Model):
         elif self.external_mode == 'server_path':
             return self.application_server_path_id.application_server_auth_id
 
-    def get_application_name(self):
-        auth = self.get_application_server_auth()
-        return (auth and auth.get_application_name()) or super(ExternalServerSync, self).get_application_name()
+    # def get_application_name(self):
+    #     auth = self.get_application_server_auth()
+    #     return (auth and auth.get_application_name()) or super(ExternalServerSync, self).get_application_name()
 
 
-    def get_endpoint_url(self):
-        auth = self.get_application_server_auth()
-        return (auth and auth.get_endpoint_url()) or super(ExternalServerSync, self).get_endpoint_url()
+    # def get_endpoint_url(self):
+    #     auth = self.get_application_server_auth()
+    #     return (auth and auth.get_endpoint_url()) or super(ExternalServerSync, self).get_endpoint_url()
     #
     # def get_external_data(self, model_name, domain=None, fields=None, offset=None, limit=None, count=False,
     #                       object_id=None, context=None):
@@ -122,16 +122,23 @@ class ExternalServerSync(models.Model):
     #         count=count, object_id=object_id, context=context
     #     )
 
-    def get_auth_config(self):
-        config = super(ExternalServerSync, self).get_auth_config()
-        auth = self.get_application_server_auth()
-        if auth:
-            config = auth.get_auth_config(config)
-        return config
+    # def get_auth_config(self):
+    #     config = super(ExternalServerSync, self).get_auth_config()
+    #     auth = self.get_application_server_auth()
+    #     if auth:
+    #         config = auth.get_auth_config(config)
+    #     return config
+    #
+    # def get_odoo_client(self, **kwargs):
+    #     auth = self.get_application_server_auth()
+    #     if auth:
+    #         return auth.create_auth_client(**kwargs)
+    #     else:
+    #         return super(ExternalServerSync, self).create_auth_client(**kwargs)
 
-    def get_odoo_client(self, **kwargs):
+    def create_remote_model(self,external_model, **kwargs):
         auth = self.get_application_server_auth()
         if auth:
-            return auth.create_auth_client(**kwargs)
+            return auth.create_remote_model(external_model,**kwargs)
         else:
-            return super(ExternalServerSync, self).create_auth_client(**kwargs)
+            return super(ExternalServerSync, self).create_remote_model(external_model,**kwargs)
