@@ -585,13 +585,13 @@ class ExternalDataSync(models.Model):
         # return result_map(int:internal_id,list():external_id), not_mapped_ids(int:internal)
         # digunakan untuk mengirim data ke server external
         if not internal:
-            return [0], [0]
+            return [], []
 
         if not isinstance(internal, models.BaseModel):
             _logger.error("Internal Object must")
             if raise_not_found_exception:
                 raise ValueError("Internal Object must")
-            return [0], [0]
+            return [], []
 
         if sync_strategy:
             result_map, not_mapped_ids = sync_strategy.reverse_mapping(internal, raise_not_found_exception=False)

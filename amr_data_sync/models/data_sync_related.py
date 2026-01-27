@@ -182,8 +182,6 @@ class ExternalDataSyncRelated(models.Model):
     ):
         # value for this related related_external_data_sync_id
         # parent external_data_sync_id
-        if field_name == 'resource_id':
-            print("ddd")
         field_after_create = field_type in ['many2many', 'one2many']
         update = {
             'field_after_create': field_after_create,

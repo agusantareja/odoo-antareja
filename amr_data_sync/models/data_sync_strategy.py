@@ -297,12 +297,7 @@ class ExternalDataSyncStrategy(models.Model):
     def action_sync_now(self):
         return self.sync_from_application_server()
 
-    def get_external_one_data(self, object_id):
-        ModelObject = self.sync_one_model_object(object_id)
-        result = ModelObject.read()
-        if result and isinstance(result, list):
-            return result[0]
-        return result
+
 
     def internal_lookup(self, item, ):
         item_data = convert_from_external_data(item)
@@ -553,28 +548,24 @@ class ExternalDataSyncStrategy(models.Model):
         else:
             raise NotImplementedError(f"External sync {external_sync} not implemented yet")
 
-    def sync_model_object(self, **kwargs):
-        return self.remote_model_object(self.external_model, **kwargs)
-
     def sync_list_model_object(self):
-        self.ensure_one()
-        kwargs = self.prepare_sync_list_dict() or {}
-        return self.sync_model_object(**kwargs)
-
-    def sync_one_model_object(self, object_id):
-        self.ensure_one()
-        kwargs = self.prepare_sync_one_dict()
-        kwargs['ids'] = [object_id]
-        return self.sync_model_object(**kwargs)
-
-    def sync_from_application_server(self):
-        ModelObject = self.sync_list_model_object()
-        self = self.ensure_internal_context()
-
+        # ModelObject = self.sync_list_model_object()
+        self_internal = self.ensure_internal_context()
         def callback(item, **kwargs):
-            self.env['external.data.sync'].data_from_external(item, self)
+            self_internal.env['external.data.sync'].data_from_external(item, self_internal)
+        kwargs = self.prepare_sync_list_dict() or {}
+        with self.server_sync_id.create_remote_model(self.external_model,**kwargs) as ModelObject:
+            ModelObject.external_data_callback(callback)
 
-        ModelObject.external_data_callback(callback)
+    def get_external_one_data(self, object_id):
+        # ModelObject = self.sync_one_model_object(object_id)
+        # create_remote_model()
+        kwargs = self.prepare_sync_one_dict()
+        with self.server_sync_id.create_remote_model(self.external_model,**kwargs) as ModelObject:
+            result = ModelObject.read([object_id])
+            if result and isinstance(result, list):
+                return result[0]
+            return result
 
     @api.model
     def method_call_sync_from_application_server(self):
