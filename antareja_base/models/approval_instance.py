@@ -186,7 +186,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             return users
         approval_task_lin = self.get_next_approval_task_line()
         if approval_task_lin:
-            return approval_task_lin.get_users_approval_notification(**kwargs)
+            return approval_task_lin.get_users_for_notification(**kwargs)
         return self.env['res.users']
 
     def request_approval(self):
@@ -436,11 +436,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
             approval_instance.register_approval_task_line(**kw)
-            # approval_task_line.send_approval_notification(
-            #     approval_template=approval_template,
-            #     approval_instance=approval_instance,
-            #     notification_template=approval_template.notification_approval_id
-            # )
 
         return self
 

@@ -48,8 +48,8 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
 
     final_args = []
     final_kwargs = {}
-    kwargs = kwargs or {}
-    args = args or []
+    kwargs = dict(kwargs or {})
+    args = list(args or [])
     for name, p in params.items():
         if p.kind in (
             inspect.Parameter.POSITIONAL_ONLY,
@@ -60,12 +60,16 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
                 args = args[1:]
             elif name in kwargs:
                 final_args.append(kwargs[name])
+                #_logger.info(f"index {len(final_args)} from {name}")
+                kwargs.pop(name)
             elif p.default is not inspect.Parameter.empty:
-                pass
+                #_logger.info(f"index {len(final_args)} default {p.default}")
+                final_args.append(p.default)
             else:
                 raise TypeError(f"Missing required argument: {name}")
 
         elif p.kind == inspect.Parameter.VAR_POSITIONAL:
+            _logger.info(f"VAR_POSITIONAL {name}")
             final_args.extend(args)
             args = ()
 
@@ -77,7 +81,6 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
 
         elif p.kind == inspect.Parameter.VAR_KEYWORD:
             final_kwargs.update(kwargs)
-
     return method(*final_args, **final_kwargs)
 
 
