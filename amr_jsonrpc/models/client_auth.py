@@ -3,8 +3,7 @@
 from requests import RequestException
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from .. import client
-from ..client import OdooSessionAuth, TokenAuth, BasicAuth, TokenAuthBearer, HeaderTokenAuth, ParamTokenAuth
+from .. import remote
 import logging
 import requests
 from contextlib import contextmanager
@@ -111,62 +110,62 @@ class AuthRestToken(models.AbstractModel):
     def get_db_uid_username_password(self):
         return self.get_db_name(), self.get_odoo_uid(), self.get_username(), self.get_password()
 
-    def create_auth_client(
-            self, endpoint_url=None, auth_type=None, **kwargs):
-        auth_type = auth_type or self.get_auth_type()
-        endpoint_url = endpoint_url or self.get_endpoint_url()
-        if auth_type == 'odoo-rcp':
-            db, uid, username, password = self.get_db_uid_username_password()
-            session_auth = OdooSessionAuth(
-                endpoint_url, db=db, login=username, password=password, uid=uid
-            )
-            session_auth.login_session()
-        elif auth_type == 'jwt-odoo-rcp':
-            db, uid, username, password = self.get_db_uid_username_password()
-            session_auth = OdooSessionAuth(
-                endpoint_url, db=db, login=username, password=password, uid=uid
-            )
-            session_auth.login_session()
-        elif auth_type == 'jwt-rest-token':
-            session_auth = TokenAuth(
-                endpoint_url,
-                self.access_token,
-                refresh_token=self.refresh_token,
-                refresh_endpoint=self.refresh_endpoint or self.get_token_endpoint_url(),
-                expires_at=self.expires_at
-            )
-        elif auth_type in ['rest-token', 'token']:
-            if self.token_in == 'basic':
-                username, password = self.get_username_password()
-                session_auth = BasicAuth(
-                    endpoint_url, username=username, password=password, path=kwargs.get('path')
-                )
-            elif self.token_in == 'bearer':
-                session_auth = TokenAuthBearer(
-                    endpoint_url,
-                    self.access_token,
-                    path=kwargs.get('path'),
-                )
-
-            elif self.token_in == 'header':
-                session_auth = HeaderTokenAuth(
-                    endpoint_url,
-                    self.token_key,
-                    self.access_token,
-                    path=kwargs.get('path'),
-                )
-            elif self.token_in == 'param':
-                session_auth = ParamTokenAuth(
-                    endpoint_url,
-                    self.token_key,
-                    self.access_token,
-                    path=kwargs.get('path'),
-                )
-            else:
-                raise UserError("Invalid token_in")
-        else:
-            raise UserError("Invalid auth_type")
-        return session_auth
+    # def create_auth_client(
+    #         self, endpoint_url=None, auth_type=None, **kwargs):
+    #     auth_type = auth_type or self.get_auth_type()
+    #     endpoint_url = endpoint_url or self.get_endpoint_url()
+    #     if auth_type == 'odoo-rcp':
+    #         db, uid, username, password = self.get_db_uid_username_password()
+    #         session_auth = OdooSessionAuth(
+    #             endpoint_url, db=db, login=username, password=password, uid=uid
+    #         )
+    #         session_auth.login_session()
+    #     elif auth_type == 'jwt-odoo-rcp':
+    #         db, uid, username, password = self.get_db_uid_username_password()
+    #         session_auth = OdooSessionAuth(
+    #             endpoint_url, db=db, login=username, password=password, uid=uid
+    #         )
+    #         session_auth.login_session()
+    #     elif auth_type == 'jwt-rest-token':
+    #         session_auth = TokenAuth(
+    #             endpoint_url,
+    #             self.access_token,
+    #             refresh_token=self.refresh_token,
+    #             refresh_endpoint=self.refresh_endpoint or self.get_token_endpoint_url(),
+    #             expires_at=self.expires_at
+    #         )
+    #     elif auth_type in ['rest-token', 'token']:
+    #         if self.token_in == 'basic':
+    #             username, password = self.get_username_password()
+    #             session_auth = BasicAuth(
+    #                 endpoint_url, username=username, password=password, path=kwargs.get('path')
+    #             )
+    #         elif self.token_in == 'bearer':
+    #             session_auth = TokenAuthBearer(
+    #                 endpoint_url,
+    #                 self.access_token,
+    #                 path=kwargs.get('path'),
+    #             )
+    #
+    #         elif self.token_in == 'header':
+    #             session_auth = HeaderTokenAuth(
+    #                 endpoint_url,
+    #                 self.token_key,
+    #                 self.access_token,
+    #                 path=kwargs.get('path'),
+    #             )
+    #         elif self.token_in == 'param':
+    #             session_auth = ParamTokenAuth(
+    #                 endpoint_url,
+    #                 self.token_key,
+    #                 self.access_token,
+    #                 path=kwargs.get('path'),
+    #             )
+    #         else:
+    #             raise UserError("Invalid token_in")
+    #     else:
+    #         raise UserError("Invalid auth_type")
+    #     return session_auth
 
     def action_get_odoo_db_name(self):
         url = f"{self.rest_endpoint_url()}{self.get_odoo_db_name_path()}"
@@ -204,23 +203,24 @@ class AuthRestToken(models.AbstractModel):
             r = s.get(f"{server.get_rest_url('/api/health')}")
 
         """
-        return client.OdooSession(self)
+        return remote.OdooSession(self)
 
+    @contextmanager
     def create_remote_model(self, model_name, **kwargs):
         """
-        State Lest
+        statefull
         Contoh penggunaan
         auth = self.env.ref('test.auth')
         with auth.create_remote_model('res.partner) as s:
             r = s.read([1])")
         """
         odoo_session = self.create_session()
-        if self.auth_type in ('odoo-rcp',):
-            remote_model = client.JsonRPCSessionModelObject(model_name, odoo_session, **kwargs)
-        else:
-            remote_model = client.RestSessionModelObject(model_name, odoo_session, **kwargs)
-
-        return remote_model
+        try:
+            remote_model = odoo_session.create_remote_model(model_name, **kwargs)
+            odoo_session.connect()
+            yield remote_model
+        finally:
+            odoo_session.close()
 
     def connect_session(self, odoo_session):
         self._apply_auth(odoo_session)
@@ -306,10 +306,9 @@ class AuthRestToken(models.AbstractModel):
 
         resp = requests.post(
             refresh_endpoint,
-            json={
+            data={
+                "grant_type": 'refresh_token',
                 "refresh_token": self.refresh_token,
-                "username": self.username,
-                "password": self.password,
             },
             timeout=15,
         )
@@ -321,3 +320,13 @@ class AuthRestToken(models.AbstractModel):
             "refresh_token": data.get("refresh_token"),
             "expires_at": datetime.utcnow() + fields.DateTime.timedelta(seconds=data.get("expires_in", 3600)),
         })
+
+    def jsonrpc_execute_kw(self, model, method, args, kw=None):
+        auth = self.ensure_one()
+        with auth.create_session() as rpc:
+            return rpc.jsonrpc_call(model, method, args, kw=kw)
+
+    def jsonrpc_call(self, model, method, args, kw=None):
+        auth = self.ensure_one()
+        with auth.create_session() as rpc:
+            return rpc.jsonrpc_call(model, method, args, kw=kw)
