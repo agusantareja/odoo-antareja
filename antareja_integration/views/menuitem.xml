@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-<!--    <menuitem id="integration_parent_menu"-->
-<!--                  name="Integration"-->
-<!--                  parent="base.menu_custom"-->
-<!--                  sequence="20"-->
-<!--    />-->
+    <menuitem id="integration_parent_menu"
+                  name="Application Integration"
+                  parent="base.menu_custom"
+                  sequence="20"
+    />
     <menuitem id="integration_application_server"
               parent="antareja_base.base_integration_menu"
               action="antareja_base.action_application_server"
