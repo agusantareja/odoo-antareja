@@ -9,10 +9,10 @@
     """,
 
     'author': "Agus Muhammad Ramdan",
-    'website': "http://www.yourcompany.com",
+    'website': "http://www.agus.ramdan.tech",
 
     'category': 'Tools',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.2',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -23,7 +23,6 @@
     # always loaded
     'data': [
         'views/server_sync_views.xml',
-        'views/application_server_auth_views.xml',
     ],
 
 }
