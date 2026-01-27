@@ -76,29 +76,61 @@ def safe_call(call_func, auth):
             return call_func()
         raise
 
+def rest_url(base_url,base_path=None, path=None):
+    if path:
+        if path != '/':
+            path = base_path
+        elif not path.startswith('/'):
+            path = f"{base_path}/{path}"
+    else:
+        path = base_path
+
+    if path:
+        if path.startswith('/'):
+            return f"{base_url}{path}"
+        else:
+            return f"{base_url}/{path}"
+    return base_url
 
 # =========================
 # CORE Session
 # =========================
-class OdooRPCSession(requests.Session):
-    def __init__(self, auth_model):
+class OdooSession(requests.Session):
+    def __init__(self, auth_model,base_path=None):
         super().__init__()
         self.auth_model = auth_model
+        self.base_path = base_path
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def get_endpoint_url(self):
+        return self.auth_model.get_endpoint_url()
+
+    def get_base_path(self):
+        return self.base_path
+
+    def get_rest_url(self,path=None):
+        return rest_url(self.get_endpoint_url() , self.get_base_path(), path)
+
+    def connect(self):
+        self.auth_model.connect_session()
 
     def request(self, *args, **kwargs):
         resp = super().request(*args, **kwargs)
 
         if resp.status_code == 401:
             self.cookies.clear()
-            self.auth_model.reconnect(self)
+            self.auth_model.reconnect_session(self)
             return super().request(*args, **kwargs)
 
         return resp
 
 
-class SessionJsonRPCModelObject(OdooRPCSession):
-    def __init__(self, model_name, auth_model, **kwargs):
-        super().__init__(auth_model)
+class JsonRPCSessionModelObject:
+    def __init__(self, model_name, session: OdooSession, **kwargs):
+        self.session = session
         self.model_name = model_name
         self.context = kwargs.get('context', {})
         self.domain = kwargs.get('domain', [])
@@ -106,6 +138,16 @@ class SessionJsonRPCModelObject(OdooRPCSession):
         self.offset = kwargs.get('offset', 0)
         self.limit = kwargs.get('limit', 500)
         self.order = kwargs.get('order', None)
+
+    def __enter__(self):
+        self.session.connect()
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def close(self):
+        self.session.close()
 
     def call(self, method, args, kw=None):
         payload = {
@@ -119,7 +161,7 @@ class SessionJsonRPCModelObject(OdooRPCSession):
             }
         }
         resp = self.session.post(
-            f"{self.base_url}/web/dataset/call_kw",
+            f"{self.session.get_endpoint_url()}/web/dataset/call_kw",
             json=normalize_json(payload)
         )
         resp.raise_for_status()
@@ -179,15 +221,14 @@ class SessionJsonRPCModelObject(OdooRPCSession):
         _logger.info("Done : Offset %s = total %s", offset, total)
 
     def __str__(self):
-        return "client.SessionJsonRPCModelObject({})".format(self.model_name)
+        return "client.JsonRPCSessionModelObject({})".format(self.model_name)
 
     __repr__ = __str__
 
 
-class RestSessionModelObject(requests.Session):
-    def __init__(self, model_name, auth_model, **kwargs):
-        super().__init__()
-        self.auth_model = auth_model
+class RestSessionModelObject:
+    def __init__(self, model_name, session, **kwargs):
+        self.session = session
         self.model_name = model_name
         self.context = kwargs.get('context', {})
         self.domain = kwargs.get('domain', [])
@@ -195,19 +236,25 @@ class RestSessionModelObject(requests.Session):
         self.offset = kwargs.get('offset', 0)
         self.limit = kwargs.get('limit', 500)
         self.order = kwargs.get('order', None)
+        # ids = kwargs.get('ids', [])
+        # if ids and isinstance(ids, int):
+        #     self.ids = [ids]
+        # else:
+        #     self.ids = ids or []
 
-        ids = kwargs.get('ids', [])
-        if ids and isinstance(ids, int):
-            self.ids = [ids]
-        else:
-            self.ids = ids or []
+    def __enter__(self):
+        self.session.connect()
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def close(self):
+        self.session.close()
 
     def rest_path_get(self, params=None):
-        path = self.auth_model.get_path()
-        if path:
-            path = f"{path}/{self.model_name}"
-        url = self.auth_model.get_rest_url(path)
-        return self.path_client.rest_path_get(url, params=params)
+        url = self.session.get_rest_url(self.model_name)
+        return self.session.get(url, params=params)
 
     def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None, context=None):
         params = {}
