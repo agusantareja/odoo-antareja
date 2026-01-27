@@ -63,38 +63,38 @@ class ApplicationServerAuth(models.Model):
         now = int(time.time())
         return now >= exp
 
-    def rest_login(self, login, password, **kwargs):
-        rec = self.ensure_one()
-        url = rec.rest_url(rec.rest_login_path())
-        rest_token, rest_refresh = rest.request_token(url, login, password, **kwargs)
-        rec.rest_token = rest_token or rec.rest_token
-        rec.rest_refresh_token = rest_refresh or rec.rest_refresh_token
-        return rest_token
+    # def rest_login(self, login, password, **kwargs):
+    #     rec = self.ensure_one()
+    #     url = rec.rest_url(rec.rest_login_path())
+    #     rest_token, rest_refresh = rest.request_token(url, login, password, **kwargs)
+    #     rec.rest_token = rest_token or rec.rest_token
+    #     rec.rest_refresh_token = rest_refresh or rec.rest_refresh_token
+    #     return rest_token
 
-    def rest_headers(self, headers=None):
-        if self.rest_token_in == 'basic':
-            return self.rest_basic_header(headers)
-        if self.rest_token_in == 'bearer':
-            return self.rest_bearer_header(headers)
-        if self.rest_token_in == 'header':
-            if headers is None:
-                headers = {}
-            headers[self.rest_token_key] = self.get_rest_token()
-        return headers
+    # def rest_headers(self, headers=None):
+    #     if self.rest_token_in == 'basic':
+    #         return self.rest_basic_header(headers)
+    #     if self.rest_token_in == 'bearer':
+    #         return self.rest_bearer_header(headers)
+    #     if self.rest_token_in == 'header':
+    #         if headers is None:
+    #             headers = {}
+    #         headers[self.rest_token_key] = self.get_rest_token()
+    #     return headers
 
-    def rest_basic_header(self, headers=None):
-        username, password = self.get_username_password()
-        return rest.basic_auth_header(username, password, headers)
+    # def rest_basic_header(self, headers=None):
+    #     username, password = self.get_username_password()
+    #     return rest.basic_auth_header(username, password, headers)
 
     def rest_bearer_header(self, headers=None):
         return rest.bearer_auth_header(self.ensure_token(), headers)
 
-    def rest_profile(self):
-        rec = self.ensure_one()
-        url = rec.rest_url(rec.rest_profile_path())
-        response = requests.get(url, rec.rest_bearer_header())
-        response.raise_for_status()
-        return response.json()
+    # def rest_profile(self):
+    #     rec = self.ensure_one()
+    #     url = rec.rest_url(rec.rest_profile_path())
+    #     response = requests.get(url, rec.rest_bearer_header())
+    #     response.raise_for_status()
+    #     return response.json()
 
     def rest_post_refresh(self, refresh_token=None, **kwargs):
         rec = self.ensure_one()
@@ -144,55 +144,55 @@ class ApplicationServerAuth(models.Model):
             db, uid, password = self.jsonrpc_authenticate()
         return jsonrpc.execute_kw(self.get_jsonrpc_url(), model, method, args, kw=kw, db=db, uid=uid, password=password)
 
-    def action_login(self):
-        self.ensure_one()
-        try:
-            username, password = self.get_odoo_username_password()
-            self.rest_login(username, password)
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Info',
-                    'message': _("Token successful."),
-                    'type': 'info',
-                }
-            }
-        except Exception as e:
-            raise UserError(_("Get Token failed: %s") % str(e))
+    # def action_login(self):
+    #     self.ensure_one()
+    #     try:
+    #         username, password = self.get_odoo_username_password()
+    #         self.rest_login(username, password)
+    #         return {
+    #             'type': 'ir.actions.client',
+    #             'tag': 'display_notification',
+    #             'params': {
+    #                 'title': 'Info',
+    #                 'message': _("Token successful."),
+    #                 'type': 'info',
+    #             }
+    #         }
+    #     except Exception as e:
+    #         raise UserError(_("Get Token failed: %s") % str(e))
 
-    def get_auth_config(self, config=None):
-        config = {}
-        auth_type = self.auth_type
-        token_key = self.rest_token_key
-        access_token = self.rest_token
-        refresh_token = self.rest_refresh
-        token_endpoint_url = self.rest_url(self.rest_login_path())
-        if self.auth_type in ['jwt-rest-token', 'rest-token']:
-            auth_type = self.rest_token_in
-        if self.auth_type in ['rest-token', 'rest-token']:
-            endpoint_url = self.rest_endpoint_url()
-        else:
-            endpoint_url = self.get_jsonrpc_url()
-        db, uid, username, password = self.get_db_uid_username_password()
-        config.update({
-            'db': db,
-            'uid': uid,
-            'username': username,
-            'password': password,
-            'auth_mode': auth_type,
-            'token_key': token_key,
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'endpoint_url': endpoint_url,
-            'token_endpoint_url': token_endpoint_url
-        })
-        return config
-
-    def remote_model_object(self, external_model, **kwargs):
-        config = self.get_auth_config()
-        config.update(kwargs)
-        if self.auth_type in ['jwt-rest-token', 'rest-token']:
-            return rest.model_object(external_model, **config)
-        else:
-            return jsonrpc.model_object(external_model, **config)
+    # def get_auth_config(self, config=None):
+    #     config = {}
+    #     auth_type = self.auth_type
+    #     token_key = self.rest_token_key
+    #     access_token = self.rest_token
+    #     refresh_token = self.rest_refresh
+    #     token_endpoint_url = self.rest_url(self.rest_login_path())
+    #     if self.auth_type in ['jwt-rest-token', 'rest-token']:
+    #         auth_type = self.rest_token_in
+    #     if self.auth_type in ['rest-token', 'rest-token']:
+    #         endpoint_url = self.rest_endpoint_url()
+    #     else:
+    #         endpoint_url = self.get_jsonrpc_url()
+    #     db, uid, username, password = self.get_db_uid_username_password()
+    #     config.update({
+    #         'db': db,
+    #         'uid': uid,
+    #         'username': username,
+    #         'password': password,
+    #         'auth_mode': auth_type,
+    #         'token_key': token_key,
+    #         'access_token': access_token,
+    #         'refresh_token': refresh_token,
+    #         'endpoint_url': endpoint_url,
+    #         'token_endpoint_url': token_endpoint_url
+    #     })
+    #     return config
+    #
+    # def remote_model_object(self, external_model, **kwargs):
+    #     config = self.get_auth_config()
+    #     config.update(kwargs)
+    #     if self.auth_type in ['jwt-rest-token', 'rest-token']:
+    #         return rest.model_object(external_model, **config)
+    #     else:
+    #         return jsonrpc.model_object(external_model, **config)
