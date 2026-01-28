@@ -112,6 +112,7 @@ class DataEventMixin(models.AbstractModel):
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in record:
             AuditEvent.create({
+                'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
                 'operation': 'write',
@@ -152,6 +153,7 @@ class DataEventMixin(models.AbstractModel):
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in self:
             AuditEvent.create({
+                'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
                 'operation': 'write',
@@ -178,6 +180,7 @@ class DataEventMixin(models.AbstractModel):
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in self:
             AuditEvent.create({
+                'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
                 'operation': 'write',
