@@ -37,7 +37,10 @@ class ApplicationServerAuth(models.Model):
         return '/application/token'
 
     def get_token_endpoint_url(self):
-        return self.rest_url(self.rest_login_path())
+        return super(ApplicationServerAuth, self).get_token_endpoint_url() or f"{self.get_endpoint_url()}{self.rest_login_path()}"
+
+    def get_application_name(self):
+        return self.application_server_id.name
 
     def get_endpoint_url(self):
         return self.application_server_id.get_endpoint_url()
@@ -60,15 +63,3 @@ class ApplicationServerAuth(models.Model):
 
         now = int(time.time())
         return now >= exp
-
-    def jsonrpc_execute_kw(self, model, method, args, kw=None):
-        """Deprecated gunakan remote_model_object"""
-        auth=self.ensure_one()
-        with auth.create_session() as rpc:
-            return rpc.jsonrpc_call(model, method, args, kw=kw)
-
-    def jsonrpc_call(self, model, method, args, kw=None):
-        """Deprecated gunakan create_remote_model"""
-        auth = self.ensure_one()
-        with auth.create_session() as rpc:
-            return rpc.jsonrpc_call(model,method,args,kw=kw)
