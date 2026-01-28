@@ -297,8 +297,6 @@ class ExternalDataSyncStrategy(models.Model):
     def action_sync_now(self):
         return self.sync_from_application_server()
 
-
-
     def internal_lookup(self, item, ):
         item_data = convert_from_external_data(item)
         external_id = item_data.get('id')
@@ -404,10 +402,14 @@ class ExternalDataSyncStrategy(models.Model):
                         continue
                     related_data_process_after_mapping[k] = (f, v)
                     continue
-
                 elif f.type in ['date', 'datetime']:
                     if isinstance(v, str):
                         v = fields.Date.from_string(v) if f.type == 'date' else fields.Datetime.from_string(v)
+                elif f.type in ['integer']:
+                    if isinstance(v, list) and len(v) > 1:
+                        # bisa jadi sebelummya dari many2one menjadi integer karena mapping di ubah
+                        v = v[0]
+                    v = int(v)
 
                 input_dict[k] = v
             for k, m in mapping_fields.items():
@@ -498,21 +500,21 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        config.update(self.get_auth_config())
+        # config.update(self.get_auth_config())
         return config
 
-    def get_auth_config(self, config=None):
-        auth_type = self.server_sync_id.auth_type
-        token_key = self.server_sync_id.token_key
-        access_token = self.server_sync_id.token_value
-        if auth_type == 'token':
-            auth_type = self.server_sync_id.token_in
-        return {
-            'auth_mode': auth_type,
-            'token_key': token_key,
-            'access_token': access_token,
-            'token_endpoint_url': None
-        }
+    # def get_auth_config(self, config=None):
+    #     auth_type = self.server_sync_id.auth_type
+    #     token_key = self.server_sync_id.token_key
+    #     access_token = self.server_sync_id.token_value
+    #     if auth_type == 'token':
+    #         auth_type = self.server_sync_id.token_in
+    #     return {
+    #         'auth_mode': auth_type,
+    #         'token_key': token_key,
+    #         'access_token': access_token,
+    #         'token_endpoint_url': None
+    #     }
 
     def prepare_sync_one_dict(self):
         # context
@@ -533,35 +535,37 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        config.update(self.get_auth_config())
+        # config.update(self.get_auth_config())
         return config
 
     def internal_model_object(self):
         if self.internal_model:
             return self.env[self.internal_model]
 
-    def remote_model_object(self, external_model, **kwargs):
-        external_sync = self.get_external_sync()
-        if external_sync in ['jsonrpc', 'rest']:
-            odoo_client = self.server_sync_id.get_odoo_client(**kwargs)
-            return odoo_client.create_remote_model(external_model, **kwargs)
-        else:
-            raise NotImplementedError(f"External sync {external_sync} not implemented yet")
+    # def remote_model_object(self, external_model, **kwargs):
+    #     external_sync = self.get_external_sync()
+    #     if external_sync in ['jsonrpc', 'rest']:
+    #         odoo_client = self.server_sync_id.get_odoo_client(**kwargs)
+    #         return odoo_client.create_remote_model(external_model, **kwargs)
+    #     else:
+    #         raise NotImplementedError(f"External sync {external_sync} not implemented yet")
 
     def sync_list_model_object(self):
         # ModelObject = self.sync_list_model_object()
         self_internal = self.ensure_internal_context()
+
         def callback(item, **kwargs):
             self_internal.env['external.data.sync'].data_from_external(item, self_internal)
+
         kwargs = self.prepare_sync_list_dict() or {}
-        with self.server_sync_id.create_remote_model(self.external_model,**kwargs) as ModelObject:
+        with self.server_sync_id.create_remote_model(self.external_model, **kwargs) as ModelObject:
             ModelObject.external_data_callback(callback)
 
     def get_external_one_data(self, object_id):
         # ModelObject = self.sync_one_model_object(object_id)
         # create_remote_model()
         kwargs = self.prepare_sync_one_dict()
-        with self.server_sync_id.create_remote_model(self.external_model,**kwargs) as ModelObject:
+        with self.server_sync_id.create_remote_model(self.external_model, **kwargs) as ModelObject:
             result = ModelObject.read([object_id])
             if result and isinstance(result, list):
                 return result[0]

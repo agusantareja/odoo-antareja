@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, _
-from odoo.exceptions import UserError
-from odoo.addons.amr_jsonrpc import client
-import requests
+from odoo import models, fields
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -45,24 +42,24 @@ class ExternalServerSync(models.Model):
     token_key = fields.Char(default='token')
     token_value = fields.Char(related='access_token', store=True)
 
-    def get_auth_config(self):
-        auth_type = self.auth_type
-        token_key = self.token_key
-        access_token = self.access_token
-        if auth_type == 'token':
-            auth_type = self.token_in
-        db, uid, username, password = self.get_db_uid_username_password()
-        return {
-            'db': db,
-            'uid': uid,
-            'username': username,
-            'password': password,
-            'auth_mode': auth_type,
-            'token_key': token_key,
-            'access_token': access_token,
-            'token_endpoint_url': None,
-            'db_name_endpoint_url': self.get_db_name_endpoint_url()
-        }
+    # def get_auth_config(self):
+    #     auth_type = self.auth_type
+    #     token_key = self.token_key
+    #     access_token = self.access_token
+    #     if auth_type == 'token':
+    #         auth_type = self.token_in
+    #     db, uid, username, password = self.get_db_uid_username_password()
+    #     return {
+    #         'db': db,
+    #         'uid': uid,
+    #         'username': username,
+    #         'password': password,
+    #         'auth_mode': auth_type,
+    #         'token_key': token_key,
+    #         'access_token': access_token,
+    #         'token_endpoint_url': None,
+    #         'db_name_endpoint_url': self.get_db_name_endpoint_url()
+    #     }
 
     def get_application_name(self):
         return self.app_name
@@ -72,6 +69,3 @@ class ExternalServerSync(models.Model):
 
     def get_path(self):
         return self.path
-
-    def get_odoo_client(self, **kwargs):
-        return self.create_auth_client(**kwargs)

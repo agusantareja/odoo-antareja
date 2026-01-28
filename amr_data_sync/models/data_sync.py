@@ -65,6 +65,9 @@ class ExternalDataSync(models.Model):
     next_processing_datetime = fields.Datetime(default=fields.Datetime.now)
     last_processing_datetime = fields.Datetime()
     request_datetime = fields.Datetime(default=fields.Datetime.now)
+    deleted_datetime = fields.Datetime(
+        help="Waktu data ini di tandai sebagai deleted dari external system."
+    )
     related_ids = fields.One2many(
         'external.data.sync.related', 'external_data_sync_id',
         string='Related Data',
@@ -106,10 +109,11 @@ class ExternalDataSync(models.Model):
             [('name', '=', self.external_app_name)], limit=1)
 
     def get_sync_strategy(self):
-        return self.sync_strategy_id or self.env['external.data.sync.strategy'].search(
+        sync_strategy_id = self.sync_strategy_id or self.env['external.data.sync.strategy'].search(
             [('external_app_name', '=', self.external_app_name),
              ('external_model', '=', self.external_model),
              ('internal_model', '=', self.internal_model)], limit=1)
+        return sync_strategy_id.ensure_internal_context()
 
     def get_external_one_data(self):
         sync_strategy = self.get_sync_strategy()
@@ -125,10 +129,16 @@ class ExternalDataSync(models.Model):
                 return json_date
         with self.env.cr.savepoint():
             json_data = self.get_external_one_data()
-            self.write({
+            data = {
                 'need_get_data_json': False,
                 'data_json': json.dumps(json_data)
-            })
+            }
+            write_date = json_data.get('write_date')
+            if write_date:
+                if isinstance(write_date, str):
+                    write_date = fields.Datetime.to_datetime(write_date)
+                data['external_last_update'] = write_date
+            self.write(data)
         return json_data
 
     def action_reset_related(self):
@@ -168,7 +178,7 @@ class ExternalDataSync(models.Model):
         return related.get_data_relation()
 
     @savepoint(rethrow=True)
-    def data_from_external(self, item, sync_strategy):
+    def data_from_external(self, item, sync_strategy, create_when_not_found=True):
         if not sync_strategy:
             raise UserError("Sync Strategy Not found")
         external_odoo_id = item.get('id')
@@ -180,7 +190,6 @@ class ExternalDataSync(models.Model):
 
         input_dict = {
             'display_name': display_name or f'ID {external_odoo_id}',
-            'external_last_update': external_last_update,
             'data_json': json.dumps([external_odoo_id, display_name])
         }
         domain = [
@@ -192,14 +201,16 @@ class ExternalDataSync(models.Model):
             if external_last_update and existing.external_last_update and existing.internal_odoo_id:
                 if existing.external_last_update >= external_last_update:
                     _logger.info("Data tidak perlu di update karena data lebih baru atau sama.")
-                return existing
+                    return existing
+                input_dict['external_last_update'] = external_last_update
 
             if existing.state != 'process' and existing.is_update_able_from_external():
                 input_dict['state'] = 'process'
+                input_dict['need_get_data_json'] = True
                 existing.write(input_dict)
             else:
                 return existing
-        else:
+        elif create_when_not_found:
             input_dict.update(
                 external_odoo_id=external_odoo_id,
                 sync_strategy_id=sync_strategy.id,
@@ -559,8 +570,8 @@ class ExternalDataSync(models.Model):
             return last_sync.last_success
         return None
 
-    def get_sync_strategy(self):
-        return self.sync_strategy_id.ensure_internal_context()
+    # def get_sync_strategy(self):
+    #     return self.sync_strategy_id.ensure_internal_context()
 
     def get_or_create(self, external_data, sync_strategy):
         external_data = self.ensure_external_data(external_data)
@@ -636,7 +647,7 @@ class ExternalDataSync(models.Model):
         if not not_mapped_ids:
             return result_map, not_mapped_ids
 
-        domain = [('internal_id', 'in', list(not_mapped_ids)), ('internal_model', '=',internal_model),
+        domain = [('internal_id', 'in', list(not_mapped_ids)), ('internal_model', '=', internal_model),
                   ('external_app_name', '=', external_app_name), ('external_model', '=', external_model),
                   ('reverse_able', '=', True), ]
 
