@@ -81,6 +81,7 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
 
         elif p.kind == inspect.Parameter.VAR_KEYWORD:
             final_kwargs.update(kwargs)
+
     return method(*final_args, **final_kwargs)
 
 
