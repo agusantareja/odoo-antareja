@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+
+from odoo import models, fields
+
+import logging
+
+from odoo.addons.amr_jsonrpc.utils import savepoint
+
+_logger = logging.getLogger(__name__)
+
+
+class InternalDataSync(models.Model):
+    _inherit = 'external.server.sync'
+
+    event_listener = fields.Boolean(default=True)
+    strategy_ids = fields.One2many(
+        'external.data.sync.strategy','server_sync_id'
+    )
+    last_data_event_id = fields.Many2one(
+        'external.data.event',readonly=True
+    )
+    @savepoint(rethrow=True)
+    def fetch_event_data_change(self):
+        auth = self.ensure_one()
+        last_data_event_id = auth.last_data_event_id
+        if last_data_event_id:
+            last_data_event_id = auth.last_data_event_id
+        else:
+            last_data_event_id=self.last_data_event_id.search([('server_id','=',auth.id)],order='id desc',limit=1)
+
+        last_id = last_data_event_id.external_odoo_id
+
+        with auth.create_remote_model('internal.data.event') as remote_model:
+            data_list = remote_model.search_read([('id','>',last_id)],order='id asc', limit=10)
+            while data_list:
+                for data in data_list:
+                    last_id = data['id']
+                    data_dict = {
+                        key:value
+                        for key,value in data_list.items()
+                        if key in ['name','res_model','res_id','event_datetime','operation','changed_fields']
+                    }
+                    data_dict.update(
+                        external_odoo_id=last_id,
+                        server_id=auth.id
+                    )
+
+                data_list = remote_model.search_read([('id', '>', last_id)], order='id asc', limit=10)
+
+        last_data_event_id and auth.write({
+            'last_data_event_id':last_data_event_id.id
+        })
+
+    def action_fetch_event_data_change(self):
+        self.fetch_event_data_change()
