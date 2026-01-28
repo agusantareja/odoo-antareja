@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- Tree View -->
+    <!-- ========================= -->
+    <record id="view_snipe_user_tree" model="ir.ui.view">
+        <field name="name">snipe.user.tree</field>
+        <field name="model">snipe.user</field>
+        <field name="arch" type="xml">
+            <tree string="Snipe Users">
+                <field name="name"/>
+                <field name="username"/>
+                <field name="email"/>
+                <field name="employee_num"/>
+                <field name="employee_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Form View -->
+    <!-- ========================= -->
+    <record id="view_snipe_user_form" model="ir.ui.view">
+        <field name="name">snipe.user.form</field>
+        <field name="model">snipe.user</field>
+        <field name="arch" type="xml">
+            <form string="Snipe User">
+                <sheet>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="User Name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="username"/>
+                            <field name="email"/>
+                        </group>
+
+                        <group>
+                            <field name="employee_num"/>
+                            <field name="employee_id"/>
+                        </group>
+                    </group>
+
+                    <!-- Hardware owned by user -->
+                    <notebook>
+                        <page string="Assigned Hardware">
+                            <field name="snipe_hardware_ids" nolabel="1">
+                                <tree editable="false">
+                                    <field name="name"/>
+                                    <field name="application_external_id"/>
+                                    <field name="image_128" widget="image" string="Image"/>
+                                    <field name="serial"/>
+                                    <field name="category"/>
+                                    <field name="model"/>
+                                    <field name="location"/>
+                                    <field name="image_url" widget="url" optional="hide"/>
+                                    <field name="image_id" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Action -->
+    <!-- ========================= -->
+    <record id="action_snipe_user" model="ir.actions.act_window">
+        <field name="name">Snipe Users</field>
+        <field name="res_model">snipe.user</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+</odoo>

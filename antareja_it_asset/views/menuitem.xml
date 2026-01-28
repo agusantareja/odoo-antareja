@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- Menu -->
+    <!-- ========================= -->
+    <menuitem id="menu_snipe_root"
+              name="Snipe-IT"
+              parent="base.menu_custom"
+              sequence="20"/>
+    <menuitem id="menu_snipe_hardware"
+              name="Hardware"
+              parent="menu_snipe_root"
+              action="action_snipe_hardware"
+              sequence="10"/>
+    <menuitem id="menu_snipe_user"
+              name="Users"
+              parent="menu_snipe_root"
+              action="action_snipe_user"
+              sequence="20"/>
+
+</odoo>

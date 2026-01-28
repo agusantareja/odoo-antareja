@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- Tree View -->
+    <!-- ========================= -->
+    <record id="view_snipe_hardware_tree" model="ir.ui.view">
+        <field name="name">snipe.hardware.tree</field>
+        <field name="model">snipe.hardware</field>
+        <field name="arch" type="xml">
+            <tree string="Snipe Hardware">
+                <field name="name"/>
+                <field name="assigned_to_id"/>
+                <field name="employee_id"/>
+                <field name="application_external_id"/>
+                <field name="image_128" widget="image" string="Image"/>
+                <field name="serial"/>
+                <field name="category"/>
+                <field name="model"/>
+                <field name="location"/>
+                <field name="image_url" widget="url" optional="hide"/>
+                <field name="image_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Form View -->
+    <!-- ========================= -->
+    <record id="view_snipe_hardware_form" model="ir.ui.view">
+        <field name="name">snipe.hardware.form</field>
+        <field name="model">snipe.hardware</field>
+        <field name="arch" type="xml">
+            <form string="Snipe Hardware">
+                <sheet>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Hardware Name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="application_external_id" readonly="1"/>
+                            <field name="assigned_to_id"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="image_url"/>
+                            <field name="image_id"/>
+                        </group>
+
+                        <group>
+                            <field name="image_128" widget="image" string="Image"/>
+                            <field name="serial"/>
+                            <field name="category"/>
+                            <field name="model"/>
+                            <field name="location"/>
+                        </group>
+                    </group>
+
+                    <!-- Image Preview -->
+                    <group>
+                        <field name="image_128"
+                               widget="image"
+                               class="oe_avatar"
+                               options="{'preview_image': 'image_128'}"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Action -->
+    <!-- ========================= -->
+    <record id="action_snipe_hardware" model="ir.actions.act_window">
+        <field name="name">Snipe Hardware</field>
+        <field name="res_model">snipe.hardware</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>
