@@ -233,8 +233,8 @@ class AuthRestToken(models.AbstractModel):
         payload = {
             "jsonrpc": "2.0",
             "params": {
-                "db": self.db,
-                "login": self.login,
+                "db": self.odoo_server_db,
+                "login": self.username,
                 "password": self.password
             }
         }

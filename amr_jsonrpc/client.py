@@ -115,7 +115,7 @@ class OdooSession(requests.Session):
         return rest_url(self.get_endpoint_url() , self.get_base_path(), path)
 
     def connect(self):
-        self.auth_model.connect_session()
+        self.auth_model.connect_session(self)
 
     def request(self, *args, **kwargs):
         resp = super().request(*args, **kwargs)
@@ -127,6 +127,29 @@ class OdooSession(requests.Session):
 
         return resp
 
+    def jsonrpc_call(self,model_name, method, args=None, kw=None):
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "model": model_name,
+                "method": method,
+                "args": args or [],
+                "kwargs": kw or {}
+            }
+        }
+        resp = self.post(
+            f"{self.get_endpoint_url()}/web/dataset/call_kw",
+            json=normalize_json(payload)
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # JSON-RPC error
+        if "error" in data:
+            raise RuntimeError(f"Odoo login error: {data['error']}")
+
+        return data.get("result") or []
 
 class JsonRPCSessionModelObject:
     def __init__(self, model_name, session: OdooSession, **kwargs):
@@ -150,28 +173,7 @@ class JsonRPCSessionModelObject:
         self.session.close()
 
     def call(self, method, args, kw=None):
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "call",
-            "params": {
-                "model": self.model_name,
-                "method": method,
-                "args": args or [],
-                "kwargs": kw or {}
-            }
-        }
-        resp = self.session.post(
-            f"{self.session.get_endpoint_url()}/web/dataset/call_kw",
-            json=normalize_json(payload)
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-        # JSON-RPC error
-        if "error" in data:
-            raise RuntimeError(f"Odoo login error: {data['error']}")
-
-        return data.get("result") or []
+        return self.session.jsonrpc_call(self.model_name,method,args,kw)
 
     def __getattr__(self, method):
         def delegate_func(*args, **kw):
