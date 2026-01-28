@@ -31,7 +31,7 @@ def request_token(token_endpoint_url, login, password, client_id=None, client_se
     headers = {}
     if client_id or client_secret:
         headers = basic_auth_header(client_id, client_secret)
-    response = requests.post(token_endpoint_url, data=data, headers=headers)
+    response = requests.post(token_endpoint_url, data=data,headers=headers)
     response.raise_for_status()
     json_result = response.json()
     rest_token = json_result.get('access_token')
