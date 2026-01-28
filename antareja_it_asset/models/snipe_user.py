@@ -37,29 +37,43 @@ class SnipeUser(models.Model):
         return vals
     def search_or_create(self,assigned):
         employee_num = assigned.get("employee_number")
+        username = assigned.get("username")
+        email = assigned.get("email")
         snipe_user = None
         if employee_num:
             snipe_user = self.env["snipe.user"].search([
                 ("employee_num", "=", employee_num)
             ], limit=1)
-
-        if not snipe_user and assigned.get("username"):
+        if not snipe_user and username:
             snipe_user = self.env["snipe.user"].search([
-                ("username", "=", assigned.get("username"))
+                ("username", "=", username)
             ], limit=1)
 
-        if not snipe_user and assigned.get("email"):
+        if not snipe_user and email:
             snipe_user = self.env["snipe.user"].search([
-                ("email", "=", assigned.get("email"))
+                ("email", "=", email)
             ], limit=1)
 
         # Jika tidak ditemukan, bisa buat baru jika perlu
-        if not snipe_user:
+        if snipe_user:
+            vals = {}
+            name = assigned.get("name")
+            if name and snipe_user.name != name:
+                vals['name'] = name
+            if email and snipe_user.email != email:
+                vals['email'] = email
+            if username and snipe_user.username != username:
+                vals['username'] = username
+            if employee_num and snipe_user.employee_num != employee_num:
+                vals['employee_num'] = employee_num
+            if vals:
+                snipe_user.write(vals)
+        else:
             snipe_user = self.env["snipe.user"].create({
                 "name": assigned.get("name"),
-                "email": assigned.get("email"),
-                "username": assigned.get("username"),
-                "employee_num": assigned.get("employee_number"),
+                "email": email,
+                "username": username,
+                "employee_num": employee_num,
             })
         return snipe_user
 

@@ -16,6 +16,9 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/hr_employee_view.xml',
+        'views/snipe_user_views.xml',
+        'views/snipe_hardware_views.xml',
+        'views/menuitem.xml',
         'views/res_config_settings_views.xml',
     ],
 }
