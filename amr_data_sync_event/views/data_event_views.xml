@@ -47,6 +47,7 @@
                     <!-- BASIC INFO -->
                     <group>
                         <group string="Resource">
+                            <field name="name" readonly="1"/>
                             <field name="res_model" readonly="1"/>
                             <field name="res_id" readonly="1"/>
                         </group>
@@ -54,24 +55,26 @@
                         <group string="Event Info">
                             <field name="operation" readonly="1"/>
                             <field name="event_datetime" readonly="1"/>
+                            <field name="changed_fields"
+                               placeholder="field1,field2"
+                               readonly="1"/>
                         </group>
                     </group>
 
-                    <!-- DETAIL -->
-                    <group string="Payload">
-                        <field name="changed_fields"
-                               placeholder="field1,field2"
-                               readonly="1"/>
-                    </group>
-
-                    <!-- ERROR -->
-                    <group string="Error"
-                           attrs="{'invisible': [('state','!=','error')]}">
-                        <field name="error_message"
+                     <notebook position="inside">
+                        <page string="Strategy">
+                            <field name="strategy_ids"/>
+                        </page>
+                        <page string="Data Changes">
+                            <field name="data_ids"/>
+                        </page>
+                        <page string="Error" attrs="{'invisible': [('state','!=','error')]}">
+                            <field name="error_message"
                                readonly="1"
                                nolabel="1"/>
-                    </group>
+                        </page>
 
+                    </notebook>
                 </sheet>
             </form>
         </field>
