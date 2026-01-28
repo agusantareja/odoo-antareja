@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 class InternalDataSync(models.Model):
     _name = 'internal.data.event'
     _description = "Internal data event yang akan assess oleh external app"
-
+    name = fields.Char("Display Name")
     res_model = fields.Char(required=True, index=True)
     res_id = fields.Integer(required=True, index=True)
     event_datetime = fields.Datetime(default=fields.Datetime.now)
