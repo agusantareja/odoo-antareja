@@ -5,19 +5,18 @@
             <field name="model">external.server.sync</field>
             <field name="inherit_id" ref="amr_data_sync.external_server_sync_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//sheet/group[1]" position="attributes">
+                <xpath expr="//page[@name='page_info']" position="attributes">
                     <attribute name="attrs">{'invisible': [('external_mode', '!=', 'standard')]}</attribute>
                 </xpath>
-                <xpath expr="//sheet/group[1]" position="before" >
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="external_mode"/>
-                            <field name="application_server_auth_id" attrs="{'invisible': [('external_mode', '!=', 'server_auth')]}" />
-                            <field name="application_server_path_id" attrs="{'invisible': [('external_mode', '!=', 'server_path')]}" />
-                            <field name="app_name" readonly="1" attrs="{'invisible': [('external_mode', '=', 'standard')]}"/>
-                        </group>
-                    </group>
+                <field name="name" position="after">
+                    <field name="external_mode"/>
+                </field>
+                <field name="app_name" position="after">
+                    <field name="application_server_auth_id" attrs="{'invisible': [('external_mode', '!=', 'server_auth')]}" />
+                    <field name="application_server_path_id" attrs="{'invisible': [('external_mode', '!=', 'server_path')]}" />
+                </field>
+                <xpath expr="//field[@name='app_name']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('external_mode', '=', 'standard')]}</attribute>
                 </xpath>
             </field>
         </record>
