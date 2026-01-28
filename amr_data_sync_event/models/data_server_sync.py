@@ -14,11 +14,12 @@ class InternalDataSync(models.Model):
 
     event_listener = fields.Boolean(default=True)
     strategy_ids = fields.One2many(
-        'external.data.sync.strategy','server_sync_id'
+        'external.data.sync.strategy', 'server_sync_id'
     )
     last_data_event_id = fields.Many2one(
-        'external.data.event',readonly=True
+        'external.data.event', readonly=True
     )
+
     @savepoint(rethrow=True)
     def fetch_event_data_change(self):
         auth = self.ensure_one()
@@ -26,29 +27,38 @@ class InternalDataSync(models.Model):
         if last_data_event_id:
             last_data_event_id = auth.last_data_event_id
         else:
-            last_data_event_id=self.last_data_event_id.search([('server_id','=',auth.id)],order='id desc',limit=1)
+            last_data_event_id = self.last_data_event_id.search([('server_id', '=', auth.id)], order='id desc', limit=1)
 
         last_id = last_data_event_id.external_odoo_id
 
         with auth.create_remote_model('internal.data.event') as remote_model:
-            data_list = remote_model.search_read([('id','>',last_id)],order='id asc', limit=10)
+            data_list = remote_model.search_read([('id', '>', last_id)], order='id asc', limit=10)
             while data_list:
                 for data in data_list:
                     last_id = data['id']
+                    res_model = data['res_model']
+                    res_id = data['res_id']
+                    strategies = auth.strategy_ids.filtered(lambda s: s.external_model == res_model)
+                    if not strategies:
+                        _logger.info("No strategy found for model %s, skipping data event ID %s", res_model, res_id)
+                        continue
                     data_dict = {
-                        key:value
-                        for key,value in data_list.items()
-                        if key in ['name','res_model','res_id','event_datetime','operation','changed_fields']
+                        key: value
+                        for key, value in data.items()
+                        if key in ['name', 'res_model', 'res_id', 'event_datetime', 'operation', 'changed_fields']
                     }
                     data_dict.update(
                         external_odoo_id=last_id,
-                        server_id=auth.id
+                        server_id=auth.id,
+                        strategy_ids=strategies.ids,
                     )
+                    data_event = auth.env['external.data.event'].create(data_dict)
+                    data_event.process()
 
                 data_list = remote_model.search_read([('id', '>', last_id)], order='id asc', limit=10)
 
         last_data_event_id and auth.write({
-            'last_data_event_id':last_data_event_id.id
+            'last_data_event_id': last_data_event_id.id
         })
 
     def action_fetch_event_data_change(self):
