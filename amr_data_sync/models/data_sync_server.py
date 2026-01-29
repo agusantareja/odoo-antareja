@@ -42,25 +42,6 @@ class ExternalServerSync(models.Model):
     token_key = fields.Char(default='token')
     token_value = fields.Char(related='access_token', store=True)
 
-    # def get_auth_config(self):
-    #     auth_type = self.auth_type
-    #     token_key = self.token_key
-    #     access_token = self.access_token
-    #     if auth_type == 'token':
-    #         auth_type = self.token_in
-    #     db, uid, username, password = self.get_db_uid_username_password()
-    #     return {
-    #         'db': db,
-    #         'uid': uid,
-    #         'username': username,
-    #         'password': password,
-    #         'auth_mode': auth_type,
-    #         'token_key': token_key,
-    #         'access_token': access_token,
-    #         'token_endpoint_url': None,
-    #         'db_name_endpoint_url': self.get_db_name_endpoint_url()
-    #     }
-
     def get_application_name(self):
         return self.app_name
 
