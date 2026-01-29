@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import ast
-import datetime
-
 from odoo.addons.amr_jsonrpc.utils import savepoint
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-
-import json
-import traceback
+from odoo import models, fields
 import logging
 
 _logger = logging.getLogger(__name__)
