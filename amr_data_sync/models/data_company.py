@@ -25,7 +25,7 @@ class ExternalDataLookup(models.Model):
         store=True
     )
     external_id = fields.Integer()
-    external_model = fields.Char(default='res.currency')
+    external_model = fields.Char(default='res.company')
 
     # ===== COMPUTE =====
     @api.depends('server_sync_id', 'server_sync_id.app_name')
