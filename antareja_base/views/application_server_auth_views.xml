@@ -50,18 +50,18 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}">
+                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}" name="page_odoo_rcp">
                             <group>
                                 <group>
                                     <field name="odoo_server_db"/>
-                                    <button string="Get db name" type="object" name="action_get_odoo_db_name"/>
+<!--                                    <button string="Get db name" type="object" name="action_get_odoo_db_name"/>-->
                                     <field name="odoo_server_uid"/>
-                                    <button string="Get UID" type="object" name="action_get_odoo_server_uid"/>
+<!--                                    <button string="Get UID" type="object" name="action_get_odoo_server_uid"/>-->
                                 </group>
                                 <group>
                                     <field name="username"/>
                                     <field name="password"/>
-                                    <button string="Test" type="object" name="action_test_connection"/>
+<!--                                    <button string="Test" type="object" name="action_test_connection"/>-->
                                 </group>
                             </group>
                         </page>
