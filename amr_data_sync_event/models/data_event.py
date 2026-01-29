@@ -2,6 +2,7 @@
 
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo import models, fields
+import traceback
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -54,14 +55,14 @@ class InternalDataSync(models.Model):
             with self.env.cr.savepoint():
                 data_ids = []
                 item = {
-                    'id': self.external_odoo_id,
+                    'id': self.res_id,
                     'write_date': self.event_datetime,
                     'display_name': self.name,
                 }
                 for sync_strategy in self.strategy_ids:
                     if self.operation == 'unlink':
                         domain = [
-                            ('external_odoo_id', '=', self.external_odoo_id),
+                            ('external_odoo_id', '=', self.res_id),
                             ('sync_strategy_id', '=', sync_strategy.id)
                         ]
                         data = self.data_ids.search(domain)
