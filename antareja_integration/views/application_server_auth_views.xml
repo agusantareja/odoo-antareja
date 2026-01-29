@@ -19,6 +19,20 @@
                     </group>
                 </page>
             </xpath>
+            <field name="odoo_server_db" position="after">
+                <button string="Get db name" type="object" name="action_get_odoo_db_name"
+                        class="oe_stat_button" icon="fa-refresh"
+                />
+            </field>
+            <field name="odoo_server_uid" position="after">
+                <button string="Get UID" type="object"
+                        name="action_get_odoo_server_uid"
+                        class="oe_stat_button" icon="fa-refresh"
+                />
+            </field>
+            <field name="password" position="after">
+                <button string="Test" type="object" name="action_test_connection"/>
+            </field>
         </field>
     </record>
 
