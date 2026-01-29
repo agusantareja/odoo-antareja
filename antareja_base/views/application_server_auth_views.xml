@@ -50,7 +50,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}">
+                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}" name="page_odoo_rcp">
                             <group>
                                 <group>
                                     <field name="odoo_server_db"/>
