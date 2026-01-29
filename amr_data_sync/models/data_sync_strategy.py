@@ -5,7 +5,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 from ..tools.utils import is_callable_method, get_callable_method, convert_from_external_data
-from odoo.addons.amr_jsonrpc import jsonrpc, rest, utils
+from odoo.addons.amr_jsonrpc import utils
 import ast
 import logging
 
