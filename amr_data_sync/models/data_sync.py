@@ -339,6 +339,7 @@ class ExternalDataSync(models.Model):
     def process_data(self):
         all_related_done = False
         input_dict = {}
+        existing = None
         try:
             # try with exception
             with self.env.cr.savepoint():
