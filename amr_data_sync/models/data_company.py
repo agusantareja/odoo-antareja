@@ -69,7 +69,7 @@ class ExternalDataLookup(models.Model):
 
         if server_sync:
             external_app_name = server_sync.get_application_name()
-            domain = [('company_id', 'in', list(not_mapped_ids)), ('sync_strategy_id', '=', server_sync.id)]
+            domain = [('company_id', 'in', list(not_mapped_ids)), ('server_sync_id', '=', server_sync.id)]
             r_map = filter_by_domain(domain)
             result_map.update(r_map)
             not_mapped_ids -= r_map.keys()
