@@ -9,10 +9,10 @@
     """,
 
     'author': "Agus Muhammad Ramdan",
-    'website': "http://www.yourcompany.com",
+    'website': "http://www.agus.ramdan.tech",
 
     'category': 'Tools',
-    'version': '13.0.1.0.2',
+    'version': '13.0.2.0.0',
 
     # any module necessary for this one to work correctly
     'depends': [
