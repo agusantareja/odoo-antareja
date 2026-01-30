@@ -229,6 +229,11 @@ class JsonRPCRemoteModel(RemoteModel):
         self.session = session
 
     def call(self, method, args, kw=None):
+        kw = dict(kw or {})
+        context = self.context or {}
+        if 'context' in kw:
+            context.update(kw['context'] or {})
+        kw['context']=context
         return self.session.jsonrpc_call(self.model_name, method, args, kw=kw)
 
     def __getattr__(self, method):
