@@ -5,6 +5,8 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 import logging
 
+from odoo.addons.amr_data_sync.tools.utils import convert_from_external_data
+
 _logger = logging.getLogger(__name__)
 
 
@@ -42,6 +44,24 @@ class ExternalDataLookup(models.Model):
             # inverse wajib ada supaya field editable
             pass
 
+    def lookup_company(self, external_data, server_sync=None,external_app_name=None):
+        if not external_data:
+            return None
+        data_dict = convert_from_external_data(external_data)
+        external_id = data_dict.get('id')
+        if not external_id:
+            return None
+        if server_sync:
+            result = self.search(
+                [('external_id', '=', external_id), ('external_app_name', '=', external_app_name)], limit=1
+            )
+            if result:
+                return result.company_id
+            external_app_name = server_sync.get_application_name()
+        result = self.search([('external_id','=',external_id),('external_app_name','=',external_app_name)],limit=1)
+        return result.company_id
+
+
     def reverse_mapping(
             self, internal,
             server_sync=None,
@@ -64,7 +84,7 @@ class ExternalDataLookup(models.Model):
             rows = self.search(domain)
             mapping = defaultdict(list)
             for r in rows:
-                mapping[r.company_id.id].append(r.external_odoo_id)
+                mapping[r.company_id.id].append(r.external_id)
             return dict(mapping)
 
         if server_sync:
