@@ -305,7 +305,7 @@ class ExternalDataSyncStrategy(models.Model):
         Model = self.env[self.internal_model].sudo()
         if self.internal_id_same_as_external and external_id:
             internal_id = external_id + self.internal_id_offset
-            _logger.info("internal_id_same_as_external")
+            _logger.debug("internal_id_same_as_external %s = %s + %s ",external_id, self.internal_id_offset, internal_id,)
             return Model.with_context(active_test=False).search([('id', '=', internal_id)])
 
         if is_callable_method(Model, self.internal_lookup_method):
@@ -365,6 +365,13 @@ class ExternalDataSyncStrategy(models.Model):
 
         return strategy or self.browse()
 
+    def lookup_company(self,external_data):
+        if not external_data:
+            return None
+        return self.env['external.data.company'].lookup_company(
+            external_data,server_sync=self.get_server_sync(),external_app_name=self.get_external_application_name()
+        )
+
     def prepare_input_external(self, parent_object, item, **kwargs):
         with self.env.cr.savepoint():
             model_object = self.env[self.internal_model]
@@ -394,7 +401,11 @@ class ExternalDataSyncStrategy(models.Model):
                     continue
                 if not v:
                     continue
-
+                if f.name == 'company_id' and f.type == 'many2one':
+                    company = self.lookup_company(v)
+                    if company:
+                        input_dict[k] = int(company)
+                    continue
                 if f.type in ['many2one', 'one2many', 'many2many']:
                     if k in include_fields:
                         _logger.info("Process relation field %s.%s", self.internal_model, k)

@@ -101,10 +101,10 @@
 <!--                                </field>-->
                             </page>
                             <page string="Script" attrs="{'invisible':[('internal_process_method','!=',False)]}">
-                                <group>
-                                    <field name="id" invisible="1"/>
-                                    <field name="test_external_data_sync_id" domain="[('sync_strategy_id','=',id)]" />
-                                </group>
+<!--                                <group>-->
+<!--                                    <field name="id" invisible="1"/>-->
+<!--                                    <field name="test_external_data_sync_id" domain="[('sync_strategy_id','=',id)]" />-->
+<!--                                </group>-->
                                 <field name="eval_script" widget="code"/>
                             </page>
                         </notebook>

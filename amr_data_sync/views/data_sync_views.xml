@@ -55,6 +55,7 @@
                             <group>
                                 <field name="internal_odoo_id" />
                                 <field name="internal_model"/>
+                                <field name="company_id"/>
                                 <field name="last_success" />
                                 <field name="last_error"/>
                                 <field name="next_processing_datetime" attrs="{'invisible':[('state','=','done')]}"/>
