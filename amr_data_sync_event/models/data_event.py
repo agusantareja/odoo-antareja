@@ -23,6 +23,7 @@ class InternalDataSync(models.Model):
     name = fields.Char()
     res_model = fields.Char(required=True, index=True)
     res_id = fields.Integer(required=True, index=True)
+    company_id = fields.Many2one('res.company')
     event_datetime = fields.Datetime(default=fields.Datetime.now)
     operation = fields.Selection([
         ('create', 'Create'),
