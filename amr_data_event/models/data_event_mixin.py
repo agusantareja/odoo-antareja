@@ -99,13 +99,16 @@ class DataEventMixin(models.AbstractModel):
 
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in record:
-            AuditEvent.create({
+            data ={
                 'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
-                'operation': 'write',
+                'operation': 'create',
                 'changed_fields': "",
-            })
+            }
+            if 'company_id' in self._fields:
+                data['company_id'] = int(rec.company_id)
+            AuditEvent.create(data)
 
     def _event_light_log_modified(self, vals):
         # safety
@@ -140,13 +143,16 @@ class DataEventMixin(models.AbstractModel):
 
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in self:
-            AuditEvent.create({
+            data = {
                 'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
                 'operation': 'write',
                 'changed_fields': ",".join(changed),
-            })
+            }
+            if 'company_id' in self._fields:
+                data['company_id'] = int(rec.company_id)
+            AuditEvent.create(data)
 
     def _event_light_log_unlink(self):
         # safety
@@ -167,10 +173,13 @@ class DataEventMixin(models.AbstractModel):
 
         AuditEvent = self.env['internal.data.event'].sudo()
         for rec in self:
-            AuditEvent.create({
+            data = {
                 'name': rec.display_name,
                 'res_model': rec._name,
                 'res_id': rec.id,
-                'operation': 'write',
+                'operation': 'unlink',
                 'changed_fields': "",
-            })
+            }
+            if 'company_id' in self._fields:
+                data['company_id'] = int(rec.company_id)
+            AuditEvent.create(data)
