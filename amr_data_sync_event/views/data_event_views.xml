@@ -16,6 +16,7 @@
                 <field name="event_datetime"/>
                 <field name="res_model"/>
                 <field name="res_id"/>
+                <field name="company_id" readonly="1"/>
                 <field name="operation"/>
                 <field name="state"/>
             </tree>
@@ -50,6 +51,7 @@
                             <field name="name" readonly="1"/>
                             <field name="res_model" readonly="1"/>
                             <field name="res_id" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
                         </group>
 
                         <group string="Event Info">
