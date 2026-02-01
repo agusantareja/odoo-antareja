@@ -12,14 +12,14 @@
     'website': "http://www.agus.ramdan.tech",
 
     'category': 'Tools',
-    'version': '13.0.2.0.1',
+    'version': '13.0.2.1.0',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'antareja_base',
-        'amr_data_sync',
-        'amr_data_sync_event'
+        'antareja_integration',
+        'amr_data_sync'
     ],
     # always loaded
     'data': [
