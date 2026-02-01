@@ -2,7 +2,7 @@
 
 {
     'name': 'REST API For Sync',
-    'version': '13.0.0.0.1',
+    'version': '13.0.0.0.2',
     'category': 'API',
     'author': 'Agus Muhammad Ramdan',
     'website': 'https://agus.ramdan.tech',

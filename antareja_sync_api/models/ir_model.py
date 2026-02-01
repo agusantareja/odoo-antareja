@@ -42,12 +42,14 @@ EXCLUDE_PREFIXES = (
     'whatsapp.'
 )
 
+
 class IrModel(models.Model):
     _inherit = 'ir.model'
 
     def excluded_read_sync_api(self):
         return self.model in EXCLUDE_MODELS or self.model.startswith(EXCLUDE_PREFIXES)
 
+    @api.model
     def is_read_sync_api(self):
         return True
 
