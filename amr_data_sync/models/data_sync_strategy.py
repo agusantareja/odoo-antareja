@@ -305,7 +305,7 @@ class ExternalDataSyncStrategy(models.Model):
         Model = self.env[self.internal_model].sudo()
         if self.internal_id_same_as_external and external_id:
             internal_id = external_id + self.internal_id_offset
-            _logger.info("internal_id_same_as_external")
+            _logger.debug("internal_id_same_as_external %s = %s + %s ",external_id, self.internal_id_offset, internal_id,)
             return Model.with_context(active_test=False).search([('id', '=', internal_id)])
 
         if is_callable_method(Model, self.internal_lookup_method):
@@ -365,6 +365,13 @@ class ExternalDataSyncStrategy(models.Model):
 
         return strategy or self.browse()
 
+    def lookup_company(self,external_data):
+        if not external_data:
+            return None
+        return self.env['external.data.company'].lookup_company(
+            external_data,server_sync=self.get_server_sync(),external_app_name=self.get_external_application_name()
+        )
+
     def prepare_input_external(self, parent_object, item, **kwargs):
         with self.env.cr.savepoint():
             model_object = self.env[self.internal_model]
@@ -394,7 +401,11 @@ class ExternalDataSyncStrategy(models.Model):
                     continue
                 if not v:
                     continue
-
+                if f.name == 'company_id' and f.type == 'many2one':
+                    company = self.lookup_company(v)
+                    if company:
+                        input_dict[k] = int(company)
+                    continue
                 if f.type in ['many2one', 'one2many', 'many2many']:
                     if k in include_fields:
                         _logger.info("Process relation field %s.%s", self.internal_model, k)
@@ -500,21 +511,8 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        # config.update(self.get_auth_config())
         return config
 
-    # def get_auth_config(self, config=None):
-    #     auth_type = self.server_sync_id.auth_type
-    #     token_key = self.server_sync_id.token_key
-    #     access_token = self.server_sync_id.token_value
-    #     if auth_type == 'token':
-    #         auth_type = self.server_sync_id.token_in
-    #     return {
-    #         'auth_mode': auth_type,
-    #         'token_key': token_key,
-    #         'access_token': access_token,
-    #         'token_endpoint_url': None
-    #     }
 
     def prepare_sync_one_dict(self):
         # context
@@ -535,20 +533,12 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        # config.update(self.get_auth_config())
         return config
 
     def internal_model_object(self):
         if self.internal_model:
             return self.env[self.internal_model]
 
-    # def remote_model_object(self, external_model, **kwargs):
-    #     external_sync = self.get_external_sync()
-    #     if external_sync in ['jsonrpc', 'rest']:
-    #         odoo_client = self.server_sync_id.get_odoo_client(**kwargs)
-    #         return odoo_client.create_remote_model(external_model, **kwargs)
-    #     else:
-    #         raise NotImplementedError(f"External sync {external_sync} not implemented yet")
 
     def sync_list_model_object(self):
         # ModelObject = self.sync_list_model_object()

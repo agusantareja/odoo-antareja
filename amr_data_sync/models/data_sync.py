@@ -29,13 +29,16 @@ class ExternalDataSync(models.Model):
         help="If unchecked, it will allow you to hide the record without removing it."
     )
     state = fields.Selection(
-        [('draft', 'Draft'), ('process', 'Process'), ('need_resolve', 'Need Resolve'), ('error', 'Error'),
+        [('draft', 'Draft'), ('process', 'Process'),
+         ('need_resolve', 'Need Resolve'), ('error', 'Error'),
          ('done', 'Done'), ]
     )
     name = fields.Char()
     display_name = fields.Char()
+    company_id = fields.Many2one('res.company')
     sync_strategy_id = fields.Many2one(
-        'external.data.sync.strategy'
+        'external.data.sync.strategy',
+        ondelete='set null'
     )
     external_model = fields.Char()
     external_app_name = fields.Char()
@@ -149,11 +152,17 @@ class ExternalDataSync(models.Model):
     def is_relation_field_ignore(self):
         return self.get_sync_strategy().relation_field_ignore
 
+    def is_mandatory_related_done(self):
+        for r in self.related_ids:
+            if r.mandatory_before_create and r.state not in ['need_resolve','done']:
+                _logger.info("field mandatory [%s] , state %s ",r.name,r.state)
+                return False
+        return True
+
     def is_all_related_done(self):
         for r in self.related_ids:
-            if not r.mandatory_before_create:
-                continue
-            if r.state != 'done':
+            if r.state not in ['need_resolve','done']:
+                _logger.info("field %s , state %s ",r.name,r.state)
                 return False
         return True
 
@@ -297,6 +306,20 @@ class ExternalDataSync(models.Model):
 
         return internal_odoo
 
+    def write_need_resolve_internal_odoo(self, internal_odoo, payload=None):
+        if internal_odoo:
+            done_data = {
+                'internal_odoo_id': internal_odoo.id,
+                'state': 'need_resolve',
+                'last_processing_datetime': fields.Datetime.now()
+            }
+            if payload:
+                done_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
+
+            self.write(done_data)
+
+        return internal_odoo
+
     def ensure_have_sync_strategy(self):
         sync_strategy = self.get_sync_strategy()
         if not self.sync_strategy_id != sync_strategy:
@@ -354,7 +377,18 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
                     })
                     return
-
+                if 'company_id' in item:
+                    company = sync_strategy.lookup_company(item.get('company_id'))
+                    if company and company.id != self.company_id.id:
+                        self.write({
+                            'company_id':company.id
+                        })
+                    if not company:
+                        company = self.company_id
+                else:
+                    company = self.company_id
+                if company:
+                    sync_strategy = sync_strategy.ensure_internal_context(default_company_id=company.id)
                 ModelObject = sync_strategy.internal_model_object()
                 existing = self.get_internal_object(ModelObject)
                 if not self.is_create_able_from_external() and not self.is_update_able_from_external():
@@ -373,22 +407,17 @@ class ExternalDataSync(models.Model):
 
                 input_dict = self.prepare_input_external(item, sync_strategy=sync_strategy)
                 existing = sync_strategy.call_internal_process_method(existing, item, input_dict, self) or existing
+                existing = self.save_data(existing, item, input_dict) or existing
                 all_related_done = self.is_all_related_done()
-                if all_related_done:
-                    existing = self.save_data(existing, item, input_dict) or existing
-                    self.write_done_internal_odoo(existing, input_dict)
-                else:
+                if not all_related_done:
+                    self.write({'state': 'need_resolve'})
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
-                                 self.internal_model, self.external_model, self.external_odoo_id)
-
-
+                                 self.internal_model, self.external_model, str(self.external_odoo_id)
+                                 )
         except Exception as ex:
             all_related_done = False
             # todo clear cache odoo
             self.write_error(traceback.format_exc(), input_dict)
-        finally:
-            if all_related_done and self.state == 'process':
-                self.state = 'need_resolve'
 
         if existing and all_related_done:
             after_data = self.process_field_after_create(existing) or {}
