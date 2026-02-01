@@ -511,21 +511,8 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        # config.update(self.get_auth_config())
         return config
 
-    # def get_auth_config(self, config=None):
-    #     auth_type = self.server_sync_id.auth_type
-    #     token_key = self.server_sync_id.token_key
-    #     access_token = self.server_sync_id.token_value
-    #     if auth_type == 'token':
-    #         auth_type = self.server_sync_id.token_in
-    #     return {
-    #         'auth_mode': auth_type,
-    #         'token_key': token_key,
-    #         'access_token': access_token,
-    #         'token_endpoint_url': None
-    #     }
 
     def prepare_sync_one_dict(self):
         # context
@@ -546,20 +533,12 @@ class ExternalDataSyncStrategy(models.Model):
             'context': context,
             'domain': domain,
         }
-        # config.update(self.get_auth_config())
         return config
 
     def internal_model_object(self):
         if self.internal_model:
             return self.env[self.internal_model]
 
-    # def remote_model_object(self, external_model, **kwargs):
-    #     external_sync = self.get_external_sync()
-    #     if external_sync in ['jsonrpc', 'rest']:
-    #         odoo_client = self.server_sync_id.get_odoo_client(**kwargs)
-    #         return odoo_client.create_remote_model(external_model, **kwargs)
-    #     else:
-    #         raise NotImplementedError(f"External sync {external_sync} not implemented yet")
 
     def sync_list_model_object(self):
         # ModelObject = self.sync_list_model_object()
