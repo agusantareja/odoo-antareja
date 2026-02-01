@@ -203,6 +203,16 @@ def object_read(model_name, params, status_code, filter_fields=None, __from_sync
 
     if 'fields' in params:
         fields += ast.literal_eval(params['fields'])
+
+    if 'ids' in params:
+        ids = ast.literal_eval(params['ids']) or []
+        if ids:
+            data = model.browse(ids).read(fields)
+            return valid_response(status=status_code, data={
+                'count': len(data),
+                'results': data
+            })
+
     if 'offset' in params:
         offset = int(params['offset'])
     if 'limit' in params:
