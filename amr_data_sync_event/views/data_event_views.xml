@@ -8,7 +8,7 @@
         <field name="name">external.data.event.tree</field>
         <field name="model">external.data.event</field>
         <field name="arch" type="xml">
-            <tree string="Internal Data Events"
+            <tree string="External Data Events"
                   default_order="event_datetime desc">
                 <field name="server_id"/>
                 <field name="strategy_ids"/>
@@ -16,6 +16,7 @@
                 <field name="event_datetime"/>
                 <field name="res_model"/>
                 <field name="res_id"/>
+                <field name="company_id" readonly="1"/>
                 <field name="operation"/>
                 <field name="state"/>
             </tree>
@@ -29,7 +30,7 @@
         <field name="name">external.data.event.form</field>
         <field name="model">external.data.event</field>
         <field name="arch" type="xml">
-            <form string="Internal Data Event">
+            <form string="External Data Event">
                 <sheet>
 
                     <!-- STATUS BAR -->
@@ -50,6 +51,7 @@
                             <field name="name" readonly="1"/>
                             <field name="res_model" readonly="1"/>
                             <field name="res_id" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
                         </group>
 
                         <group string="Event Info">
@@ -84,12 +86,12 @@
     <!-- ACTION -->
     <!-- ========================= -->
     <record id="action_external_data_event" model="ir.actions.act_window">
-        <field name="name">Internal Data Events</field>
+        <field name="name">External Data Events</field>
         <field name="res_model">external.data.event</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Internal data events for external synchronization
+                External data events for external synchronization
             </p>
         </field>
     </record>

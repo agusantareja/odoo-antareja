@@ -30,7 +30,7 @@ class InternalDataSync(models.Model):
         auth = self.ensure_one()
         last_data_event_id = auth.last_data_event_id
         last_id = last_data_event_id.external_odoo_id or 0
-
+        external_data_company = self.env['external.data.company']
         with auth.create_remote_model('internal.data.event') as remote_model:
             data_list = remote_model.search_read([('id', '>', last_id)], order='id asc', limit=10)
             while data_list:
@@ -38,6 +38,7 @@ class InternalDataSync(models.Model):
                     last_id = data['id']
                     res_model = data['res_model']
                     res_id = data['res_id']
+                    company = external_data_company.lookup_company(data.get('company_id'),auth)
                     strategies = auth.strategy_ids.filtered(lambda s: s.external_model == res_model)
                     if not strategies:
                         _logger.info("No strategy found for model %s, skipping data event ID %s", res_model, res_id)
@@ -52,6 +53,8 @@ class InternalDataSync(models.Model):
                         server_id=auth.id,
                         strategy_ids=strategies.ids,
                     )
+                    if company:
+                        data_dict['company_id'] = int(company)
                     data_event = auth.env['external.data.event'].create(data_dict)
                     data_event.process()
 
@@ -60,3 +63,9 @@ class InternalDataSync(models.Model):
 
     def action_fetch_event_data_change(self):
         self.fetch_event_data_change()
+
+    def cron_fetch_event_data_change(self):
+        server_list = self or self.search([('event_listener','=',True)])
+
+        for server in server_list:
+            server.fetch_event_data_change()
