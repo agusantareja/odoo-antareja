@@ -37,7 +37,8 @@ class ExternalDataSync(models.Model):
     display_name = fields.Char()
     company_id = fields.Many2one('res.company')
     sync_strategy_id = fields.Many2one(
-        'external.data.sync.strategy'
+        'external.data.sync.strategy',
+        ondelete='set null'
     )
     external_model = fields.Char()
     external_app_name = fields.Char()
