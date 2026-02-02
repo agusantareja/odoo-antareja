@@ -451,8 +451,12 @@ class RestModelObject(RemoteModel):
         super().__init__(model_name, **kwargs)
         self.session = session
 
-    def rest_path_get(self, params=None):
-        url = self.session.get_rest_url(self.model_name)
+    def rest_path_get(self, params=None, _id=None):
+        if _id is not None:
+            path = f"{self.model_name}/{_id}"
+        else:
+            path = self.model_name
+        url = self.session.get_rest_url(path)
         return self.session.get(url, params=params)
 
     def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None, context=None):
@@ -492,13 +496,16 @@ class RestModelObject(RemoteModel):
         #     ids = self.ids[0]
         params = {}
         fields = fields or self.fields
+        _id = None
         if ids is not None:
+            if isinstance(ids, (list, tuple)) and len(ids) == 1:
+                _id = ids[0]
             params['ids'] = str(ids)
         if fields is not None:
             params['fields'] = str(fields)
         if self.context:
             params['context'] = str(self.context)
-        response = self.rest_path_get(params=params)
+        response = self.rest_path_get(params=params, _id=_id)
         response.raise_for_status()
         data = response.json()
         return data.get("results", [])
@@ -579,6 +586,7 @@ if __name__ == "__main__":
             self.access_token = access_token
             self.refresh_token = refresh_token
             self.expires_at = expires_at
+
 
     auth_model = AuthModel('basic', 'admin', 'admin')
     session_auth = OdooSession(auth_model)
