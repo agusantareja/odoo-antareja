@@ -16,13 +16,12 @@ def _password_grant(data):
         ('login', '=', data.get('username'))
     ], limit=1)
 
-    if user:
-        try:
-            user.with_user(user)._check_credentials(data.get('password'))
-        except Exception:
-            return invalid_response(200, "invalid_grant")
-    else:
-        return invalid_response(200, "invalid_grant")
+    if not user:
+        return invalid_response(400, "invalid_grant")
+    try:
+        user.with_user(user)._check_credentials(data.get('password'))
+    except Exception:
+        return invalid_response(401, "invalid_grant")
 
     kw = request.env["antareja.token"].login(user.id)
     return valid_response(200, kw)
@@ -151,7 +150,7 @@ class ControllerMobileAccess(http.Controller):
         ], limit=1)
 
         if not rec or rec.expires_at < fields.Datetime.now():
-            return invalid_response(200, "invalid_grant")
+            return invalid_response(400, "invalid_grant")
 
         # revoke old token
         rec.write({"revoked": True})

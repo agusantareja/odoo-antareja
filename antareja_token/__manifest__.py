@@ -12,7 +12,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'API',
-    'version': '13.0.0.0.7',
+    'version': '13.0.0.0.8',
     'depends': ['base', 'antareja_base', ],
     "external_dependencies": {
         "python": ["jwt"],
