@@ -4,7 +4,7 @@ import logging
 import json
 import base64
 
-from odoo.http import request, OpenERPSession, SessionExpiredException
+from odoo.http import request
 from odoo.service import security
 from functools import wraps
 from werkzeug.wrappers import Response
@@ -141,4 +141,3 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
         return decorator
     else:
         return decorator(_func)
-
