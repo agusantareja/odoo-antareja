@@ -2,83 +2,144 @@
 
 import logging
 import werkzeug
-import json
-from odoo import http, fields, SUPERUSER_ID, _
+from odoo import http, fields
 from odoo.http import request
-from werkzeug import url_encode
+from werkzeug.urls import url_encode
+from ..tools.utils import set_session, get_bearer_token
+from odoo.addons.antareja_base.tools.rest import valid_response, invalid_response
 
 _logger = logging.getLogger(__name__)
 
 
+def _password_grant(data):
+    user = request.env['res.users'].sudo().search([
+        ('login', '=', data.get('username'))
+    ], limit=1)
+
+    if user:
+        try:
+            user.with_user(user)._check_credentials(data.get('password'))
+        except Exception:
+            return invalid_response(200, "invalid_grant")
+    else:
+        return invalid_response(200, "invalid_grant")
+
+    kw = request.env["antareja.token"].login(user.id)
+    return valid_response(200, kw)
+
+
 class ControllerMobileAccess(http.Controller):
 
-    @http.route(['/web_token_access', '/web_mobile_access'], type='http', auth='none', methods=['GET'], csrf=False)
-    def web_mobile_access(self, mobile_token=None, token_access=None, **kw):
+    @http.route(['/web_token_access'], type='http', auth='none', methods=['GET'], csrf=False)
+    def web_token_access(self, token_access=None, redirect=None, **kw):
 
-        if request.session.uid:
-            _logger.info("Sudah login")
-        else:
-            token_data = request.env['antareja.token'].validate(token_access or mobile_token)
+        def get_valid_token_payload(token, env):
+            token_data = env['antareja.token'].validate(token)
             if token_data and token_data.get('uid'):
-                request.session.authenticate(request.session.db, uid=token_data['uid'], password=mobile_token)
-            # return http.redirect_with_hash('/web')
-        if kw:
+                return token_data
+            payload = env['antareja.token.audience'].validate(token)
+            if payload and payload.get('uid'):
+                return payload
+            return None
+
+        token_data = get_valid_token_payload(token_access, request.env)
+        if token_data and token_data.get('uid'):
+            uid = token_data['uid']
+            login = token_data.get('username') or token_data.get('sub')
+            set_session(login, uid)
+
+        # if not request.session.uid:
+        #     _logger.info("Sudah login")
+        # else:
+
+        if redirect:
+            url = redirect
+        elif kw:
             url = "/web#%s" % url_encode(kw)
         else:
             url = "/web"
         return werkzeug.utils.redirect(url)
 
-    @http.route("/api/application/login", type="http", auth="none", methods=["POST"], csrf=False)
-    def login(self, login=None, password=None):
-        if not login or not password:
-            return self._error("Invalid login or password")
+    @http.route('/application/token', type='http', auth='none', methods=['POST'], csrf=False)
+    def api_token(self, **kwargs):
+        grant_type = kwargs.get('grant_type')
 
-        uid = request.session.authenticate(
-            request.session.db, login, password
-        )
-        if not uid:
-            return self._error("Invalid login or password")
-        kw = request.env["antareja.token"].login(uid)
-        return self._success(**kw)
+        if grant_type == 'password':
+            return _password_grant(kwargs)
 
-    @http.route('/api/application/profile', type='http', auth='none', methods=['POST'], csrf=False)
-    def api_profile(self):
+        if grant_type == 'refresh_token':
+            return self._refresh_grant(kwargs.get('refresh_token'))
 
-        auth = request.httprequest.headers.get('Authorization')
-        if not auth or not auth.startswith('Bearer '):
-            return self._error("Missing token")
+        if grant_type == 'trusted_token':
+            return self._trusted_grant(kwargs.get('access_token'))
 
-        token = auth.replace('Bearer ', '')
-        payload = request.env['antareja.token'].validate(token)
+        return invalid_response(401, "unsupported_grant_type")
 
-        if not payload or not payload.get('uid'):
-            return self._error("Invalid or expired token")
+    @http.route('/application/profile', type='http', auth='none', methods=['GET'], csrf=False)
+    def api_application_introspect(self, access_token):
+        active = False
+        token = access_token or get_bearer_token()
+        if token:
+            payload = request.env['antareja.token'].validate(token)
+            if payload and payload.get('uid'):
+                uid = payload.get('uid')
+                user = request.env['res.users'].sudo().browse(uid)
+                active = user.exists()
 
-        uid = payload.get('uid')
-        user = request.env['res.users'].sudo().browse(uid)
-        if not user.exists():
-            return self._error("User not found")
+        if active:
+            data = dict(payload)
+            data.update(
+                uid=user.id,
+                user_id=user.id,
+                name=user.name,
+                login=user.login,
+                db=request.session.db,
+            )
+            return valid_response(200, data)
+        else:
+            return invalid_response(401, "invalid_token","Invalid Token")
 
-        # set user context
-        request.uid = user.id
+    @http.route('/application/introspect', type='http', auth='none', methods=['GET'], csrf=False)
+    def api_application_introspect(self,access_token):
+        active = False
+        token = access_token or get_bearer_token()
+        if token:
+            payload = request.env['antareja.token'].validate(token)
+            if payload and payload.get('uid'):
+                uid = payload.get('uid')
+                user = request.env['res.users'].sudo().browse(uid)
+                active = user.exists()
 
-        return self._success(
-            uid=user.id,
-            name=user.name,
-            login=user.login,
-            db=request.session.db,
-        )
+        if active:
+            data = dict(payload)
+            data.update(
+                active=True,
+                uid=user.id,
+                user_id=user.id,
+                name=user.name,
+                login=user.login,
+                db=request.session.db,
+            )
+            return valid_response(200, data)
+        else:
+            return valid_response(401, {'active': False,"error": "invalid_token"})
 
-    @http.route('/api/application/refresh', type='http', auth='none', methods=['POST'], csrf=False)
-    def refresh_grant(self, refresh_token=None):
+    def _trusted_grant(self, token_access):
+        payload = self.env['antareja.token.audience'].validate(token_access)
+        if payload and payload.get('uid'):
+            kw = request.env["antareja.token"].login(payload['uid'])
+            return valid_response(200, kw)
+        else:
+            return invalid_response(401, "invalid_grant")
 
+    def _refresh_grant(self, refresh_token=None):
         if not refresh_token:
-            return self._error("invalid_request")
+            return invalid_response(200, "invalid_request")
 
-        payload = request.env['antareja.token'].validate(refresh_token)
+        payload = request.env['antareja.token'].validate(refresh_token, refresh_token=True)
 
         if not payload or not payload.get('token'):
-            return self._error("Invalid or expired token")
+            return invalid_response(400, "invalid_grant", "Invalid or expired token")
 
         token = payload.get('token')
 
@@ -90,23 +151,10 @@ class ControllerMobileAccess(http.Controller):
         ], limit=1)
 
         if not rec or rec.expires_at < fields.Datetime.now():
-            return self._error("invalid_grant")
+            return invalid_response(200, "invalid_grant")
 
         # revoke old token
         rec.write({"revoked": True})
 
         kw = request.env["antareja.token"].login(rec.user_id.id)
-        return self._success(**kw)
-
-    def _success(self, **kwargs):
-        return request.make_response(
-            json.dumps(kwargs),
-            headers=[("Content-Type", "application/json")]
-        )
-
-    def _error(self, error):
-        return request.make_response(
-            json.dumps({"error": error}),
-            status=400,
-            headers=[("Content-Type", "application/json")]
-        )
+        return valid_response(200, kw)
