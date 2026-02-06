@@ -38,11 +38,7 @@
                         <field name="state"
                                widget="statusbar"
                                statusbar_visible="pending,sent,error"/>
-                        <button name="send_events"
-                                type="object"
-                                string="Send Event"
-                                class="btn-primary"
-                                states="pending,error"/>
+
                     </header>
 
                     <!-- BASIC INFO -->
