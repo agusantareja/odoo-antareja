@@ -1,0 +1,7 @@
+<odoo>
+    <menuitem id="mobile_notification_menu"
+              parent="ceria_mobile.ceria_mobile_menu"
+              action="ceria_mobile_notification_action"
+              sequence="10"
+    />
+</odoo>
