@@ -13,7 +13,7 @@
     'website': "https://agus.ramdan.tech",
     'category': 'tools',
     'version': '13.0.0.0.2',
-    'depends': ['base', 'mail','amr_jsonrpc', 'amr_data_sync'],
+    'depends': ['base', 'mail', 'amr_jsonrpc', 'amr_data_sync'],
     # always loaded
     'data': [
         'security/ir.model.access.csv',
