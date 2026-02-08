@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-from odoo.tools.safe_eval import safe_eval
 import ast
-import requests
 import json
 import logging
 from odoo import models, fields, api, _
@@ -12,6 +8,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
 import random
 import re
+import requests
 
 _logger = logging.getLogger(__name__)
 
