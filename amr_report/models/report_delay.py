@@ -88,4 +88,3 @@ class ReportDelay(models.Model):
         context = parameter.get('context') or {}
         context['data'] = parameter.get('data') or {}
         self.next_action_id and self.next_action_id.with_context(context).run()
-
