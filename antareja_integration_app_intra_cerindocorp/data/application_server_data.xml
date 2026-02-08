@@ -17,5 +17,11 @@
             <field name="application_server_id" ref="application_server"/>
             <field name="auth_type">odoo-rcp</field>
         </record>
+
+        <record model="application.server.auth" id="application_server_auth_jwt">
+            <field name="name">intra.auth.jwt</field>
+            <field name="application_server_id" ref="application_server"/>
+            <field name="auth_type">jwt-odoo-rcp</field>
+        </record>
     </data>
 </odoo>
