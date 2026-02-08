@@ -33,5 +33,11 @@ class ControllerSync(http.Controller):
         if Model_id.excluded_read_sync_api() or not Model_id.is_read_sync_api():
             return rest_api_unavailable(model_name)
         if not id:
-            return object_read(model_name, kwargs, status_code=200, filter_fields=readable_fields, sudo_read=Model_id.sudo_read_sync_api())
-        return object_read_one(model_name, id, kwargs, status_code=200, filter_fields=readable_fields, sudo_read=Model_id.sudo_read_sync_api())
+            return object_read(
+                model_name, kwargs, status_code=200, filter_fields=readable_fields,
+                sudo_read=Model_id.sudo_read_sync_api()
+            )
+        return object_read_one(
+            model_name, id, kwargs, status_code=200, filter_fields=readable_fields,
+            sudo_read=Model_id.sudo_read_sync_api()
+        )
