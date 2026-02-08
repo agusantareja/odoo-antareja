@@ -19,11 +19,18 @@ class ExternalServerSync(models.Model):
     app_name = fields.Char(
         compute='_compute_external_app_name',
         inverse='_inverse_external_app_name',
-        store=True)
+        store=True
+    )
+    odoo_server_db = fields.Char(
+        compute='_compute_external_app_name',
+        inverse='_inverse_odoo_server_db',
+        store=True
+    )
     base_url = fields.Char(
         compute='_compute_external_app_name',
         inverse='_inverse_base_url',
-        store=True)
+        store=True
+    )
     application_server_id = fields.Many2one(
         'application.server',
         compute = '_compute_external_app_name',
@@ -50,19 +57,35 @@ class ExternalServerSync(models.Model):
                 rec.application_server_id = rec.application_server_auth_id.application_server_id
                 rec.app_name = rec.application_server_auth_id.get_application_name()
                 rec.base_url = rec.application_server_auth_id.get_endpoint_url()
+                rec.odoo_server_db = rec.application_server_auth_id.odoo_server_db
             # kalau server_sync_id kosong → JANGAN override
             # biarkan nilai manual tetap
 
     # ===== INVERSE =====
+    def _inverse_odoo_server_db(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
+
     def _inverse_external_app_name(self):
         for rec in self:
             # inverse wajib ada supaya field editable
             pass
+
+    def _inverse_external_app_name(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
+
     def _inverse_base_url(self):
         for rec in self:
             # inverse wajib ada supaya field editable
             pass
 
+    def _inverse_server_auth(self):
+        for rec in self:
+            # inverse wajib ada supaya field editable
+            pass
 
     @api.depends('external_mode', 'application_server_path_id')
     def _compute_server_auth(self):
@@ -72,11 +95,6 @@ class ExternalServerSync(models.Model):
             # kalau server_sync_id kosong → JANGAN override
             # biarkan nilai manual tetap
 
-    # ===== INVERSE =====
-    def _inverse_server_auth(self):
-        for rec in self:
-            # inverse wajib ada supaya field editable
-            pass
 
     @api.model
     def get_sync_path(self):
