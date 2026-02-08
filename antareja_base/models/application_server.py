@@ -19,25 +19,6 @@ class ApplicationServer(models.Model):
     description = fields.Char()
     endpoint = fields.Char(compute='compute_endpoint')
     endpoint_value = fields.Char()
-    application_server_auth_ids = fields.One2many(
-        'application.server.auth', 'application_server_id'
-    )
-    application_server_path_ids = fields.One2many(
-        'application.server.path', 'application_server_id',
-        readonly=True
-    )
-
-    def action_add_auth(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Add Line',
-            'res_model': 'application.server.auth',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_application_server_id': self.id,
-            }
-        }
 
     @api.depends('endpoint_value', 'config_param_name')
     def compute_endpoint(self):
