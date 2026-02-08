@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import datetime
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-import json
-import traceback
+
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -37,21 +33,3 @@ class ApplicationServerPath(models.Model):
                 rec.path = rec.get_value_config_param(config_param_name=rec.config_param_name)
             else:
                 rec.path = rec.path_value
-
-    def rest_get(self, params=None, headers=None, **kwargs):
-        rec = self.ensure_one()
-        return rec.application_server_auth_id.rest_get(rec.path, params=params, headers=headers, **kwargs)
-
-    def rest_post(self, params=None, headers=None, **kwargs):
-        rec = self.ensure_one()
-        return rec.application_server_auth_id.rest_post(rec.path, params=params, headers=headers, **kwargs)
-
-    def action_open_view(self):
-        self.ensure_one()
-        return {
-            'name': _('Server Path'),
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-        }
