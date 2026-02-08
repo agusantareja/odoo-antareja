@@ -1,0 +1,60 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_application_server_path_tree" model="ir.ui.view">
+        <field name="name">application.server.path.tree</field>
+        <field name="model">application.server.path</field>
+        <field name="arch" type="xml">
+            <tree string="Application Server Path">
+                <field name="name" string="Name"/>
+                <field name="application_server_id"/>
+                <field name="application_server_auth_id"/>
+                <field name="path"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_application_server_path_form" model="ir.ui.view">
+        <field name="name">application.server.path.form</field>
+        <field name="model">application.server.path</field>
+        <field name="arch" type="xml">
+            <form string="Application Server Path">
+                <header>
+                    <field name="active" invisible="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Name . . ." />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="application_server_auth_id" readonly="context.get('edit_from_server_auth_form')"/>
+                            <field name="application_server_id" />
+                        </group>
+                        <group>
+                            <field name="path" string="Path" attrs="{'invisible':[('config_param_name','!=','')]}"/>
+                            <field name="path_value" string="Path" attrs="{'invisible':[('config_param_name','=','')]}"/>
+                            <field name="config_param_name"/>
+                            <button string="Edit" type="object" name="open_config_parameter" attrs="{'invisible':[('config_param_name','!=','')]}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_application_server_path" model="ir.actions.act_window">
+        <field name="name">Application Server Path</field>
+        <field name="res_model">application.server.path</field>
+        <field name="view_mode">tree,form</field>
+
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Application Server Path here.
+            </p>
+        </field>
+    </record>
+
+</odoo>
