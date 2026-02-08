@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-<!--    <menuitem id="integration_parent_menu"-->
-<!--                  name="Integration"-->
-<!--                  parent="base.menu_custom"-->
-<!--                  sequence="20"-->
-<!--    />-->
     <menuitem id="integration_application_server"
               parent="antareja_base.base_integration_menu"
               action="antareja_base.action_application_server"
               sequence="10"
+    />
+    <menuitem id="integration_application_server_auth"
+              parent="antareja_base.base_integration_menu"
+              action="action_application_server_auth"
+              sequence="20"
+    />
+    <menuitem id="integration_application_server_path"
+              parent="antareja_base.base_integration_menu"
+              action="action_application_server_path"
+              sequence="20"
     />
     <menuitem id="integration_api_call_retry"
               parent="antareja_base.base_integration_menu"
