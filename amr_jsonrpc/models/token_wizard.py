@@ -18,6 +18,9 @@ class GetTokenWizard(models.TransientModel):
     expires_at = fields.Datetime(readonly=True)
     message = fields.Text(readonly=True)
 
+    target_id = fields.Integer(readonly=True)
+    target_model = fields.Char(readonly=True)
+
     def action_get_token(self):
         self.ensure_one()
 
@@ -64,10 +67,8 @@ class GetTokenWizard(models.TransientModel):
         }
 
     def _save_token(self, data, expires_at):
-        action_id = self.env.context.get('action_id')
-        action_model = self.env.context.get('action_model')
-        action = self.env[action_model].browse(action_id)
-        action.write({
+        target = self.env[self.target_model].browse(self.target_id)
+        target.update_token(**{
             "username": self.username,
             "refresh_endpoint": self.url,
             "password": '',
