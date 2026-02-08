@@ -57,9 +57,9 @@ class ExternalEventLine(models.Model):
 
     def action_search_3(self):
         # cara 3
-        remote_res_partner = self.auth_id.remote_model_object('res.partner')
-        ids = remote_res_partner.search([("is_company", "=", True)], limit=10)
-        self.save_payload(ids)
+        with self.auth_id.create_remote_model('res.partner') as remote_res_partner:
+            ids = remote_res_partner.search_read([("is_company", "=", True)], limit=10)
+            self.save_payload(ids)
 
     def action_read_1(self):
         # xml client
@@ -85,9 +85,11 @@ class ExternalEventLine(models.Model):
 
     def action_read_3(self):
         # cara 3
-        remote_res_partner = self.auth_id.remote_model_object('res.partner')
-        ids = remote_res_partner.read([3, 4, 5, 6, 7, 8, 9, 70], fields=['name', 'is_company'])
-        self.save_payload(ids)
+        auth_id = self.auth_id
+        with auth_id.create_remote_model('res.partner') as remote_res_partner:
+            ids = remote_res_partner.read([9735], fields=['name', 'is_company'])
+            # ids = remote_res_partner.read([3, 4, 5, 6, 7, 8, 9, 70], fields=['name', 'is_company'])
+            self.save_payload(ids)
 
     def action_search_read_1(self):
         # xml client
@@ -115,9 +117,10 @@ class ExternalEventLine(models.Model):
 
     def action_search_read_3(self):
         # cara 3
-        remote_res_partner = self.auth_id.remote_model_object('res.partner')
-        ids = remote_res_partner.search_read([("is_company", "=", True)], fields=['name', 'is_company'], limit=10)
-        self.save_payload(ids)
+        auth_id = self.auth_id
+        with auth_id.create_remote_model('res.partner') as remote_res_partner:
+            ids = remote_res_partner.search_read([("is_company", "=", True)], fields=['name', 'is_company'], limit=10)
+            self.save_payload(ids)
 
     def action_create_1(self):
         # xml client
@@ -147,7 +150,7 @@ class ExternalEventLine(models.Model):
 
     def action_create_3(self):
         # cara 3
-        remote_res_partner = self.auth_id.remote_model_object('res.partner')
+        remote_res_partner = self.auth_id.create_remote_model('res.partner')
         ids = remote_res_partner.create([{'name': "test-3"}])
         self.save_payload(ids)
 
@@ -173,6 +176,6 @@ class ExternalEventLine(models.Model):
 
     def action_write_3(self):
         # cara 3
-        remote_res_partner = self.auth_id.remote_model_object('res.partner')
+        remote_res_partner = self.auth_id.create_remote_model('res.partner')
         ids = remote_res_partner.write([70], {'name': "test-3-33"})
         self.save_payload(ids)

@@ -15,7 +15,7 @@ Addon contoh:
     'author': "Agus Muhammad Ramdan",
     'license': "AGPL-3",
     'website': "http://agus.ramdan.tech",
-    'depends': ['base'],
+    'depends': ['base', 'antareja_integration'],
     'data': [
         'security/ir.model.access.csv',
         'views/external_event_line_views.xml',
