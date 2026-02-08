@@ -1,0 +1,113 @@
+<odoo>
+
+    <record id="view_client_auth_mixin_form_views" model="ir.ui.view">
+        <field name="name">client.auth.mixin.form</field>
+        <field name="model">client.auth.mixin</field>
+        <field name="priority" eval="10"/>
+        <field name="arch" type="xml">
+            <form string="Client Auth">
+                <header>
+                    <button string="Get db name" type="object" name="action_get_odoo_db_name"
+                        attrs="{'invisible':[('auth_type','not in',['odoo-rcp','jwt-odoo-rcp'])]}"
+                    />
+                    <button string="Get UID" type="object" name="action_get_odoo_server_uid"
+                            attrs="{'invisible':[('auth_type','not in',['odoo-rcp'])]}"
+                    />
+                    <button string="Test Connect" type="object" name="action_test_connection"
+                            attrs="{'invisible':[('auth_type','not in',['basic','odoo-rcp'])]}"
+                    />
+                    <button name="action_open_token_wizard" string="Get JWT Token" type="object"
+                            attrs="{'invisible':[('auth_type','not in',['jwt-odoo-rcp','jwt-rest-token'])]}"
+                    />
+                    <field name="active" invisible="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"/>
+                    <group>
+                        <group>
+                            <field name="auth_type"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Auth Basic" attrs="{'invisible':[('auth_type','!=','basic')]}">
+                            <group>
+                                <group>
+                                    <field name="username"/>
+                                    <field name="password"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Auth Rest" attrs="{'invisible':[('auth_type','!=','rest-token')]}">
+                            <group>
+                                <group>
+                                    <field name="token_in"/>
+                                </group>
+                                <group attrs="{'invisible':[('token_in','!=','basic')]}">
+                                    <field name="username"/>
+                                    <field name="password"/>
+                                </group>
+                                <group attrs="{'invisible':[('token_in','=','basic')]}">
+                                    <field name="token_key"/>
+                                    <field name="access_token"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}" name="page_odoo_rcp">
+                            <group>
+                                <group>
+                                    <field name="odoo_server_db"/>
+                                    <field name="odoo_server_uid"/>
+                                </group>
+                                <group>
+                                    <field name="username"/>
+                                    <field name="password"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
+                            <group>
+                                <group string="JWT Token">
+                                    <field name="access_token"/>
+                                    <field name="refresh_token"/>
+                                    <field name="expires_at"/>
+                                </group>
+                                <group string="Get Token">
+                                    <field name="odoo_server_db" />
+                                    <field name="refresh_endpoint"/>
+                                    <field name="username"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="JWT Token" attrs="{'invisible':[('auth_type','!=','jwt-rest-token')]}">
+                            <group>
+                                <group string="JWT Token">
+                                    <field name="access_token"/>
+                                    <field name="refresh_token"/>
+                                    <field name="expires_at"/>
+                                </group>
+                                <group string="Get Token">
+                                    <field name="refresh_endpoint"/>
+                                    <field name="username"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_application_server_auth" model="ir.actions.act_window">
+        <field name="name">Application Server Auth</field>
+        <field name="res_model">application.server.auth</field>
+        <field name="view_mode">tree,form</field>
+
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Application Server Auth here.
+            </p>
+        </field>
+    </record>
+
+</odoo>

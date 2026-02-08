@@ -372,6 +372,10 @@ class OdooSession(requests.Session):
                 db = get_db_name(self.auth_model.get_db_name_endpoint_url())
                 if not db:
                     raise ValueError("Odoo RPC call requires database name")
+
+            if not password:
+                password = self.auth_model.get_access_token()
+
             if not uid:
                 uid = odoo_rpc_auth(self.auth_model, self, db, username, password)
                 if not uid:
@@ -402,7 +406,7 @@ class OdooSession(requests.Session):
         return data.get("result") or []
 
     def create_remote_model(self, model_name, **kwargs):
-        if self.auth_model.auth_type in ('odoo-rcp',):
+        if self.auth_model.auth_type in ('odoo-rcp', 'jwt-odoo-rcp',):
             remote_model = JsonRPCRemoteModel(model_name, self, **kwargs)
         else:
             remote_model = RestModelObject(model_name, self, **kwargs)
@@ -508,6 +512,12 @@ class RestModelObject(RemoteModel):
         response = self.rest_path_get(params=params, _id=_id)
         response.raise_for_status()
         data = response.json()
+        if not data:
+            return []
+
+        if isinstance(data, list):
+            return data
+
         return data.get("results", [])
 
     def search_count(self):

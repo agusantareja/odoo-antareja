@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from requests import RequestException
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from .. import remote
 import logging
-import requests
 from contextlib import contextmanager
-from datetime import datetime
-import uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -123,6 +119,8 @@ class AuthRestToken(models.AbstractModel):
         context = dict(self.env.context)
         context['default_username'] = self.username
         context['default_url'] = self.get_token_endpoint_url()
+        context['default_target_id'] = self.id
+        context['default_target_model'] = self._name
         context['action_id'] = self.id
         context['action_model'] = self._name
         return {
@@ -170,12 +168,18 @@ class AuthRestToken(models.AbstractModel):
     def reconnect_session(self, odoo_session):
         self.apply_auth(odoo_session)
 
-    def update_token(self, access_token, refresh_token=None, expires_at=None):
-        self.write({
+    def update_token(self, access_token, refresh_token=None, expires_at=None, refresh_endpoint=None, username=None,**kwargs):
+        data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
             "expires_at": expires_at,
-        })
+            "password": "",
+        }
+        if refresh_endpoint:
+            data["refresh_endpoint"] = refresh_endpoint
+        if username:
+            data["username"] = username
+        self.write(data)
 
     def jsonrpc_execute_kw(self, model, method, args, kw=None):
         auth = self.ensure_one()
