@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from requests import RequestException
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
 
-import requests
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -24,12 +21,15 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
     rest_token_key = fields.Char(
         default='basic'
     )
-    rest_token = fields.Char()
-    rest_refresh = fields.Char()
+    rest_token = fields.Char(related="access_token", store=True)
+    rest_refresh = fields.Char(related="refresh_token", store=True)
+    access_token = fields.Char()
+    refresh_token = fields.Char()
+
 
 class ApplicationServerAuthOdooRCP(models.AbstractModel):
     _name = 'application.server.auth.odoo.rcp.mixin'
-    _inherit = 'application.server.auth.rest.token.mixin'
+    # _inherit = 'application.server.auth.rest.token.mixin'
     # odoo rcp
     odoo_server_db = fields.Char()
     odoo_server_uid = fields.Integer()
@@ -39,8 +39,7 @@ class ApplicationServerAuthOdooRCP(models.AbstractModel):
 
 class ApplicationServerAuth(models.Model):
     _name = 'application.server.auth'
-    _inherit = ['application.server.auth.odoo.rcp.mixin',
-                'ir.config_parameter.able.mixin']
+    _inherit = ['ir.config_parameter.able.mixin']
 
     active = fields.Boolean(default=True)
     name = fields.Char()
@@ -54,13 +53,34 @@ class ApplicationServerAuth(models.Model):
     auth_type = fields.Selection([
         ('odoo-rcp', 'Odoo RCP'),
         ('rest-token', 'Rest Token'),
-    ], default='rest-token')
-
+        ('jwt-odoo-rcp', 'JWT Odoo RCP'),
+        ('rest-token', 'Rest Token'),
+        ('jwt-rest-token', 'JWT Rest Token'),
+        ('basic', 'Basic'),
+    ], default='rest-token',
+    )
+    rest_token_in = fields.Selection([
+        ('basic', 'Basic'),
+        ('bearer', 'Bearer'),
+        ('header', 'Header'),
+        ('param', 'Parameter'),
+        ('body', 'Body')
+    ], default='header',
+    )
+    rest_token_key = fields.Char(
+        default='access_token'
+    )
+    rest_token = fields.Char(related="access_token")
+    rest_refresh = fields.Char(related="refresh_token")
+    access_token = fields.Char()
+    refresh_token = fields.Char()
     username = fields.Char()
     password = fields.Char()
+    odoo_server_db = fields.Char()
+    odoo_server_uid = fields.Integer()
 
     def get_rest_token(self):
-        return self.get_value_config_param(value_without_config_param=self.rest_token)
+        return self.get_value_config_param(value_without_config_param=self.access_token)
 
     def action_open_view(self):
         self.ensure_one()
