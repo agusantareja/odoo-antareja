@@ -1,0 +1,30 @@
+<odoo>
+    <record id="view_application_server_form" model="ir.ui.view">
+        <field name="name">application.server.form</field>
+        <field name="model">application.server</field>
+        <field name="inherit_id" ref="antareja_base.view_application_server_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Auth Methods">
+                    <field name="application_server_auth_ids" context="{'edit_from_server_form':True}">
+                        <tree>
+                            <field name="application_server_id" invisible="1"/>
+                            <field name="name" string="Name"/>
+                            <field name="auth_type"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Path">
+                    <field name="application_server_path_ids" context="{'edit_from_server_form':True}">
+                        <tree>
+                            <field name="application_server_id" invisible="1"/>
+                            <field name="application_server_auth_id"/>
+                            <field name="name" string="Name"/>
+                            <field name="path"/>
+                        </tree>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

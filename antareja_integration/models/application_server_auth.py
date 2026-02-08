@@ -10,19 +10,17 @@ _logger = logging.getLogger(__name__)
 
 class ApplicationServerAuth(models.Model):
     _name = 'application.server.auth'
-    _inherit = [_name, 'client.auth.mixin']
-    auth_type = fields.Selection(selection_add=[
-        ('jwt-odoo-rcp', 'JWT Odoo RCP'),
-        ('jwt-rest-token', 'JWT rest-token'),
-    ])
+    _inherit = ['ir.config_parameter.able.mixin', 'client.auth.mixin']
 
-    rest_refresh = fields.Char()
-    access_token = fields.Char(related="rest_token", store=True)
-    refresh_token = fields.Char(related="rest_refresh", store=True)
-
-    def get_db_name(self):
-        return self.odoo_server_db
-
+    active = fields.Boolean(default=True)
+    name = fields.Char()
+    application_server_id = fields.Many2one(
+        'application.server'
+    )
+    application_server_path_ids = fields.One2many(
+        'application.server.path',
+        'application_server_auth_id'
+    )
     @api.model
     def rest_login_path(self):
         return '/application/token'
@@ -46,14 +44,14 @@ class ApplicationServerAuth(models.Model):
 
     def is_jwt(self):
         try:
-            jwt.get_unverified_header(self.rest_token)
+            jwt.get_unverified_header(self.access_token)
             return True
         except jwt.InvalidTokenError:
             return False
 
     def is_token_expired(self):
         payload = jwt.decode(
-            self.rest_token,
+            self.access_token,
             options={"verify_signature": False}
         )
         exp = payload.get("exp")

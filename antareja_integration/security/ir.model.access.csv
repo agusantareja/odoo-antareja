@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_application_server_auth_system_user,CRUD Auth,model_application_server_auth,base.group_system,1,1,1,1
+access_application_server_auth_user,Read Auth,model_application_server_auth,base.group_user,1,0,0,0
+access_application_server_path_system_user,CRUD Path,model_application_server_path,base.group_system,1,1,1,1
+access_application_server_path_user,Read Path,model_application_server_path,base.group_user,1,0,0,0
