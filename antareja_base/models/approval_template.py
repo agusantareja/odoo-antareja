@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # v16 from odoo import tools,Command
-from odoo import models, fields, api,tools,Command
+from odoo import models, fields, api, tools, Command
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare
 from odoo.tools.safe_eval import safe_eval, test_python_expr
