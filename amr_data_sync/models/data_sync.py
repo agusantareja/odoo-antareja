@@ -428,17 +428,14 @@ class ExternalDataSync(models.Model):
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
                                  self.internal_model, self.external_model, str(self.external_odoo_id)
                                  )
+                elif existing:
+                    _logger.info("event_external_data_sync_done ")
+                    sync_strategy.event_external_data_sync_done(existing, item, input_dict)
+                else:
+                    _logger.info("Not ")
         except Exception as ex:
-            all_related_done = False
             # todo clear cache odoo
             self.write_error(traceback.format_exc(), input_dict)
-
-        if existing and all_related_done:
-            after_data = self.process_field_after_create(existing) or {}
-            if after_data:
-                input_dict.update(after_data)
-                self.write_done_internal_odoo(existing, input_dict)
-            sync_strategy.event_external_data_sync_done(existing, item, input_dict)
 
     @savepoint
     def write_error(self, stack_trace, payload=None):
@@ -481,7 +478,6 @@ class ExternalDataSync(models.Model):
             try:
                 t.process_data()
             except Exception:
-                self.env.cr.rollback()
                 _logger.exception("error")
                 t.write({
                     'error_info': traceback.format_exc(),
@@ -489,7 +485,6 @@ class ExternalDataSync(models.Model):
                     'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
-            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
 
@@ -504,7 +499,6 @@ class ExternalDataSync(models.Model):
             try:
                 t.process_data()
             except Exception:
-                self.env.cr.rollback()
                 _logger.exception("error")
                 t.write({
                     'error_info': traceback.format_exc(),
@@ -512,7 +506,6 @@ class ExternalDataSync(models.Model):
                     'last_error': fields.Datetime.now(),
                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                 })
-            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
 
@@ -535,7 +528,6 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                     })
             except Exception:
-                self.env.cr.rollback()
                 t.write({
                     'error_info': traceback.format_exc(),
                     'state': 'error',
@@ -545,15 +537,12 @@ class ExternalDataSync(models.Model):
                 continue
             if fields.Datetime.now() > limit_time:
                 break
-            self.env.cr.commit()
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
         for t in external_data_sync:
             try:
                 t.process_data()
             except Exception:
-                self.env.cr.rollback()
                 continue
-            self.env.cr.commit()
             if fields.Datetime.now() > limit_time:
                 break
 
