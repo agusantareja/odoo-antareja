@@ -87,10 +87,12 @@
                                 <group string="Approve">
                                     <field name="invoke_before_approve" string="Before"/>
                                     <field name="invoke_after_approve" string="After"/>
+                                    <field name="notes_chatter_approved" string="Note Chatter"/>
                                 </group>
                                 <group string="Reject">
                                     <field name="invoke_before_reject" string="Before"/>
                                     <field name="invoke_after_reject" string="After"/>
+                                    <field name="notes_chatter_rejected" string="Note Chatter"/>
                                 </group>
                             </group>
                         </page>

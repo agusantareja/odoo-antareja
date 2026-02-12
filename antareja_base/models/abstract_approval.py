@@ -296,7 +296,19 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         ('to_previous', "To Previous"),
         ('to_task_line', "To Task Line"),
     ], default='legacy', readonly=True)
-
+    requester_id = fields.Many2one(
+        'res.users', 'Requester',
+        default=lambda self: self.env.user,
+        help="User who requested the approval."
+    )
+    user_execution_id = fields.Many2one(
+        'res.users',
+        'User Execution',
+        help="User who executed approval (Approve/Reject)the transaction"
+    )
+    date_execution = fields.Datetime('Date Execution')
+    reject_reason = fields.Text('Reject Reason')
+    sign_title = fields.Char("Sign Title")
     def get_reject_to_task_line(self):
         raise NotImplemented
 
@@ -357,7 +369,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         if have_method(self, "domain_waiting_status"):
             domain.extend(self.domain_waiting_status() or [])
         result = self.search(domain, limit=1)
-        self.flush()
         return result
 
     def register_approval_task(self, **kwargs):

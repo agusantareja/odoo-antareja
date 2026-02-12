@@ -24,13 +24,13 @@ class ApprovalTaskLine(models.Model):
         help="User who requested the approval."
     )
     reject_to_method = fields.Selection(default='to_requestor')
-    user_execution_id = fields.Many2one(
-        'res.users',
-        'User Execution',
-        help="User who executed approval (Approve/Reject)the transaction"
-    )
-    date_execution = fields.Datetime('Date Execution')
-    reject_reason = fields.Text('Reject Reason')
+    # user_execution_id = fields.Many2one(
+    #     'res.users',
+    #     'User Execution',
+    #     help="User who executed approval (Approve/Reject)the transaction"
+    # )
+    # date_execution = fields.Datetime('Date Execution')
+    # reject_reason = fields.Text('Reject Reason')
 
     def set_approved_status(self, **kwargs):
         self.ensure_one()
@@ -54,6 +54,11 @@ class ApprovalTaskLine(models.Model):
             'status_approval': 'waiting_approval'
         })
 
+    def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
+        transaction_id = transaction_id or self.transaction_id
+        transaction_model_name = transaction_model_name or self.transaction_model_name
+        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id asc')
+
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         transaction_id = transaction_id or self.transaction_id
         transaction_model_name = transaction_model_name or self.transaction_model_name
@@ -67,3 +72,29 @@ class ApprovalTaskLine(models.Model):
 
     def get_approval_instance(self):
         return self.approval_instance_id
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = kwargs.get('company') or self.env.company
+        if users:
+            return users.get_users_for_notification(company=company)
+        else:
+            return users
+
+    def send_approval_notification(self, **kwargs):
+        self.send_notification(**kwargs)
+
+    def send_rejected_notification(self, **kwargs):
+        kwargs = dict(kwargs)
+        kwargs['users'] = self.requester_id
+        self.send_notification(**kwargs)
+
+    def send_approved_notification(self, **kwargs):
+        kwargs = dict(kwargs)
+        kwargs['users'] = self.requester_id
+        self.send_notification(**kwargs)
+
+    def send_notification(self,**kwargs):
+        # implment di module notification
+        pass

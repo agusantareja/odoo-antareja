@@ -111,3 +111,6 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
         return approval_instance.is_status_waiting_approval()
+
+    def get_all_approval_task_line(self):
+        return self.approval_instance_id.get_all_approval_task_line()

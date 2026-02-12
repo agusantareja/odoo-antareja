@@ -240,3 +240,24 @@ class ApprovalTransactionTask(models.AbstractModel):
 
     def is_status_waiting_approval(self):
         raise NotImplemented
+
+    def get_all_approval_task_line(self):
+        raise NotImplemented
+
+    def get_approval_users_signature(self):
+        self.ensure_one()
+        signatures = [{
+            'sign_title': 'Created by',
+            'sign_user': self.create_uid,
+            'approval_task_line': False,
+        }]
+        all_approval_task_line = self.get_all_approval_task_line()
+        if all_approval_task_line:
+            for line in all_approval_task_line:
+                signatures.append({
+                    'sign_title': line.sign_title or 'Approved by',
+                    'sign_user': line.user_execution_id,
+                    'approval_task_line': line,
+                })
+
+        return signatures
