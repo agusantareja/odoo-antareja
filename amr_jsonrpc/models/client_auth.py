@@ -131,7 +131,7 @@ class AuthRestToken(models.AbstractModel):
             'context': context
         }
 
-    def create_session(self):
+    def create_session(self, **kwargs):
         """
         State Lest
         Contoh penggunaan
@@ -140,7 +140,7 @@ class AuthRestToken(models.AbstractModel):
             r = s.get(f"{server.get_rest_url('/api/health')}")
 
         """
-        return remote.OdooSession(self)
+        return remote.OdooSession(self, **kwargs)
 
     @contextmanager
     def create_remote_model(self, model_name, **kwargs):
