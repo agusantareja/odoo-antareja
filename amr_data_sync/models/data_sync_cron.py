@@ -54,6 +54,7 @@ class ExternalDataSyncCron(models.Model):
             try:
                 data_sync.sync_strategy_id.sync_from_application_server()
             except Exception as e:
+
                 _logger.error(
                     "Error sync from server %s , model %s : %s",
                     data_sync.external_app_name,

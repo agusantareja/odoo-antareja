@@ -124,6 +124,16 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 vals.update(approval_template.prepare_dict())
         return super(ApprovalInstanceMixin, self).create(vals_list)
 
+    def get_all_approval_task_line(self):
+        rec = self.ensure_approval_template()
+        approval_task_line_model = rec.approval_template_id.approval_task_line_model
+        if not approval_task_line_model:
+            return None
+        return self.env[approval_task_line_model].get_all_approval_task_line(
+            transaction_model_name=rec.transaction_model_name,
+            transaction_id=rec.transaction_id
+        )
+
     def get_next_approval_task_line(self):
         rec = self.ensure_approval_template()
         approval_task_line_model = rec.approval_template_id.approval_task_line_model
@@ -317,20 +327,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
         is_approval_done = kwargs.get('is_approval_done')
         trx_update_value = kwargs.get('transaction_update_value') or {}
 
-        if approval_template.notification_approved_id:
-            # if not approval_template.notification_approved_id.template_comment:
-            #     self._mail_message_approve(self.get_approved_message(**kw))
-            approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
-            kw_approved = dict(kwargs)
-            kw_approved.update(
-                approval_template=approval_template,
-                approval_instance=approval_instance,
-                transaction_id=approval_instance.transaction_id,
-                transaction_model_name=approval_instance.transaction_model_name,
-                notification_template=approval_template.notification_approved_id
-            )
-            approval_task_line.send_approved_notification(**kw_approved)
-
         approval_template.invoke_method(transaction_object, 'after_approve', **kw)
 
         if is_approval_done:
@@ -352,12 +348,22 @@ class ApprovalInstanceMixin(models.AbstractModel):
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
             approval_instance.register_approval_task_line(**kw)
-            # approval_task_line.send_approval_notification(
-            #     approval_template=approval_template,
-            #     approval_instance=approval_instance,
-            #     notification_template=approval_template.notification_approval_id
-            # )
 
+        approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
+        kw_approved = dict(kwargs)
+        kw_approved.update(
+            approval_template=approval_template,
+            approval_instance=approval_instance,
+            transaction_id=approval_instance.transaction_id,
+            transaction_model_name=approval_instance.transaction_model_name
+        )
+        if approval_template.notes_chatter_approved:
+            if have_method(transaction_object, 'get_approved_message'):
+                rejected_message = safe_call_method(transaction_object, 'get_rejected_message', kwargs=kw_approved)
+            else:
+                rejected_message = self.get_rejected_message(**kw)
+            rejected_message and self._mail_message_approve(rejected_message)
+        approval_task_line.send_approved_notification(**kw_approved)
         return self
 
     def get_approved_message(self, **kwargs):
@@ -404,19 +410,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         trx_update_value = kwargs.get('transaction_update_value') or {}
 
         approval_template.invoke_method(transaction_object, 'after_reject', **kw)
-
-        if approval_template.notification_rejection_id:
-            # if not approval_template.notification_rejection_id.template_comment:
-            #     self._mail_message_approve(self.get_rejected_message(**kw))
-            approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
-            approval_task_line.send_rejected_notification(
-                approval_template=approval_template,
-                approval_instance=approval_instance,
-                transaction_id=approval_instance.transaction_id,
-                transaction_model_name=approval_instance.transaction_model_name,
-                notification_template=approval_template.notification_rejection_id
-            )
-
+        approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
         if is_approval_done:
             kw['is_rejected'] = True
             trx_update_value.update(kwargs.get('update_value') or {})
@@ -436,6 +430,21 @@ class ApprovalInstanceMixin(models.AbstractModel):
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
             approval_instance.register_approval_task_line(**kw)
+
+        kw_rejected = dict(kwargs)
+        kw_rejected.update(
+            approval_template=approval_template,
+            approval_instance=approval_instance,
+            transaction_id=approval_instance.transaction_id,
+            transaction_model_name=approval_instance.transaction_model_name
+        )
+        if approval_template.notes_chatter_rejected:
+            if have_method(transaction_object, 'get_rejected_message'):
+                rejected_message = safe_call_method(transaction_object, 'get_rejected_message', kwargs=kw_rejected)
+            else:
+                rejected_message = self.get_rejected_message(**kw)
+            rejected_message and self._mail_message_approve(rejected_message)
+        approval_task_line.send_rejected_notification(**kw_rejected)
 
         return self
 

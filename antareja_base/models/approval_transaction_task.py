@@ -4,6 +4,8 @@ from odoo import models, fields, api
 
 import logging
 
+from ..tools.utils import have_method
+
 _logger = logging.getLogger(__name__)
 
 
@@ -11,6 +13,15 @@ class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
     _description = """ implement untuk instance yang akan akan di tambahkan approval
     """
+    access_approval = fields.Boolean(compute="compute_access_approval")
+
+    def compute_access_approval(self):
+        for rec in self:
+            access_approval = False
+            if rec.is_status_waiting_approval():
+                approval_task_line = rec.get_next_approval_task_line()
+                access_approval= approval_task_line and approval_task_line.access_approval
+            rec.access_approval = access_approval
 
     approval_line_for_document = fields.Many2many(
         'approval.audit.log',
@@ -29,7 +40,7 @@ class ApprovalTransactionTask(models.AbstractModel):
     def done_approval_transaction_task(self, **kwargs):
         self.unregister_approval_task(**kwargs)
 
-    def unregister_approval_task(self, **kwargs):
+    def unregister_approval_task(self,skip_create_approval_log=True, **kwargs):
         """
         Approval task as done
         """
@@ -40,9 +51,8 @@ class ApprovalTransactionTask(models.AbstractModel):
             transaction_model_name=self._name,
         )
         self.env['approval.task'].approval_done(**kwargs)
-        if kwargs.get("skip_create_approval_log"):
-            return
-        self.create_approval_log(**kwargs)
+        if not skip_create_approval_log:
+            self.create_approval_log(**kwargs)
 
     def setup_approval_transaction_task(self, **kwargs):
         return self.register_approval_task(**kwargs)
@@ -209,8 +219,45 @@ class ApprovalTransactionTask(models.AbstractModel):
             'target': 'new',
         }
 
+    def write(self, vals):
+        # handling bila keluar approval
+        if have_method(self,'is_status_waiting_approval'):
+            in_waiting_approval = [res.id for res in self if res.is_status_waiting_approval()]
+        else:
+            in_waiting_approval= []
+        result = super(ApprovalTransactionTask,self).write(vals)
+        if in_waiting_approval:
+            for rec in self:
+                if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
+                    rec.unregister_approval_task(skip_create_approval_log=True)
+        return result
+
     def reject_from_popup_reject(self,**kwargs):
         raise NotImplemented
 
     def get_next_approval_task_line(self):
         raise NotImplemented
+
+    def is_status_waiting_approval(self):
+        raise NotImplemented
+
+    def get_all_approval_task_line(self):
+        raise NotImplemented
+
+    def get_approval_users_signature(self):
+        self.ensure_one()
+        signatures = [{
+            'sign_title': 'Created by',
+            'sign_user': self.create_uid,
+            'approval_task_line': False,
+        }]
+        all_approval_task_line = self.get_all_approval_task_line()
+        if all_approval_task_line:
+            for line in all_approval_task_line:
+                signatures.append({
+                    'sign_title': line.sign_title or 'Approved by',
+                    'sign_user': line.user_execution_id,
+                    'approval_task_line': line,
+                })
+
+        return signatures

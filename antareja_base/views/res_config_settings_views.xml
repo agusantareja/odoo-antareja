@@ -35,7 +35,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
@@ -109,7 +108,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="antareja_integration" groups="base.group_erp_manager">
                         <h2>Integration</h2>
                         <div class="row mt16 o_settings_container" id="antareja_integration_enabled_setting">
@@ -128,7 +126,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="antareja_token" groups="base.group_erp_manager">
                         <h2>JWT Token</h2>
                         <div class="row mt16 o_settings_container">
@@ -202,7 +199,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </xpath>
         </field>

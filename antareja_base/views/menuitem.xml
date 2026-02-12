@@ -19,6 +19,16 @@
                   parent="base_parent_menu"
                   sequence="16"
     />
+    <menuitem id="approval_template_menu"
+              parent="base_task_approval_menu"
+              action="action_approval_template"
+              sequence="20"
+    />
+    <menuitem id="approval_instance_menu"
+              parent="base_task_approval_menu"
+              action="action_approval_instance"
+              sequence="30"
+    />
     <menuitem id="base_reporting_menu"
                   name="Reporting"
                   parent="base_parent_menu"
