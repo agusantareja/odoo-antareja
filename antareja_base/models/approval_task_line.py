@@ -24,13 +24,13 @@ class ApprovalTaskLine(models.Model):
         help="User who requested the approval."
     )
     reject_to_method = fields.Selection(default='to_requestor')
-    user_execution_id = fields.Many2one(
-        'res.users',
-        'User Execution',
-        help="User who executed approval (Approve/Reject)the transaction"
-    )
-    date_execution = fields.Datetime('Date Execution')
-    reject_reason = fields.Text('Reject Reason')
+    # user_execution_id = fields.Many2one(
+    #     'res.users',
+    #     'User Execution',
+    #     help="User who executed approval (Approve/Reject)the transaction"
+    # )
+    # date_execution = fields.Datetime('Date Execution')
+    # reject_reason = fields.Text('Reject Reason')
 
     def set_approved_status(self, **kwargs):
         self.ensure_one()
@@ -53,6 +53,11 @@ class ApprovalTaskLine(models.Model):
         self.write({
             'status_approval': 'waiting_approval'
         })
+
+    def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
+        transaction_id = transaction_id or self.transaction_id
+        transaction_model_name = transaction_model_name or self.transaction_model_name
+        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id asc')
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         transaction_id = transaction_id or self.transaction_id
