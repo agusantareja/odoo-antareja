@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_report_store_root"
+              name="Reports"
+              sequence="10"
+              groups="amr_report.group_report_store_user"
+    />
+
+    <menuitem id="menu_report_store"
+              name="Generated Report Store"
+              parent="menu_report_store_root"
+              action="action_report_store"
+              sequence="10"/>
+
+    <menuitem id="menu_report_delay"
+              name="Report Async"
+              parent="base.reporting_menuitem"
+              action="action_report_delay"
+              sequence="10"
+    />
+
+</odoo>

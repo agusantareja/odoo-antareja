@@ -13,17 +13,19 @@
     "license": "AGPL-3",
     'website': "https://agus.ramdan.tech",
     'category': 'tools',
-    'version': '14.0.0.1.0',
+    'version': '14.0.1.0.0',
     'depends': ['base', 'web', 'mail'],
     # always loaded
     'data': [
         'data/cron.xml',
         'data/mail_template.xml',
+        'security/res_groups.xml',
         'security/ir.model.access.csv',
         'security/ir_rule.xml',
         'views/ir_actions_views.xml',
         'views/report_delay_views.xml',
         'views/report_store_views.xml',
         'wizard/report_download_wizard.xml',
+        'views/menuitem.xml',
     ],
 }

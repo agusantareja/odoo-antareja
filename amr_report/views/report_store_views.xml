@@ -119,13 +119,5 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_report_store_root"
-              name="Reports"
-              sequence="10"/>
 
-    <menuitem id="menu_report_store"
-              name="Generated Report Store"
-              parent="menu_report_store_root"
-              action="action_report_store"
-              sequence="10"/>
 </odoo>

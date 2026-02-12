@@ -180,12 +180,12 @@ class ReportStore(models.Model):
         }
 
     def action_response(self):
-        view_id = self.env.ref("amr_report.view_report_form_download").id
+        view_id = self.env.ref("amr_report.view_report_download_attachment_wizard").id
         return {
             'view_id': view_id,
             'view_mode': 'form',
             'res_id': self.id,
-            'name': 'Download Report Store',
+            'name': 'Report Download',
             'res_model': 'report.store',
             'view_type': 'form',
             'type': 'ir.actions.act_window',

@@ -44,9 +44,4 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_report_delay"
-              name="Report Async"
-              parent="base.reporting_menuitem"
-              action="action_report_delay"
-              sequence="10"/>
 </odoo>
