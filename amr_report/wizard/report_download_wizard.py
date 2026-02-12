@@ -11,3 +11,9 @@ class ReportDownloadWizard(models.TransientModel):
     _name = "report.download.wizard"
     _inherit = 'report.download.mixin'
     _description = "Report Download Wizard"
+
+
+class ReportDownloadAttachmentWizard(models.TransientModel):
+    _name = "report.download.attachment.wizard"
+    _inherit = 'report.download.attachment.mixin'
+    _description = "Report Download Attachment Wizard"

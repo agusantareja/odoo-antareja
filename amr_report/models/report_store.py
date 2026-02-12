@@ -42,7 +42,7 @@ class ReportDownloadMixin(models.AbstractModel):
 class ReportDownloadAttachmentMixin(models.AbstractModel):
     _name = 'report.download.attachment.mixin'
     _inherit = 'report.download.mixin'
-    _description = 'Report Download Mixin'
+    _description = 'Report Download Attachment Mixin'
 
     attachment_id = fields.Many2one('ir.attachment', "Attachment", ondelete='set null')
     file = fields.Binary(related='attachment_id.datas')
@@ -104,6 +104,9 @@ class ReportStore(models.Model):
     next_action = fields.Boolean(
         string="Next Action",
         help="Execute Next Action when done generate report",
+        readonly=True
+    )
+    start_render = fields.Datetime(
         readonly=True
     )
     generated_at = fields.Datetime(
@@ -191,31 +194,41 @@ class ReportStore(models.Model):
         }
 
     def action_open_attachment(self):
-        view_id = self.env.ref("amr_report.view_report_form_download").id
+        view_id = self.env.ref("amr_report.view_report_download_attachment_wizard").id
         return {
             'view_id': view_id,
-            'view_mode': 'form',
-            'res_id': self.id,
-            'name': 'Generate Report Store',
-            'res_model': 'report.store',
+            'name': 'Report Download',
+            'res_model': 'report.download.attachment.wizard',
             'view_type': 'form',
             'type': 'ir.actions.act_window',
             'target': 'new',
-            'context': {'create': False, 'update': False}
+            'context': {
+                'create': False, 'update': False,
+                'active_id': self.id,
+                'active_ids': self.ids,
+                'default_attachment_id': self.attachment_id.id,
+            }
         }
 
-    def render_report(self):
+    def render_report(self, raise_exception=False):
         self.ensure_one()
         self.write({
             'state': 'processing',
             'last_call': fields.Datetime.now(),
         })
-        self.env.cr.commit()
         try:
-            self._render_report()
-            self.write({'state': 'done', 'error_message': None, 'generated_at': fields.Datetime.now()})
+            with self.env.cr.savepoint():
+                start_render= fields.Datetime.now()
+                self._render_report()
+                self.write({
+                    'state': 'done',
+                    'error_message': None,
+                    'start_render':start_render,
+                    'generated_at': fields.Datetime.now()
+                })
         except Exception as e:
-            self.env.cr.rollback()
+            if raise_exception:
+                raise
             _logger.error(f"Error generating report for record ID {self.id}: {str(e)}", exc_info=True)
             error = traceback.format_exc()
             self.write({
@@ -223,8 +236,6 @@ class ReportStore(models.Model):
                 'error_message': f"Error generating report for record ID {self.id}: {str(e)}",
                 'error_trace': error
             })
-        finally:
-            self.env.cr.commit()
 
     def get_parameter(self):
         def object_hook(obj):
