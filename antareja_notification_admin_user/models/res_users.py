@@ -14,7 +14,3 @@ class ResUsers(models.Model):
             return
         return super(ResUsers,self.filtered(lambda u: not u.admin_user)).get_users_for_notification(company=company)
 
-    def get_users_for_approval(self, company=None):
-        if not self:
-            return
-        return super(ResUsers,self.filtered(lambda u: not u.admin_user)).get_users_for_approval(company=company)
