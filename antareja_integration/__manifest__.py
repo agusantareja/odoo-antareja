@@ -2,10 +2,10 @@
 
 {
     'name': "Antarja || Integration",
-    'summary': """Integartion Integartion""",
+    'summary': """Integration""",
 
     'description': """
-        Integartion 
+        Integration 
     """,
 
     'author': "IT Antareja",
