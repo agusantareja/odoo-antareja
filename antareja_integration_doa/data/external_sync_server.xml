@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="1">
+    <record model="external.server.sync" id="external_server_sync_cni_intra">
+      <field name="name">intra.cerindocorp.id</field>
+      <field name="base_url">http://10.184.0.17:10157</field>
+      <field name="access_token">Pv1V3Sg0lhWXqtcDmuGcK609EhNFeR</field>
+    </record>
+  </data>
+</odoo>
