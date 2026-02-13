@@ -60,6 +60,7 @@
                         <group>
                             <field name="name" readonly="1"/>
                             <field name="file" widget="binary" filename="filename" />
+                            <field name="start_render" readonly="1" groups="base.group_no_one"/>
                             <field name="generated_at" readonly="1"/>
                         </group>
                         <group>
@@ -105,6 +106,9 @@
                         </group>
                     </group>
                 </sheet>
+                <footer>
+                    <button special="cancel" string="Close" class="oe_highlight"/>
+                </footer>
             </form>
         </field>
     </record>

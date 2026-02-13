@@ -16,4 +16,21 @@
             </form>
         </field>
     </record>
+
+    <record id="view_report_download_attachment_wizard" model="ir.ui.view">
+        <field name="name">report.download.attachment.wizard.form</field>
+        <field name="model">report.download.attachment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Report">
+                <group>
+                    <field name="attachment_id" invisible="1"/>
+                    <field name="file" readonly="1" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <footer>
+                    <button special="cancel" string="Close" class="oe_highlight"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>

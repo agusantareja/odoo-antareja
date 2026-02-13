@@ -42,7 +42,7 @@ class ReportDownloadMixin(models.AbstractModel):
 class ReportDownloadAttachmentMixin(models.AbstractModel):
     _name = 'report.download.attachment.mixin'
     _inherit = 'report.download.mixin'
-    _description = 'Report Download Mixin'
+    _description = 'Report Download Attachment Mixin'
 
     attachment_id = fields.Many2one('ir.attachment', "Attachment", ondelete='set null')
     file = fields.Binary(related='attachment_id.datas')
