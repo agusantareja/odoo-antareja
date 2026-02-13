@@ -106,6 +106,9 @@ class ReportStore(models.Model):
         help="Execute Next Action when done generate report",
         readonly=True
     )
+    start_render = fields.Datetime(
+        readonly=True
+    )
     generated_at = fields.Datetime(
         readonly=True
     )
