@@ -334,11 +334,13 @@ class ApprovalInstanceMixin(models.AbstractModel):
             trx_update_value.update(kwargs.get('update_value') or {})
             state_field = approval_instance.get_state_field()
             state_approved = approval_instance.get_state_approved()
-            if state_approved and state_field not in state_approved:
+            if state_approved and state_field not in trx_update_value:
                 trx_update_value[state_field] = state_approved
 
         if trx_update_value:
             transaction_object.write(trx_update_value)
+        elif is_approval_done:
+            _logger.warning("No Update state when is_approval_done")
 
         if not approval_instance.is_status_waiting_approval() or is_approval_done:
             kw['is_approval_done'] = True
@@ -414,13 +416,16 @@ class ApprovalInstanceMixin(models.AbstractModel):
         if is_approval_done:
             kw['is_rejected'] = True
             trx_update_value.update(kwargs.get('update_value') or {})
-            update_value = kwargs.get('update_value') or {}
             state_field = approval_instance.get_state_field()
-            if state_field not in update_value:
-                update_value[state_field] = approval_instance.get_state_reject()
+            state_rejected = approval_instance.get_state_reject()
+            if state_rejected and state_field not in trx_update_value:
+                trx_update_value[state_field] = state_rejected
 
         if trx_update_value:
             transaction_object.write(trx_update_value)
+            _logger.info("No update state %s",str(trx_update_value))
+        elif is_approval_done:
+            _logger.warning("No Update state")
 
         if not approval_instance.is_status_waiting_approval() or is_approval_done:
             kw['is_approval_done'] = True

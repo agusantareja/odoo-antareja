@@ -95,7 +95,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         rec = self.ensure_one()
         notification_template = kwargs.get(
             "notification_template") or rec.approval_instance_id.get_notification_approval()
-        users = kwargs.get("users") or rec.get_users_for_notification()
+        users = kwargs.get("users") or rec.get_users_for_notification(**kwargs)
         if notification_template:
             notification_template.send_notification_to_users(users, rec.id, **kwargs)
 

@@ -19,7 +19,7 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
         ('body', 'Body')
     ], default='header')
     rest_token_key = fields.Char(
-        default='basic'
+        default='access_token'
     )
     rest_token = fields.Char(related="access_token", store=True)
     rest_refresh = fields.Char(related="refresh_token", store=True)
