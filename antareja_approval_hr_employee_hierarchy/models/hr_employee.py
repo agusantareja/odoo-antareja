@@ -33,7 +33,7 @@ class HrEmployeeBase(models.AbstractModel):
             while emp and len(user_ids) < max_level_approver:
                 try:
                     emp = emp.approver_id
-                    if emp and emp.user_id:
+                    if emp and emp.user_id and emp.user_id.active:
                         user_ids |= emp.user_id
                 except Exception:
                     break
