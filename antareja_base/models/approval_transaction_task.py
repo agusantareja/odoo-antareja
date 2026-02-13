@@ -229,6 +229,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         if in_waiting_approval:
             for rec in self:
                 if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
+                    _logger.info(f"Keluar dari waiting_approval {rec.id}")
                     rec.unregister_approval_task(skip_create_approval_log=True)
         return result
 
@@ -261,3 +262,9 @@ class ApprovalTransactionTask(models.AbstractModel):
                 })
 
         return signatures
+
+    def get_all_to_approve_ids(self):
+        # get all ids to approve by transaction model
+        approval_task = self.env['approval.task'].with_context(__transaction_model_name=self._name).search(
+            [('user_have_access_to_approval', '=', True)])
+        return list(approval_task.mapped('transaction_id'))

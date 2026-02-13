@@ -17,7 +17,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
-    'version': '13.0.2.0.4',
+    'version': '13.0.2.0.5',
     # any module necessary for this one to work correctly
     'depends': ['base', 'base_setup', 'mail'],
     # always loaded
