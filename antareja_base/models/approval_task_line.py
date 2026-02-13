@@ -72,3 +72,29 @@ class ApprovalTaskLine(models.Model):
 
     def get_approval_instance(self):
         return self.approval_instance_id
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = kwargs.get('company') or self.env.company
+        if users:
+            return users.get_users_for_notification(company=company)
+        else:
+            return users
+
+    def send_approval_notification(self, **kwargs):
+        self.send_notification(**kwargs)
+
+    def send_rejected_notification(self, **kwargs):
+        kwargs = dict(kwargs)
+        kwargs['users'] = self.requester_id
+        self.send_notification(**kwargs)
+
+    def send_approved_notification(self, **kwargs):
+        kwargs = dict(kwargs)
+        kwargs['users'] = self.requester_id
+        self.send_notification(**kwargs)
+
+    def send_notification(self,**kwargs):
+        # implment di module notification
+        pass
