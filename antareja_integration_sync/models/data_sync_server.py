@@ -33,9 +33,9 @@ class ExternalServerSync(models.Model):
     )
     application_server_id = fields.Many2one(
         'application.server',
-        compute = '_compute_external_app_name',
+        compute='_compute_external_app_name',
         readonly=True,
-        store = True
+        store=True
     )
     application_server_auth_id = fields.Many2one(
         'application.server.auth',
@@ -106,9 +106,9 @@ class ExternalServerSync(models.Model):
         elif self.external_mode == 'server_path':
             return self.application_server_path_id.application_server_auth_id
 
-    def create_remote_model(self,external_model, **kwargs):
+    def create_remote_model(self, external_model, **kwargs):
         auth = self.get_application_server_auth()
         if auth:
-            return auth.create_remote_model(external_model,**kwargs)
+            return auth.create_remote_model(external_model, **kwargs)
         else:
-            return super(ExternalServerSync, self).create_remote_model(external_model,**kwargs)
+            return super(ExternalServerSync, self).create_remote_model(external_model, **kwargs)
