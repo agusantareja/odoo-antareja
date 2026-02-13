@@ -52,7 +52,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
     invoke_after_reject = fields.Char()
 
     notes_chatter_approved = fields.Boolean("Note Chatter Approve")
-    notes_chatter_rejected = fields.Boolean("Note Chatter Approve")
+    notes_chatter_rejected = fields.Boolean("Note Chatter Rejected")
 
     code = fields.Text(
         string='Python Code',
