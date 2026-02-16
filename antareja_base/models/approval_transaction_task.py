@@ -229,6 +229,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         if in_waiting_approval:
             for rec in self:
                 if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
+                    _logger.info(f"Keluar dari waiting_approval {rec.id}")
                     rec.unregister_approval_task(skip_create_approval_log=True)
         return result
 

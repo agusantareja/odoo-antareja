@@ -8,7 +8,6 @@ class ResConfigSettings(models.TransientModel):
     antareja_application_name = fields.Char(config_parameter='antareja.application_name')
 
     module_antareja_sync_api = fields.Boolean("Sync Service API")
-    module_antareja_data_event_api = fields.Boolean("Data Event API")
     module_antareja_report = fields.Boolean("Report Store")
     module_antareja_integration = fields.Boolean("Application Integration")
 
@@ -23,7 +22,7 @@ class ResConfigSettings(models.TransientModel):
     module_antareja_doa = fields.Boolean("Delegation of Authority (DoA)")
 
     module_antareja_approval_ceria_mobile_intra = fields.Boolean("Ceria Apprval Mobile Intra")
-    module_antareja_notification_ceria_mobile_intra = fields.Boolean("Ceria Mobile Mobile Intra")
+    module_antareja_notification_ceria_mobile_intra = fields.Boolean("Ceria Notification Mobile Intra")
 
     # module_ceria_mobile_notification = fields.Boolean("Ceria Mobile Notification Server")
     # module_ceria_mobile_notification_test = fields.Boolean("Test Module Ceria Mobile Firebase")

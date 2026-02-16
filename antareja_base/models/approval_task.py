@@ -160,7 +160,7 @@ class ApprovalTask(models.Model):
                                        ('transaction_model_name', '=', transaction_model_name), ])
             else:
                 return True
-        return records.unlink()
+        return records.sudo().unlink()
 
     def prepare_data(self, **kwargs):
         data = dict()
