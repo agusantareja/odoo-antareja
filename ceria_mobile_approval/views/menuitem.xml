@@ -1,0 +1,7 @@
+<odoo>
+    <menuitem id="mobile_approval_menu"
+              parent="ceria_mobile.ceria_mobile_menu"
+              action="ceria_mobile_approval_action"
+              sequence="10"
+    />
+</odoo>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_ceria_mobile_approval_search" model="ir.ui.view">
+            <field name="name">ceria.mobile.approval.search</field>
+            <field name="model">ceria.mobile.approval</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="source_number"/>
+                    <field name="source_document"/>
+                    <field name="source_application"/>
+                    <field name="source_model"/>
+                </search>
+            </field>
+        </record>
+
+		<record id="view_ceria_mobile_approval_tree" model="ir.ui.view">
+            <field name="name">ceria.mobile.approval.tree</field>
+            <field name="model">ceria.mobile.approval</field>
+            <field name="arch" type="xml">
+                <tree string="Mobile Approval" create='false' edit='false' >
+                    <field name="user_id"/>
+                    <field name="source_number"/>
+                    <field name="source_document"/>
+                    <field name="source_url" widget="url"/>
+                    <field name="source_application"/>
+                    <field name="source_model"/>
+                    <field name="source_res_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_ceria_mobile_approval_form" model="ir.ui.view">
+            <field name="name">ceria.mobile.approval.form</field>
+            <field name="model">ceria.mobile.approval</field>
+            <field name="arch" type="xml">
+                <form string="Mobile Approval" create='false' delete='false'>
+                    <header>
+<!--                        <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="ready_to_send"/>-->
+<!--                        <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel"/>-->
+<!--                        <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="ready_to_send"/>-->
+<!--                        <button name="process" string="Process" type="object" />-->
+                        <field name="active" invisible="1"/>
+<!--                        <field name="state" widget="statusbar" readonly="1" />-->
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="user_id"/>
+                                <field name="source_number"/>
+                                <field name="source_document"/>
+                                <field name="source_originator_name"/>
+                                <field name="source_url" widget="url"/>
+                                <field name="source_local" />
+                            </group>
+                            <group>
+                                <field name="source_application"/>
+                                <field name="source_model"/>
+                                <field name="source_res_id"/>
+                                <field name="source_approval_model"/>
+                                <field name="source_approval_res_id"/>
+                            </group>
+                        </group>
+<!--                        <notebook>-->
+<!--                            <page name="raw_data" string="Raw Data">-->
+<!--                                <field name="accept_data"/>-->
+<!--                            </page>-->
+<!--                            <page name="audit_log" string="Audit Log">-->
+<!--                                <group>-->
+<!--                                    <group>-->
+<!--                                        <field name="errors_message"/>-->
+
+<!--                                    </group>-->
+<!--                                    <group>-->
+<!--                                        <field name="last_error"/>-->
+<!--                                    </group>-->
+<!--                                </group>-->
+<!--                            </page>-->
+<!--                        </notebook>-->
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ceria_mobile_approval_action" model="ir.actions.act_window">
+            <field name="name">Mobile Approval</field>
+            <field name="res_model">ceria.mobile.approval</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_ceria_mobile_approval_search"/>
+            <!-- <field name="domain">[('api_type', '=', 'normal_api')]</field> -->
+            <field name="context">{ }</field>
+        </record>
+    </data>
+</odoo>
