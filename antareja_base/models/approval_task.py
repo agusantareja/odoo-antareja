@@ -14,6 +14,7 @@ class ApprovalTask(models.Model):
     _inherit = 'approval.transaction.view.able.mixin'
     _description = 'This is Approval Task for Approval helper waiting approval'
     _order = 'create_date desc'
+
     name = fields.Char('Name')
     document = fields.Char()
     description = fields.Char()
@@ -90,6 +91,10 @@ class ApprovalTask(models.Model):
         cr = self._cr
         ids = set()
         delegators = self.env.user.get_delegators()
+        transaction_model_name = self.env.context.get('__transaction_model_name')
+        model_filter = ""
+        if transaction_model_name:
+            model_filter = f" transaction_model_name = '{transaction_model_name}' AND "
         if delegators:
             user_and_delegator = self.env.user | delegators
             user_filter = f"IN ({', '.join(str(d.id) for d in user_and_delegator)})"
@@ -102,8 +107,10 @@ class ApprovalTask(models.Model):
             col_this = self._fields['user_ids'].column1
             col_user = self._fields['user_ids'].column2
             cr.execute(f"""
-                   SELECT {col_this} FROM {rel_table}
-                   WHERE {col_user} {user_filter}
+                   SELECT DISTINCT at.id 
+                   FROM approval_task at 
+                   JOIN {rel_table} mg ON at.id = mg.{col_this}
+                   WHERE {model_filter} {col_user} {user_filter}
                """)
             ids.update(r[0] for r in cr.fetchall())
 
@@ -113,10 +120,11 @@ class ApprovalTask(models.Model):
             col_this = self._fields['group_ids'].column1
             col_group = self._fields['group_ids'].column2
             cr.execute(f"""
-                   SELECT DISTINCT mg.{col_this}
-                   FROM {rel_table} mg
+                   SELECT DISTINCT at.id 
+                   FROM approval_task at
+                   JOIN {rel_table} mg ON at.id = mg.{col_this}
                    JOIN res_groups_users_rel gu ON gu.gid = mg.{col_group}
-                   WHERE gu.uid {user_filter}
+                   WHERE {model_filter} gu.uid {user_filter}
                """, (current_uid,))
             ids.update(r[0] for r in cr.fetchall())
         if (operator == '=' and value) or (operator == '!=' and not value):
@@ -160,7 +168,7 @@ class ApprovalTask(models.Model):
                                        ('transaction_model_name', '=', transaction_model_name), ])
             else:
                 return True
-        return records.unlink()
+        return records.sudo().unlink()
 
     def prepare_data(self, **kwargs):
         data = dict()
