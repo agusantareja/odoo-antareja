@@ -25,6 +25,8 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     flag_reject = fields.Boolean()
     note_reject = fields.Text()
 
+    @api.depends_context("uid")
+    @api.depends('approval_instance_id')
     def compute_access_approval(self):
         for rec in self:
             rec.access_approval = rec.approval_instance_id.access_approval

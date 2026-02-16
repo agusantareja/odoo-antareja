@@ -262,3 +262,9 @@ class ApprovalTransactionTask(models.AbstractModel):
                 })
 
         return signatures
+
+    def get_all_to_approve_ids(self):
+        # get all ids to approve by transaction model
+        approval_task = self.env['approval.task'].with_context(__transaction_model_name=self._name).search(
+            [('user_have_access_to_approval', '=', True)])
+        return list(approval_task.mapped('transaction_id'))
