@@ -9,9 +9,14 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     user_delegation_id = fields.Many2one('user.delegation',compute='_compute_user_delegation')
 
+    @api.depends_context("uid")
     def _compute_user_delegation(self):
         for rec in self:
-            rec.user_delegation_id = rec.get_user_delegation()
+            user_delegation = rec.get_user_delegation()
+            if user_delegation:
+                rec.user_delegation_id = user_delegation.id
+            else:
+                rec.user_delegation_id = None
 
     def get_user_delegation(self):
         rec = self.ensure_one()

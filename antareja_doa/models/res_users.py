@@ -9,51 +9,6 @@ _logger = logging.getLogger(__name__)
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
-    # proxy_ids = fields.One2many(
-    #     'user.delegate',
-    #     'proxy_id',
-    #     string='Proxy for Users',
-    #     help="List of users delegated to this user."
-    # )
-    #
-    # proxy_user_ids = fields.Many2many(
-    #     'res.users',
-    #     string='Delegator Users',
-    #     compute='_compute_proxy_user_group_ids',
-    #     store=False,
-    #     readonly=True,
-    #     help="Users who delegated to this user."
-    # )
-    #
-    # proxy_group_ids = fields.Many2many(
-    #     'res.groups',
-    #     string='Delegator Groups',
-    #     compute='_compute_proxy_user_group_ids',
-    #     store=False,
-    #     readonly=True,
-    #     help="Groups from users who delegated to this user."
-    # )
-    #
-    # @api.depends('proxy_ids.delegator_id.groups_id')
-    # def _compute_proxy_user_group_ids(self):
-    #     for user in self:
-    #         # Ambil semua delegator dari proxy_ids
-    #         delegators = user.proxy_ids.mapped('delegator_id')
-    #         user.proxy_user_ids = delegators
-    #
-    #         # Gabungkan semua group dari delegators
-    #         group_set = self.env['res.groups'].browse()
-    #         for delegator in delegators:
-    #             group_set |= delegator.groups_id
-    #         user.proxy_group_ids = group_set
-
-    # delegate_ids = fields.One2many(
-    #     'user.delegate',
-    #     'delegator_id',
-    #     string='Delegated to Users',
-    #     help="List of users delegated by this user."
-    # )
-
     def has_group(self, group_ext_id=None):
         # use singleton's id if called on a non-empty recordset, otherwise
         # context uid
