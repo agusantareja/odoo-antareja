@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 from ..tools.utils import have_method, safe_call_method
@@ -11,6 +12,61 @@ class ApprovalAccessMixin(models.AbstractModel):
     access_approval = fields.Boolean(
         string="Can Approve",
     )
+
+class ApprovalTaskLineAccess(models.AbstractModel):
+    _name = "approval.task.line.access.mixin"
+
+    access_approval = fields.Boolean(
+        string="Can Approve",
+        compute="_compute_access_rights",
+        store=False
+    )
+
+    @api.depends_context('uid')
+    def _compute_access_rights(self):
+        """Hitung apakah user login punya akses approve/reject."""
+        current_user = self.env.user
+        for rec in self:
+            rec.access_approval = current_user in rec.get_users_for_approval()
+
+    def get_company(self):
+        if 'company_id' in self._fields:
+            return self.company_id
+        return self.env['res.company']
+
+    def get_users(self):
+        return self.env['res.users'].browse()
+
+    def get_groups(self):
+        return self.env['res.groups'].browse()
+
+    def prepare_approval_task_dict(self):
+        """Prepare dict untuk create record approval task"""
+        self.ensure_one()
+        kw = {
+            'approval_task_line': self,
+            'approval_model': self._name,
+            'approval_res_id': self.id
+        }
+        return kw
+
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users')
+        company = kwargs.get('company') or record.get_company()
+        if users:
+            return users.get_users_for_approval(company=company)
+        else:
+            return record.get_users().get_users_for_approval(company=company)
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users')
+        company = kwargs.get('company') or record.get_company()
+        if users:
+            return users.get_users_for_notification(company=company)
+        else:
+            return record.get_users().get_users_for_notification(company=company)
 
 
 class AbstractApprovalType(models.AbstractModel):
@@ -31,7 +87,7 @@ class AbstractApprovalType(models.AbstractModel):
     assign_responsible_rule = fields.Selection([
         ('legacy', 'Legacy'),
         ('have_one_user', 'Have One User'),
-        ('pikcup', 'Responsible'),
+        ('pickup', 'Pickup Responsible'),
     ], 'Responsible', default='legacy')
 
     responsible_user_id = fields.Many2one('res.users', 'Responsible User')
@@ -163,7 +219,7 @@ class AbstractApprovalAccess(models.AbstractModel):
 
     def get_approval_domain(self):
         current_uid = self.env.user.id
-        model_name = self._name
+        # model_name = self._name
         table = self._table
         cr = self._cr
 
@@ -223,11 +279,11 @@ class AbstractApprovalAccess(models.AbstractModel):
 
     def search_for_current_user(self):
         """Cari record yang bisa di-approve user login."""
-        return self.search(self.get_approval_domain())
+        return self.search(self.get_domain_for_current_user())
 
     def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
         if self.env.context.get('current_user_only'):
-            approval_domain = self.get_approval_domain()
+            approval_domain = self.get_domain_for_current_user()
             if domain:
                 if isinstance(domain, str):
                     domain = eval(domain)
@@ -261,6 +317,7 @@ class AbstractApprovalStatus(models.AbstractModel):
         default='draft',
     )
 
+    @api.model
     def domain_waiting_status(self):
         return [('status_approval', 'in', [APPROVAL_STATUS_NOT_APPROVE, 'waiting', 'draft'])]
 
@@ -399,6 +456,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return self.approval_task_id
 
     def _create_approval_audit_log(self, **kwargs):
+        if self.env.context.get('__skip_create_approval_audit_log'):
+            return None
+
         self.ensure_one()
         transaction_object = kwargs.get('transaction_object')
         kw = dict(kwargs)
@@ -445,14 +505,14 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             return self.set_waiting_approval_state()
         raise NotImplemented
 
-    def action_approve(self):
+    def action_approve(self,**kwargs):
         rec = self.ensure_one()
-        rec.do_approve()
+        rec.do_approve(**kwargs)
 
     # def action_reject(self):
     #     self.do_reject(reason="No Reason")
     @api.model
-    def action_reject(self):
+    def action_reject(self,**kwargs):
         return {
             'name': 'Reject Message',
             'type': 'ir.actions.act_window',
@@ -468,7 +528,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         kw['approval_task_line'] = rec
         rec.before_approve(**kw)
-        rec.set_approved_status(**kw)
+        rec.with_context(__skip_create_approval_audit_log=True).set_approved_status(**kw)
+        rec.create_approval_audit_log_approved(**kw)
         rec.after_approve(**kw)
 
     def before_approve(self, **kwargs):
@@ -529,7 +590,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             kw['approval_task_line_next'] = approval_task_line_next
         kw['approve_task_task_between'] = approval_task_line_between
         kw['approve_task_line'] = kw['approve_task_line_reject'] = self
-        self.set_rejected_status(**kw)
+        self.with_context(__skip_create_approval_audit_log=True).set_rejected_status(**kw)
+        self.create_approval_audit_log_rejected(**kw)
         self.after_reject(**kw)
         if not is_approval_done and approval_task_line_next:
             approval_task_line_next.set_waiting_status(**kw)

@@ -79,21 +79,13 @@ class ApprovalTemplateMixin(models.AbstractModel):
         return self.state_field or state_field
 
     def get_state_reject(self):
-        state_approved = 'approved'
-        if not self:
-            return state_approved
-        return self and self.state_reject or 'draft'
+        return self and self.state_reject
 
     def get_state_approved(self):
-        state_approved = 'approved'
-        if not self:
-            return state_approved
-
-        return self.state_approved or state_approved
+        return self and self.state_approved
 
     def prepare_dict(self):
-        return {'model_id': self.model_id.id
-                }
+        return {'model_id': self.model_id.id}
 
     def get_transaction_status(self, transaction):
         rec = self.ensure_one()
@@ -155,6 +147,18 @@ class ApprovalTemplateMixin(models.AbstractModel):
             raise UserError("Model Name not set")
 
         return self.search([('model_id.model', '=', transaction_model_name)], limit=1)
+
+    @api.model
+    def get_notification_approval(self):
+        return None
+
+    @api.model
+    def get_notification_rejection(self):
+        return None
+
+    @api.model
+    def get_notification_approved(self):
+        return None
 
 
 class ApprovalTemplate(models.Model):

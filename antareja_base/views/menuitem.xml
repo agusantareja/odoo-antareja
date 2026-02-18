@@ -29,6 +29,19 @@
               action="action_approval_instance"
               sequence="30"
     />
+    <menuitem id="approval_manager_waiting_approval_menu"
+              parent="base_task_approval_menu"
+              name="Manager Waiting"
+              action="view_approval_task_action"
+              sequence="40"
+    />
+    <menuitem id="manager_approved_menu"
+              parent="base_task_approval_menu"
+              name="Manager Approved"
+              action="view_approval_audit_log_action"
+              sequence="50"
+    />
+
     <menuitem id="base_reporting_menu"
                   name="Reporting"
                   parent="base_parent_menu"

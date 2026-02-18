@@ -169,8 +169,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
             if self.env.context.get('___register_approval_task_line'):
                 return approval_task_line
             rec = self.with_context(___register_approval_task_line=True)
-            if rec.approval_template_id.notification_approval_id and 'notification_approval_id' not in kwargs:
-                kwargs['notification_approval_id'] = rec.approval_template_id.notification_approval_id.id
+            if 'notification_approval_id' not in kwargs:
+                notification_approval = rec.get_notification_approval()
+                notification_approval and kwargs.update(notification_approval_id=notification_approval.id)
             kwargs['approval_instance'] = rec
             kwargs['transaction_model_name'] = rec.transaction_model_name,
             kwargs['transaction_id']=rec.transaction_id
@@ -188,7 +189,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         )
 
     def get_notification_approval(self):
-        return None
+        return self.approval_template_id.get_notification_approval()
 
     def get_users_approval_notification(self, **kwargs):
         users = kwargs.get("users")
@@ -279,11 +280,11 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def action_approve(self):
         check_approval = self.get_next_approval_task_line()
-        check_approval.action_approve()
+        check_approval.action_approve(approval_instance=self)
 
     def action_reject(self):
         check_approval = self.get_next_approval_task_line()
-        return check_approval.action_reject()
+        return check_approval.action_reject(approval_instance=self)
 
     def action_cancel(self):
         pass
@@ -293,7 +294,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def approve(self):
         check_approval = self.get_next_approval_task_line()
-        check_approval.approve()
+        check_approval.do_approve(approval_instance=self)
 
     def before_approve(self, **kwargs):
         if not self:
@@ -316,7 +317,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_instance = self.ensure_one()
         approval_instance.ensure_approval_template()
         approval_template = approval_instance.approval_template_id
-        notification_template = approval_template.notification_approved_id
+        notification_template = approval_template.get_notification_approved()
 
         kw = dict(kwargs)
         kw['skip_send_notification'] = True
@@ -338,6 +339,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 trx_update_value[state_field] = state_approved
 
         if trx_update_value:
+            _logger.info("Info Update state %s ",str(trx_update_value))
             transaction_object.write(trx_update_value)
         elif is_approval_done:
             _logger.warning("No Update state when is_approval_done")
@@ -361,10 +363,10 @@ class ApprovalInstanceMixin(models.AbstractModel):
         )
         if approval_template.notes_chatter_approved:
             if have_method(transaction_object, 'get_approved_message'):
-                rejected_message = safe_call_method(transaction_object, 'get_rejected_message', kwargs=kw_approved)
+                approved_message = safe_call_method(transaction_object, 'get_approved_message', kwargs=kw_approved)
             else:
-                rejected_message = self.get_rejected_message(**kw)
-            rejected_message and self._mail_message_approve(rejected_message)
+                approved_message = self.get_approved_message(**kw)
+            approved_message and self._mail_message_approve(approved_message)
         approval_task_line.send_approved_notification(**kw_approved)
         return self
 
@@ -401,7 +403,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_instance = self.ensure_one()
         approval_instance.ensure_approval_template()
         approval_template = approval_instance.approval_template_id
-        notification_template = approval_template.notification_approved_id
+        notification_template = approval_template.get_notification_approved()
 
         kw = dict(kwargs)
         kw['approval_instance'] = approval_instance
