@@ -445,9 +445,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             return self.set_waiting_approval_state()
         raise NotImplemented
 
-    def action_approve(self):
+    def action_approve(self,**kwargs):
         rec = self.ensure_one()
-        rec.do_approve()
+        rec.do_approve(**kwargs)
 
     # def action_reject(self):
     #     self.do_reject(reason="No Reason")

@@ -205,8 +205,10 @@ class ApprovalTransactionTask(models.AbstractModel):
         list_ids = self.ids
         model_name = self._name
         result = super(ApprovalTransactionTask, self).unlink()
+        _logger.info(f"unlink {model_name} , {list_ids} propagate to approval.task")
         self.env['approval.task'].search(
-            [('transaction_model_name', '=', model_name), ('transaction_id', 'in', list_ids)]).unlink()
+            [('transaction_model_name', '=', model_name), ('transaction_id', 'in', list_ids)]
+        ).approval_done()
         return result
 
     @api.model

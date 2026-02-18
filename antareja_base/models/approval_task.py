@@ -361,7 +361,7 @@ class ApprovalTask(models.Model):
         if rec.approval_instance_id:
             rec.approval_instance_id.check_approval_task_status()
         elif not rec.transaction_model_name or not rec.transaction_id:
-            rec.unlink()
+            rec.approval_done()
         else:
             transaction_object = rec.get_transaction_object()
             if transaction_object:
