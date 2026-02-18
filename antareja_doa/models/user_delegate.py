@@ -113,6 +113,7 @@ class UserDelegate(models.Model):
     def action_button_revoke(self):
         self.state = 'expired'
 
+    @api.model
     def get_prepared_state(self):
         return ['prepared']
 

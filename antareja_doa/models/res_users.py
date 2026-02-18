@@ -77,8 +77,9 @@ class ResUsers(models.Model):
         if self and delegator_ids:
             record = self.ensure_one()
             if record.id not in delegator_ids:
-                ids = self.env['user.delegate'].get_all_delegations(delegatee_id=record.id, delegator_id=delegator_ids, company_id=company_id, limit=1)
-                return self.env['user.delegate'].browse(ids)
+                return self.env['user.delegate'].get_all_delegations(
+                    delegatee_id=record.id, delegator_id=delegator_ids, company_id=company_id, limit=1
+                )
         return self.env['user.delegate'].browse()
 
     def get_delegators(self, company_id=None):
