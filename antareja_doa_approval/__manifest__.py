@@ -21,6 +21,7 @@
 
     # always loaded
     'data': [
+        'data/notification_template_approver.xml',
         'data/approval_template_data.xml',
         'views/user_delegate_views.xml',
         'views/menuitem_views.xml',
