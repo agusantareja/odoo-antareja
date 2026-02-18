@@ -37,7 +37,7 @@ class UserDelegate(models.Model):
         else:
             # Default to admin user if no approver found
             approval_task_line = [{"group_id": self.env.ref('base.group_erp_manager').id, "type_approval": "group"}]
-
+        approval_instance.clear_approval()
         if not self.env['approval.task.line'].with_context(
                 default_transaction_id=transaction_id,
                 default_transaction_model_name=transaction_model_name,
@@ -52,9 +52,11 @@ class UserDelegate(models.Model):
     def event_approval_start(self):
         self.write({'state': 'waiting_approval'})
 
-    def event_approval_done(self, is_approved=False):
+    def event_approval_done(self, is_approved=False,is_rejected=False):
         if is_approved:
-            self._set_prepared_state()
+            self.sudo()._set_prepared_state()
+        elif is_rejected:
+            self.sudo().self.write({'state': 'draft'})
 
     def get_prepared_state(self):
         return super(UserDelegate, self).get_prepared_state() + ['approved']
