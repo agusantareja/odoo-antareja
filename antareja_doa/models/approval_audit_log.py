@@ -28,7 +28,7 @@ class ApprovalAuditLog(models.Model):
         if kwargs.get('user_delegate'):
             kw['user_delegate_id']= int(kwargs.get('user_delegate'))
 
-        return super(ApprovalAuditLog, self).create_audit_log(kw)
+        return super(ApprovalAuditLog, self).create_audit_log(**kw)
 
     @api.model_create_multi
     def create(self, vals_list):
