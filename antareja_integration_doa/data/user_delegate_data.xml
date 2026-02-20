@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="external.data.sync.strategy" id="external_data_sync_strategy_intra_department">
+            <field name="server_sync_id" ref="external_server_sync_intra_employee"/>
+            <field name="external_app_name">intra.cerindocorp.id</field>
+            <field name="external_model">user.delegate</field>
+<!--            <field name="external_domain">[('company_id.name','=','PT. CERIA METALINDO PRIMA')]</field>-->
+            <field name="external_context">{'__from_sync_data_api':True,'__read_data_for_sync_external_application':True}</field>
+            <field name="external_fields">active,name,company_id,state,notification_option,delegator_id,delegatee_id,start_date,end_date,note</field>
+            <field name="strategy">external_cu</field>
+            <field name="internal_model">user.delegate</field>
+            <field name="internal_lookup_fields">name</field>
+<!--            <field name="internal_lookup_method">internal_lookup_for_doa</field>-->
+            <field name="sync_cron" eval="True"/>
+            <field name="filter_last_update" eval="True"/>
+            <field name="internal_process_method">internal_process_for_doa</field>
+<!--            <field name="internal_event_sync_done">internal_event_sync_done</field>-->
+            <field name="internal_context">{'tracking_disable':True, 'mail_notrack':True, 'mail_create_nosubscribe':True, 'skip_setup_employee_user_have_group':True,'skip_after_create_or_update':True}</field>
+<!--            <field name="company_name">PT. CERIA METALINDO PRIMA</field>-->
+        </record>
+    </data>
+</odoo>
