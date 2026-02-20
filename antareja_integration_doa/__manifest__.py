@@ -13,6 +13,6 @@
     'depends': ['base','mail', 'amr_data_sync'],
     # always loaded
     'data': [
-        'data/external_sync_server.xml',
+        'data/external_server_sync_data.xml',
     ],
 }
