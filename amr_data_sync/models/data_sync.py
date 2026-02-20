@@ -412,6 +412,15 @@ class ExternalDataSync(models.Model):
                     if after_data:
                         input_dict.update(after_data)
                     self.write_done_internal_odoo(existing, input_dict)
+                    all_related_done = self.is_all_related_done()
+                    if all_related_done:
+                        _logger.info("Related Done Process after sync done")
+                        sync_strategy.event_external_data_sync_done(existing, item, input_dict)
+                    else:
+                        self.write({'state': 'need_resolve'})
+                        _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
+                                     self.internal_model, self.external_model, str(self.external_odoo_id)
+                                     )
                 else:
                     _logger.info(f"No update or Create {item.get('id')}")
                     self.write({
@@ -421,19 +430,7 @@ class ExternalDataSync(models.Model):
                         'last_processing_datetime': fields.Datetime.now(),
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=8),
                     })
-
-                all_related_done = self.is_all_related_done()
-                if not all_related_done:
-                    self.write({'state': 'need_resolve'})
-                    _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
-                                 self.internal_model, self.external_model, str(self.external_odoo_id)
-                                 )
-                elif existing:
-                    _logger.info("event_external_data_sync_done ")
-                    sync_strategy.event_external_data_sync_done(existing, item, input_dict)
-                else:
-                    _logger.info("Not ")
-        except Exception as ex:
+        except Exception:
             # todo clear cache odoo
             self.write_error(traceback.format_exc(), input_dict)
 
