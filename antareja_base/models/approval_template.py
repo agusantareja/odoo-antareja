@@ -61,7 +61,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
              "available for use; help about python expression is given in the help tab."
     )
 
-    def invoke_method(self, transaction_object, method_name, **kwargs):
+    def invoke_method(self, transaction_object, method_name,kwargs=None):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
         save_call_method(transaction_object, object_method_name, **kwargs)
@@ -147,6 +147,18 @@ class ApprovalTemplateMixin(models.AbstractModel):
             raise UserError("Model Name not set")
 
         return self.search([('model_id.model', '=', transaction_model_name)], limit=1)
+
+    @api.model
+    def get_notification_approval(self):
+        return None
+
+    @api.model
+    def get_notification_rejection(self):
+        return None
+
+    @api.model
+    def get_notification_approved(self):
+        return None
 
 
 class ApprovalTemplate(models.Model):
