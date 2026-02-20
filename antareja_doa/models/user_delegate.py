@@ -533,23 +533,23 @@ class UserDelegate(models.Model):
         }
 
     def read(self, fields=None, load='_classic_read'):
-        if self.env.context.get('__from_sync_data_api'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
             if fields:
                 if 'delegator_group_ids' in fields:
                     fields.remove('delegator_group_ids')
 
         result = super(UserDelegate, self).read(fields=fields, load=load)
-        if self.env.context.get('__from_sync_data_api'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
             delegator = {}
             for rec in self:
                 delegator[rec.id] = {
                     'write_date': rec.write_date,
                 }
-                if self.delegator_id and (not fields or (fields and 'delegator_id' in fields)):
+                if rec.delegator_id and (not fields or (fields and 'delegator_id' in fields)):
                     delegator[rec.id]['delegator_id'] = self.read_user(rec.delegator_id)
 
-                if self.delegatee_id and (not fields or (fields and 'delegatee_id' in fields)):
-                    delegator[rec.id]['delegatee_id'] = self.read_user(rec.delegator_id)
+                if rec.delegatee_id and (not fields or (fields and 'delegatee_id' in fields)):
+                    delegator[rec.id]['delegatee_id'] = self.read_user(rec.delegatee_id)
 
             if len(result) > 0:
                 for data in result:

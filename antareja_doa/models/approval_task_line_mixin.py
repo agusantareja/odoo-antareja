@@ -21,7 +21,11 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def get_user_delegation(self):
         rec = self.ensure_one()
         delegator_ids = rec.get_users().ids
-        return self.env.user.get_delegation(delegator_ids, company_id=rec.company_id)
+        if 'company_id' in self._fields:
+            company = rec.company_id
+        else:
+            company = None
+        return self.env.user.get_delegation(delegator_ids, company_id=company)
 
     def do_approve(self, **kwargs):
         rec = self.ensure_one()
