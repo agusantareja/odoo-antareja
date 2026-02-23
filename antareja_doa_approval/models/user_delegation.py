@@ -3,8 +3,8 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 
 
-class UserDelegate(models.Model):
-    _name = 'user.delegate'
+class UserDelegation(models.Model):
+    _name = 'user.delegation'
     _inherit = [_name, 'approval.instance.able.mixin']
 
     # add state for approval
@@ -56,7 +56,7 @@ class UserDelegate(models.Model):
         if is_approved:
             self.sudo()._set_prepared_state()
         elif is_rejected:
-            self.sudo().self.write({'state': 'draft'})
+            self.sudo().write({'state': 'draft'})
 
     def get_prepared_state(self):
-        return super(UserDelegate, self).get_prepared_state() + ['approved']
+        return super(UserDelegation, self).get_prepared_state() + ['approved']

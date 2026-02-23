@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from . import user_delegate
+from . import user_delegation
