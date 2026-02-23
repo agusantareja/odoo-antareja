@@ -61,7 +61,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
              "available for use; help about python expression is given in the help tab."
     )
 
-    def invoke_method(self, transaction_object, method_name, **kwargs):
+    def invoke_method(self, transaction_object, method_name,kwargs=None):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
         safe_call_method(transaction_object, object_method_name, kwargs=kwargs)
