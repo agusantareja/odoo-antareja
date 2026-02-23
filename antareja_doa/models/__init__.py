@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import user_delegate
+from . import user_delegation
 from . import res_users
 from . import res_config_settings
 from . import approval_task

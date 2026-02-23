@@ -1,7 +1,7 @@
 <odoo>
-    <record id="view_user_delegate_form" model="ir.ui.view">
-        <field name="name">user.delegate.form</field>
-        <field name="model">user.delegate</field>
+    <record id="view_user_delegation_form" model="ir.ui.view">
+        <field name="name">user.delegation.form</field>
+        <field name="model">user.delegation</field>
         <field name="arch" type="xml">
             <form string="User Delegation">
                 <header>
@@ -52,9 +52,9 @@
         </field>
     </record>
 
-    <record id="view_user_delegate_tree" model="ir.ui.view">
-        <field name="name">user.delegate.tree</field>
-        <field name="model">user.delegate</field>
+    <record id="view_user_delegation_tree" model="ir.ui.view">
+        <field name="name">user.delegation.tree</field>
+        <field name="model">user.delegation</field>
         <field name="arch" type="xml">
             <tree string="Delegations">
                 <field name="name"/>
@@ -68,9 +68,9 @@
         </field>
     </record>
 
-    <record id="action_user_delegate" model="ir.actions.act_window">
+    <record id="action_user_delegation" model="ir.actions.act_window">
         <field name="name">User Delegations</field>
-        <field name="res_model">user.delegate</field>
+        <field name="res_model">user.delegation</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('filter_user_delegate', '=', True)]</field>
     </record>
