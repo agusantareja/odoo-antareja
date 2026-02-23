@@ -8,7 +8,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'Uncategorized',
-    'version': '13.0.1.0.0.1',
+    'version': '13.0.1.0.0.2',
     'depends': ['base', 'mail', 'antareja_integration'],
     # always loaded
     'data': [
