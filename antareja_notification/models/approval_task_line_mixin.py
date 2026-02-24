@@ -57,9 +57,21 @@ class ApprovalTaskLine(models.AbstractModel):
         if notification_template:
             res_id,model_name = self.get_res_id_for_notification(notification_template, **kwargs)
             if res_id :
+                if 'company_id' in self._fields:
+                    company = self.company_id
+                else:
+                    company = self.env.company
+                users = None
                 kw = dict(kwargs)
+                if 'users' in kw:
+                    users = kw.pop('users')
+                if not users:
+                    users = self.get_users()
+
+                users.get_users_for_notification(company=company)
+
                 kw['approval_task_line']=self
                 if 'res_id' in kw:
                     kw.pop('res_id')
-                users = kw.pop('users')
+
                 notification_template.send_notification_to_users(users,res_id,**kw)
