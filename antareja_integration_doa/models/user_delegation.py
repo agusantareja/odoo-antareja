@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
-import requests
-from odoo import models, fields, api
-from odoo.addons.base.models.ir_fields import exclude_ref_fields
-from odoo.exceptions import UserError
-from odoo.tools import image_process
-import json
+
+from odoo import models
 import logging
 from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
 
-class UserDelegate(models.Model):
-    _inherit = 'user.delegate'
+class UserDelegation(models.Model):
+    _inherit = 'user.delegation'
 
 
     def internal_process_for_doa(self, data_external=None, sync_strategy=None,
