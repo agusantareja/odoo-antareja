@@ -30,8 +30,8 @@ class ExternalServerSync(models.Model):
         ('token', 'Key Token-Deprecated'),
     ], default='odoo-rcp')
 
-    basic_auth_username = fields.Char(related='username', store=True)
-    basic_auth_password = fields.Char(related='password', store=True)
+    # basic_auth_username = fields.Char(related='username', store=True)
+    # basic_auth_password = fields.Char(related='password', store=True)
 
     token_in = fields.Selection([
         ('basic', 'Basic'),
@@ -40,7 +40,7 @@ class ExternalServerSync(models.Model):
         ('body', 'Body')
     ], default='header')
     token_key = fields.Char(default='token')
-    token_value = fields.Char(related='access_token', store=True)
+    token_value = fields.Char(related='access_token')
 
     def get_application_name(self):
         return self.app_name
