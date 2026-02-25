@@ -230,11 +230,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
             next_approval_task_line=approval_task_line,
             )
         )
-        # approval_task_line.send_approval_notification(
-        #     approval_template=approval_template,
-        #     approval_instance=approval_instance,
-        #     notification_template=approval_template.notification_approval_id
-        # )
 
     def configure_approval_task_line(self, **kwargs):
         config_approval_task_line = kwargs
@@ -471,7 +466,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_task_line.send_rejected_notification(**kw_rejected)
 
         return self
-
+    @api.model
     def get_rejected_message(self, **kwargs):
         reason = kwargs.get('reason')
         return _('Note Reject => %s') % reason
@@ -524,3 +519,21 @@ class ApprovalInstance(models.Model):
     approval_template_id = fields.Many2one('approval.template')
     approval_task_line_model = fields.Char(related='approval_template_id.approval_task_line_model')
     approval_task_line = fields.One2many('approval.task.line', 'approval_instance_id', string='Approval Task Lines')
+
+    user_ids = fields.Many2many('res.users', compute='_compute_approval_users_groups', compute_sudo=True)
+    group_ids = fields.Many2many('res.groups', compute='_compute_approval_users_groups', compute_sudo=True)
+
+    def _compute_approval_users_groups(self):
+        for rec in self:
+            next_approval_task_line = rec.get_next_approval_task_line()
+            user_ids = self.user_ids.browse()
+            group_ids = self.group_ids.browse()
+            if next_approval_task_line:
+                if have_method(next_approval_task_line,'get_users_for_approval'):
+                    user_ids = next_approval_task_line.get_users_for_approval()
+                elif have_method(next_approval_task_line,'get_users'):
+                    user_ids = next_approval_task_line.get_users()
+                if have_method(next_approval_task_line,'get_groups'):
+                    group_ids = next_approval_task_line.get_groups()
+            rec.user_ids = user_ids.ids if user_ids else False
+            rec.group_ids = group_ids.ids if group_ids else False
