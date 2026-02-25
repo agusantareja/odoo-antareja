@@ -44,28 +44,40 @@ class NotificationLog(models.Model):
             self.receiver_id,self.res_id
         )
         if result:
-            self.write(result)
+            self.write({
+                'mail_id':result.id,
+                'mail_model':result._name
+            })
 
     def send_wa(self):
         result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_wa(
             self.receiver_id,self.res_id
         )
         if result:
-            self.write(result)
+            self.write({
+                'send_message_id': result.id,
+                'send_message_model': result._name
+            })
 
     def send_chat(self):
         result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_chatter(
             self.receiver_id,self.res_id
         )
         if result:
-            self.write(result)
+            self.write({
+                'chat_message_id': result.id,
+                'chat_message_model': result._name
+            })
 
     def send_mobile(self):
         result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_mobile(
             self.receiver_id,self.res_id
         )
         if result:
-            self.write(result)
+            self.write({
+                'mobile_message_id': result.id,
+                'mobile_message_model': result._name
+            })
 
     def send_post_message(self):
         self.notification_template_id.with_user(self.user_id).send_comment_post(
