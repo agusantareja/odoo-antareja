@@ -169,8 +169,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
             if self.env.context.get('___register_approval_task_line'):
                 return approval_task_line
             rec = self.with_context(___register_approval_task_line=True)
-            if rec.approval_template_id.notification_approval_id and 'notification_approval_id' not in kwargs:
-                kwargs['notification_approval_id'] = rec.approval_template_id.notification_approval_id.id
+            if 'notification_approval_id' not in kwargs:
+                notification_approval = rec.get_notification_approval()
+                notification_approval and kwargs.update(notification_approval_id=notification_approval.id)
             kwargs['approval_instance'] = rec
             kwargs['transaction_model_name'] = rec.transaction_model_name,
             kwargs['transaction_id']=rec.transaction_id
@@ -188,7 +189,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         )
 
     def get_notification_approval(self):
-        return None
+        return self.approval_template_id.get_notification_approval()
 
     def get_users_approval_notification(self, **kwargs):
         users = kwargs.get("users")
@@ -211,25 +212,24 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         approval_template.invoke_method(
             transaction_object, 'validate_request_approval',
+            dict(
             approval_instance=approval_instance,
             approval_template=approval_template)
+        )
 
         config_approval_task_line = approval_template.get_config_instance(approval_instance) or {}
         approval_instance.configure_approval_task_line(**config_approval_task_line)
         approval_task_line = approval_instance.register_approval_task_line(**config_approval_task_line)
         approval_template.invoke_method(
             transaction_object, 'approval_start',
+            dict(
             approval_instance=approval_instance,
             approval_template=approval_template,
             approval_task_line=approval_task_line,
             approval_task_line_next=approval_task_line,
             next_approval_task_line=approval_task_line,
+            )
         )
-        # approval_task_line.send_approval_notification(
-        #     approval_template=approval_template,
-        #     approval_instance=approval_instance,
-        #     notification_template=approval_template.notification_approval_id
-        # )
 
     def configure_approval_task_line(self, **kwargs):
         config_approval_task_line = kwargs
@@ -279,11 +279,17 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def action_approve(self):
         check_approval = self.get_next_approval_task_line()
-        check_approval.action_approve(approval_instance=self)
+        check_approval.action_approve(
+            approval_instance=self,
+            transaction_object=self.get_transaction_object()
+        )
 
     def action_reject(self):
         check_approval = self.get_next_approval_task_line()
-        return check_approval.action_reject(approval_instance=self)
+        return check_approval.action_reject(
+            approval_instance=self,
+            transaction_object=self.get_transaction_object()
+        )
 
     def action_cancel(self):
         pass
@@ -293,7 +299,10 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
     def approve(self):
         check_approval = self.get_next_approval_task_line()
-        check_approval.do_approve(approval_instance=self)
+        check_approval.do_approve(
+            approval_instance=self,
+            transaction_object=self.get_transaction_object()
+        )
 
     def before_approve(self, **kwargs):
         if not self:
@@ -305,7 +314,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         transaction_object = approval_instance.get_transaction_object()
         approval_instance.ensure_approval_template()
         approval_template = approval_instance.approval_template_id
-        approval_template.invoke_method(transaction_object, 'before_approve', **kw)
+        approval_template.invoke_method(transaction_object, 'before_approve', kw)
         return self
 
     def after_approve(self, **kwargs):
@@ -316,7 +325,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_instance = self.ensure_one()
         approval_instance.ensure_approval_template()
         approval_template = approval_instance.approval_template_id
-        notification_template = approval_template.notification_approved_id
+        notification_template = approval_template.get_notification_approved()
 
         kw = dict(kwargs)
         kw['skip_send_notification'] = True
@@ -327,7 +336,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         is_approval_done = kwargs.get('is_approval_done')
         trx_update_value = kwargs.get('transaction_update_value') or {}
 
-        approval_template.invoke_method(transaction_object, 'after_approve', **kw)
+        approval_template.invoke_method(transaction_object, 'after_approve', kw)
 
         if is_approval_done:
             kw['is_approved'] = True
@@ -375,11 +384,15 @@ class ApprovalInstanceMixin(models.AbstractModel):
     def reject(self, reason, **kwargs):
         rec = self.ensure_one()
         reject_approval = rec.get_next_approval_task_line()
-        reject_approval.reject(reason, **kwargs)
+        kw = dict(kwargs)
+        kw.setdefault('transaction_object',rec.get_transaction_object())
+        reject_approval.reject(reason, **kw)
 
     def reject_from_popup_reject(self,**kwargs):
         rec = self.ensure_one()
         reject_approval = rec.get_next_approval_task_line()
+        kw = dict(kwargs)
+        kw.setdefault('transaction_object', rec.get_transaction_object())
         return reject_approval.reject_from_popup_reject( **kwargs)
 
     def before_reject(self, **kwargs):
@@ -392,7 +405,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         kw = dict(kwargs)
         kw['approval_instance'] = approval_instance
         transaction_object = approval_instance.get_transaction_object()
-        approval_template.invoke_method(transaction_object, 'before_reject', **kw)
+        approval_template.invoke_method(transaction_object, 'before_reject', kw)
         return self
 
     def after_reject(self, **kwargs):
@@ -402,7 +415,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_instance = self.ensure_one()
         approval_instance.ensure_approval_template()
         approval_template = approval_instance.approval_template_id
-        notification_template = approval_template.notification_approved_id
+        notification_template = approval_template.get_notification_approved()
 
         kw = dict(kwargs)
         kw['approval_instance'] = approval_instance
@@ -412,7 +425,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         is_approval_done = kwargs.get('is_approval_done')
         trx_update_value = kwargs.get('transaction_update_value') or {}
 
-        approval_template.invoke_method(transaction_object, 'after_reject', **kw)
+        approval_template.invoke_method(transaction_object, 'after_reject', kw)
         approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
         if is_approval_done:
             kw['is_rejected'] = True
@@ -454,6 +467,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         return self
 
+    @api.model
     def get_rejected_message(self, **kwargs):
         reason = kwargs.get('reason')
         return _('Note Reject => %s') % reason
@@ -506,3 +520,21 @@ class ApprovalInstance(models.Model):
     approval_template_id = fields.Many2one('approval.template')
     approval_task_line_model = fields.Char(related='approval_template_id.approval_task_line_model')
     approval_task_line = fields.One2many('approval.task.line', 'approval_instance_id', string='Approval Task Lines')
+
+    user_ids = fields.Many2many('res.users', compute='_compute_approval_users_groups', compute_sudo=True)
+    group_ids = fields.Many2many('res.groups', compute='_compute_approval_users_groups', compute_sudo=True)
+
+    def _compute_approval_users_groups(self):
+        for rec in self:
+            next_approval_task_line = rec.get_next_approval_task_line()
+            user_ids = self.user_ids.browse()
+            group_ids = self.group_ids.browse()
+            if next_approval_task_line:
+                if have_method(next_approval_task_line,'get_users_for_approval'):
+                    user_ids = next_approval_task_line.get_users_for_approval()
+                elif have_method(next_approval_task_line,'get_users'):
+                    user_ids = next_approval_task_line.get_users()
+                if have_method(next_approval_task_line,'get_groups'):
+                    group_ids = next_approval_task_line.get_groups()
+            rec.user_ids = user_ids.ids if user_ids else False
+            rec.group_ids = group_ids.ids if group_ids else False
