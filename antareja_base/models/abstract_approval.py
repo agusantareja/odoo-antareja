@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
-from ..tools.utils import have_method, safe_call_method
 
 
 class ApprovalAccessMixin(models.AbstractModel):
@@ -29,11 +27,6 @@ class ApprovalTaskLineAccess(models.AbstractModel):
         for rec in self:
             rec.access_approval = current_user in rec.get_users_for_approval()
 
-    def get_company(self):
-        if 'company_id' in self._fields:
-            return self.company_id
-        return self.env['res.company']
-
     def get_users(self):
         return self.env['res.users'].browse()
 
@@ -53,13 +46,17 @@ class ApprovalTaskLineAccess(models.AbstractModel):
     def get_users_for_approval(self, **kwargs):
         record = self.ensure_one()
         users = kwargs.get('users') or record.get_users()
-        company = kwargs.get('company') or record.get_company()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
         return users.get_users_for_approval(company=company)
 
     def get_users_for_notification(self, **kwargs):
         record = self.ensure_one()
         users = kwargs.get('users') or record.get_users()
-        company = kwargs.get('company') or record.get_company()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
         return users.get_users_for_notification(company=company)
 
 
@@ -179,12 +176,18 @@ class AbstractApprovalType(models.AbstractModel):
     def get_users_for_approval(self, **kwargs):
         record = self.ensure_one()
         users = kwargs.get('users') or record.get_users()
-        return users.get_users_for_approval(company=record.company_id)
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_approval(company=company)
 
     def get_users_for_notification(self, **kwargs):
         record = self.ensure_one()
         users = kwargs.get('users') or record.get_users()
-        return users.get_users_for_notification(company=record.company_id)
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_notification(company=company)
 
 
 class AbstractApprovalAccess(models.AbstractModel):

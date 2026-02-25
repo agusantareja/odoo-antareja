@@ -162,34 +162,34 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         pass
 
     def set_approved_status(self, **kwargs):
-        if not have_method(self, "set_approve_state"):
-            raise NotImplemented
+        if have_method(self, "set_approve_state"):
+            self.set_approve_state()
         self.write({
             'user_execution_id': self.env.uid,
             'date_execution': fields.Datetime.now(),
         })
-        return self.set_approve_state()
+
 
     def set_rejected_status(self, **kwargs):
-        if not have_method(self, "set_reject_state"):
-            raise NotImplemented
+        if have_method(self, "set_reject_state"):
+            self.set_reject_state()
         self.write({
             'user_execution_id': self.env.uid,
             'date_execution': fields.Datetime.now(),
             'reject_reason': kwargs.get('reject_reason') or kwargs.get('reason') or self.env.context.get(
                 '__reject_reason')
         })
-        return self.set_reject_state()
+
 
     def set_waiting_status(self, **kwargs):
-        if not have_method(self, "set_waiting_approval_state"):
-            raise NotImplemented
+        if have_method(self, "set_waiting_approval_state"):
+            self.set_waiting_approval_state()
         self.write({
             'user_execution_id': False,
             'date_execution': False,
             'reject_reason': False,
         })
-        return self.set_waiting_approval_state()
+
 
     def action_approve(self,**kwargs):
         rec = self.ensure_one()
