@@ -16,7 +16,11 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         def get_phone_number():
-            return self.env['hr.employee'].search([('user_id', '=', notification_to_user.id)], limit=1).mobile_phone
+            employees = self.env['hr.employee'].sudo().search([('user_id', '=', notification_to_user.id)])
+            for emp in employees:
+                if emp.mobile_phone:
+                    return emp.mobile_phone
+            return False
 
         if self.template_wa and kwargs.get('send_notification_whatsapp', True):
             WhatsAppTemplate = self.env['whatsapp.template']
