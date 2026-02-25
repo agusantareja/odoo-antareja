@@ -21,24 +21,31 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def get_user_delegation(self):
         rec = self.ensure_one()
         delegator_ids = rec.get_users().ids
-        return self.env.user.get_delegation(delegator_ids, company_id=rec.company_id)
+        company = None
+        if 'company_id' in self._fields:
+            company =  rec.company_id
+        return self.env.user.get_delegation(delegator_ids, company_id=company)
 
     def do_approve(self, **kwargs):
         rec = self.ensure_one()
-        if kwargs.get('user_delegation') :
-            kw = kwargs
-        else:
+        user_delegation = kwargs.get('user_delegation') or rec.get_user_delegation()
+        if user_delegation:
+            self.write({'user_delegation_id':user_delegation.id})
             kw = dict(kwargs)
-            kw['user_delegation'] = rec.get_user_delegation()
+            kw['user_delegation'] = user_delegation
+        else:
+            kw = kwargs
         return super(ApprovalTaskLineMixin, self).do_approve(**kw)
 
     def do_reject(self, reason=None, **kwargs):
         rec = self.ensure_one()
-        if kwargs.get('user_delegation'):
-            kw = kwargs
-        else:
+        user_delegation = kwargs.get('user_delegation') or rec.get_user_delegation()
+        if user_delegation:
+            self.write({'user_delegation_id': user_delegation.id})
             kw = dict(kwargs)
-            kw['user_delegation'] = rec.get_user_delegation()
+            kw['user_delegation'] = user_delegation
+        else:
+            kw = kwargs
         return super(ApprovalTaskLineMixin,self).do_reject( reason=reason, **kw)
 
 

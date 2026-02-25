@@ -47,7 +47,7 @@ class ResUsers(models.Model):
             uid = self.id
             if uid and uid != self._uid:
                 self = self.with_user(uid)
-            return self.env['user.delegate'].proxy_has_delegate_group(self._uid, group_id)
+            return self.env['user.delegation'].has_delegate_group(self._uid, group_id)
         else:
             return False
 
@@ -62,11 +62,11 @@ class ResUsers(models.Model):
         uid = self.id
         if uid and uid != self._uid:
             uid = self._uid
-        return self.env['user.delegate'].get_delegations_user_group_for_proxy(uid)
+        return self.env['user.delegation'].get_delegations_user_group_for_proxy(uid)
 
     def get_notification_users(self, company_id=None):
         if self:
-            notification_users_ids = self.env['user.delegate'].get_notification_user_ids(self.ids, company_id=company_id)
+            notification_users_ids = self.env['user.delegation'].get_notification_user_ids(self.ids, company_id=company_id)
             if notification_users_ids:
                 return self.browse(notification_users_ids)
         return self.browse()
@@ -77,21 +77,21 @@ class ResUsers(models.Model):
         if self and delegator_ids:
             record = self.ensure_one()
             if record.id not in delegator_ids:
-                return self.env['user.delegate'].get_all_delegations(
+                return self.env['user.delegation'].get_all_delegations(
                     delegatee_id=record.id, delegator_id=delegator_ids, company_id=company_id, limit=1
                 )
-        return self.env['user.delegate'].browse()
+        return self.env['user.delegation'].browse()
 
     def get_delegators(self, company_id=None):
         if self:
-            delegator_ids = self.env['user.delegate'].get_all_delegator(self.ids, company_id=company_id)
+            delegator_ids = self.env['user.delegation'].get_all_delegator(self.ids, company_id=company_id)
             if delegator_ids:
                 return self.browse(delegator_ids)
         return self.browse()
 
     def get_delegatee(self, company_id=None):
         if self:
-            delegatee_ids = self.env['user.delegate'].get_all_delegatee(self.ids, company_id=company_id)
+            delegatee_ids = self.env['user.delegation'].get_all_delegatee(self.ids, company_id=company_id)
             if delegatee_ids:
                 return self.browse(delegatee_ids)
         return self.browse()
@@ -107,5 +107,5 @@ class ResUsers(models.Model):
         if uid and uid != self._uid:
             self = self.with_user(uid)
 
-        return self.env['user.delegate'].get_notification_user_ids(user_ids=[self._uid],company_id=company_id)
+        return self.env['user.delegation'].get_notification_user_ids(user_ids=[self._uid],company_id=company_id)
 

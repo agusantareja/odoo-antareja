@@ -28,14 +28,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-6 o_setting_box" id="antareja_doa_client_enabled_setting">
+                <div class="col-12 col-lg-6 o_setting_box" id="antareja_integration_doa_enabled_setting">
                     <div class="o_setting_left_pane">
-                        <field name="module_antareja_doa_client"/>
+                        <field name="module_antareja_integration_doa"/>
                     </div>
-                    <div class="o_setting_right_pane" name="antareja_doa_client_enabled_right_pane">
-                        <label for="module_antareja_doa_client"/>
+                    <div class="o_setting_right_pane" name="antareja_integration_doa_enabled_right_pane">
+                        <label for="module_antareja_integration_doa"/>
                         <div class="text-muted">
-                            DoA Client to sync from DoA server
+                            DoA Intra Integration
                         </div>
                     </div>
                 </div>
