@@ -38,7 +38,7 @@
                                     <group attrs="{'invisible':[('auth_type','not in',['rest-token','token','jwt-odoo-rcp'])]}">
                                         <field name="token_in" attrs="{'invisible':[('auth_type','not in',['rest-token','token'])]}"/>
                                         <field name="token_key" attrs="{'invisible':[('auth_type','not in',['rest-token','token'])]}"/>
-                                        <field name="token_value" />
+                                        <field name="access_token" />
                                     </group>
                                 </group>
                             </page>
