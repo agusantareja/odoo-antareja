@@ -1,6 +1,6 @@
 <odoo>
 
-    <menuitem id="menu_to_approve_user_delegate" name="To Approve" parent="antareja_doa.menu_user_delegate"
+    <menuitem id="menu_to_approve_user_delegation" name="To Approve" parent="antareja_doa.menu_user_delegation"
               action="action_to_approve_user_delegate"/>
 
 </odoo>

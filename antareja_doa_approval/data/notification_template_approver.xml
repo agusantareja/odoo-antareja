@@ -3,7 +3,7 @@
     <data>
         <record id="doa_approver_mail_template" model="mail.template">
             <field name="name">DOA Approver</field>
-            <field name="model_id" ref="antareja_doa.model_user_delegate"/>
+            <field name="model_id" ref="antareja_doa.model_user_delegation"/>
             <field name="subject">DOA: ${object.name | safe}</field>
             <field name="body_html" type="html">
                 <table style="
@@ -227,14 +227,21 @@
 
         <record id="doa_approver_wa_template" model="mail.template">
             <field name="name">Approver WA Notification</field>
-            <field name="model_id" ref="antareja_doa.model_user_delegate"/>
+            <field name="model_id" ref="antareja_doa.model_user_delegation"/>
+            <field name="subject">${object.name}</field>
+            <field name="body_html"><![CDATA[Hai ${ctx.get('notification_to_user').name} DOA Dengan Kode ${object.name} dari ${object.delegator_id.name} butuh approval anda sebagai Approver ${object.get_internal_url() | safe} ]]></field>
+        </record>
+
+        <record id="doa_approver_chatter_template" model="mail.template">
+            <field name="name">Approver Chatter Notification</field>
+            <field name="model_id" ref="antareja_doa.model_user_delegation"/>
             <field name="subject">${object.name}</field>
             <field name="body_html"><![CDATA[Hai ${ctx.get('notification_to_user').name} DOA Dengan Kode ${object.name} dari ${object.delegator_id.name} butuh approval anda sebagai Approver ${object.get_internal_url() | safe} ]]></field>
         </record>
 
         <record id="doa_approver_mobile_template" model="notification.mobile.template">
             <field name="name">Approver Mobile Notification</field>
-            <field name="model_id" ref="antareja_doa.model_user_delegate"/>
+            <field name="model_id" ref="antareja_doa.model_user_delegation"/>
             <field name="title">Approval ${object.name}</field>
             <field name="body"><![CDATA[Hai ${ctx.get('notification_to_user').name} DOA Dengan Kode ${object.name} dari ${object.delegator_id.name} butuh approval anda sebagai Approver ${object.get_internal_url() | safe} ]]></field>
             <!--            <field name="image">Todo send url image</field>-->
@@ -253,6 +260,7 @@ data.update(
             <field name="model">material.inventory.request</field>
             <field name="template_email" ref="doa_approver_mail_template"/>
             <field name="template_wa" ref="doa_approver_wa_template"/>
+            <field name="template_chatter" ref="doa_approver_chatter_template"/>
             <!-- <field name="template_mobile" ref="doa_approver_mobile_template"/> -->
         </record>
     </data>

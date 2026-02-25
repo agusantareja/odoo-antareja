@@ -3,7 +3,7 @@
     <data>
         <record id="approval_template" model="approval.template">
 <!--            <field name="is_primary" eval="True"/>-->
-            <field name="model_id" ref="model_user_delegate"/>
+            <field name="model_id" ref="model_user_delegation"/>
             <field name="approval_task_line_model_id" ref="antareja_base.model_approval_task_line"/>
             <field name="state_field">state</field>
             <field name="state_waiting_approvals">waiting_approval</field>

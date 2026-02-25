@@ -1,9 +1,9 @@
 <odoo>
-    <record id="view_user_delegate_form" model="ir.ui.view">
-        <field name="name">user.delegate</field>
-        <field name="model">user.delegate</field>
+    <record id="view_user_delegation_form" model="ir.ui.view">
+        <field name="name">user.delegation</field>
+        <field name="model">user.delegation</field>
         <field name="priority" eval="16"/>
-        <field name="inherit_id" ref="antareja_doa.view_user_delegate_form"/>
+        <field name="inherit_id" ref="antareja_doa.view_user_delegation_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header/field[@name='state']" position="attributes">
                 <attribute name="statusbar_visible">draft,waiting_approval,approved,active</attribute>
@@ -47,9 +47,9 @@
 
     </record>
 
-    <record id="action_to_approve_user_delegate" model="ir.actions.act_window">
+    <record id="action_to_approve_user_delegation" model="ir.actions.act_window">
         <field name="name">To Approve</field>
-        <field name="res_model">user.delegate</field>
+        <field name="res_model">user.delegation</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('state','=','waiting_approval'),('access_approval', '=', True)]</field>
     </record>
