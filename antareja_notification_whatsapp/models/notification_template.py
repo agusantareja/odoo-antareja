@@ -16,7 +16,11 @@ class NotificationTemplate(models.Model):
             return
         self.ensure_one()
         def get_phone_number():
-            return self.env['hr.employee'].search([('user_id', '=', notification_to_user.id)], limit=1).mobile_phone
+            employees = self.env['hr.employee'].sudo().search([('user_id', '=', notification_to_user.id)])
+            for emp in employees:
+                if emp.mobile_phone:
+                    return emp.mobile_phone
+            return False
 
         if self.template_wa and kwargs.get('send_notification_whatsapp', True):
             WhatsAppTemplate = self.env['whatsapp.template']
@@ -32,8 +36,7 @@ class NotificationTemplate(models.Model):
                 _logger.warning("Invalid phone number for partner ID %s , name %s , %s", partner.id,partner.name,phone_number)
                 return
 
-            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(
-                res_id,['subject', 'body_html'])
+            values = self.template_wa.with_context(notification_to_user=notification_to_user).generate_email(res_id)
             message_wa = values['body_html']
             ref = values['subject']
             payload = {

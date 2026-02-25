@@ -5,7 +5,7 @@
     'summary': """Notification WhatsApp Client and Integration """,
     'description': """Notification WhatsApp Client and Integration""",
     'author': "Agus Muhammad Ramdan",
-    'website': "http://www.yourcompany.com",
+    'website': "http://www.agus.ramdan.tech",
     'category': 'Uncategorized',
     'version': '16.0.1.0.0.2',
     'depends': ['base', 'mail', 'ahda_dynamic_whatsapp_client', 'antareja_notification'],
