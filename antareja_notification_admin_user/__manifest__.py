@@ -6,8 +6,7 @@
     "category": "Extra Tools",
     "license": "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
-    'description': """  Ignore Admin User on Notification
-    """,
+    'description': "Ignore Admin User on Notification",
     'depends': ['base', 'mail', 'antareja_notification', 'auth_admin_sso'],
     'data': [],
     'demo': [],
