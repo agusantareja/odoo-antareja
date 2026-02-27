@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import api, fields, models
 
 
 class ApprovalAccessMixin(models.AbstractModel):
@@ -17,7 +17,7 @@ class ApprovalTaskLineAccess(models.AbstractModel):
     access_approval = fields.Boolean(
         string="Can Approve",
         compute="_compute_access_rights",
-        store=False
+        store=False,
     )
 
     @api.depends_context('uid')
@@ -34,7 +34,7 @@ class ApprovalTaskLineAccess(models.AbstractModel):
         return self.env['res.groups'].browse()
 
     def prepare_approval_task_dict(self):
-        """Prepare dict untuk create record approval task"""
+        """Prepare dict untuk create record approval task."""
         self.ensure_one()
         kw = {
             'approval_task_line': self,
@@ -210,7 +210,6 @@ class AbstractApprovalAccess(models.AbstractModel):
 
     def get_approval_domain(self):
         current_uid = self.env.user.id
-        # model_name = self._name
         table = self._table
         cr = self._cr
 
@@ -326,6 +325,3 @@ class AbstractApprovalStatus(models.AbstractModel):
 
     def set_canceled_state(self):
         self.status_approval = APPROVAL_STATUS_CANCELLED
-
-
-

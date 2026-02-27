@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.exceptions import UserError
-from ..tools.utils import have_method, safe_call_method
 import logging
 
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+
+from ..tools.utils import have_method, safe_call_method
+
 _logger = logging.getLogger(__name__)
+
 
 class ApprovalTaskLineMixin(models.AbstractModel):
     _name = "approval.task.line.mixin"
@@ -304,6 +307,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def reject_from_popup_reject(self, **kwargs):
         return self.do_reject(**kwargs)
+
 
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'

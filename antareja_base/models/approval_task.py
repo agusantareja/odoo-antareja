@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.exceptions import UserError, AccessError
-from odoo.models import BaseModel
-from ..tools.utils import have_method
 import logging
+
+from odoo import fields, models
+from odoo.exceptions import AccessError, UserError
+from odoo.models import BaseModel
+
+from ..tools.utils import have_method
 
 _logger = logging.getLogger(__name__)
 
@@ -107,11 +109,11 @@ class ApprovalTask(models.Model):
             col_this = self._fields['user_ids'].column1
             col_user = self._fields['user_ids'].column2
             cr.execute(f"""
-                   SELECT DISTINCT at.id 
-                   FROM approval_task at 
-                   JOIN {rel_table} mg ON at.id = mg.{col_this}
-                   WHERE {model_filter} {col_user} {user_filter}
-               """)
+                SELECT DISTINCT at.id 
+                FROM approval_task at 
+                JOIN {rel_table} mg ON at.id = mg.{col_this}
+                WHERE {model_filter} {col_user} {user_filter}
+            """)
             ids.update(r[0] for r in cr.fetchall())
 
         # CASE: Multi Group (M2M)
@@ -120,12 +122,12 @@ class ApprovalTask(models.Model):
             col_this = self._fields['group_ids'].column1
             col_group = self._fields['group_ids'].column2
             cr.execute(f"""
-                   SELECT DISTINCT at.id 
-                   FROM approval_task at
-                   JOIN {rel_table} mg ON at.id = mg.{col_this}
-                   JOIN res_groups_users_rel gu ON gu.gid = mg.{col_group}
-                   WHERE {model_filter} gu.uid {user_filter}
-               """, (current_uid,))
+                SELECT DISTINCT at.id 
+                FROM approval_task at
+                JOIN {rel_table} mg ON at.id = mg.{col_this}
+                JOIN res_groups_users_rel gu ON gu.gid = mg.{col_group}
+                WHERE {model_filter} gu.uid {user_filter}
+            """, (current_uid,))
             ids.update(r[0] for r in cr.fetchall())
         if (operator == '=' and value) or (operator == '!=' and not value):
             if ids and self.env.context.get('__transaction_data_check_access_rights_and_rule'):

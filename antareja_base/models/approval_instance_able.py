@@ -1,13 +1,8 @@
-from odoo import api, fields, models, SUPERUSER_ID, _
-from datetime import datetime
-from odoo.exceptions import UserError, AccessError, ValidationError
 import logging
 
+from odoo import api, fields, models
+
 _logger = logging.getLogger(__name__)
-
-
-def have_method(obj, method):
-    return hasattr(obj, method) and callable(getattr(obj, method))
 
 
 class ApprovalInstanceAbleMixin(models.AbstractModel):
@@ -33,8 +28,8 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
 
     def search_filter_access_approval(self, operator, value):
         datas = self.search([])
-        ids= [data.id for data in datas if data.access_approval]
-        return [('id','in',ids)]
+        ids = [data.id for data in datas if data.access_approval]
+        return [('id', 'in', ids)]
 
     def action_ensure_approval_instance(self):
         rec = self.ensure_one()
@@ -51,6 +46,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
                 'edit': 0,
             }
         }
+
     def ensure_approval_instance(self):
         rec = self.ensure_one()
         return rec.approval_instance_id.create_or_get(transaction=rec)
@@ -70,7 +66,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         approval_instance = rec.approval_instance_id.create_or_get(rec)
         return approval_instance.action_reject()
 
-    def reject_from_popup_reject(self,**kwargs):
+    def reject_from_popup_reject(self, **kwargs):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
         return approval_instance.reject_from_popup_reject(**kwargs)
