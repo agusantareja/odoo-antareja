@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -9,5 +9,5 @@ class ResConfigSettings(models.TransientModel):
     notification_wa_scope = fields.Char(
         string="Scope Default",
         config_parameter='antareja_notification.scope_default',
-        default="False"
+        default="False",
     )
