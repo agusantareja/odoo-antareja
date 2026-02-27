@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from urllib.parse import urlparse
+
 import werkzeug
 from odoo import models
 from odoo.exceptions import AccessDenied
-from urllib.parse import urlparse
 
 _logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class ResUsers(models.Model):
     # v16 ada parameter env
     def _check_credentials(self, password, env):
         try:
-            #v16 ada paremeter env
+            # v16 ada paremeter env
             return super(ResUsers, self)._check_credentials(password,env)
         except AccessDenied:
             payload = self.env['antareja.token'].validate(password)

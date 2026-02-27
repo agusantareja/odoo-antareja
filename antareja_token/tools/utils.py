@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import json
 import base64
+import json
+import logging
+from functools import wraps
 
+from odoo.addons.antareja_base.tools.rest import invalid_response
 from odoo.http import request
 from odoo.service import security
-from functools import wraps
 from werkzeug.wrappers import Response
-from odoo.addons.antareja_base.tools.rest import invalid_response
 
 _logger = logging.getLogger(__name__)
 
 
-#v16 handle session berbeda dengan 13
+# v16 handle session berbeda dengan 13
 def set_session(login, uid, session_token=None):
     session = request.session
     session.rotate = True
@@ -144,4 +144,3 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
         return decorator
     else:
         return decorator(_func)
-
