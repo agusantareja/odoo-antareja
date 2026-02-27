@@ -6,8 +6,7 @@
     "category": "Extra Tools",
     "license": "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
-    'description': """  Ignore Admin User on Approval
-    """,
+    'summary': "Ignore Admin User on Approval",
     'depends': ['base', 'mail', 'antareja_base', 'auth_admin_sso'],
     'data': [],
     'demo': [],
