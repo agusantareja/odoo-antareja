@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-from odoo.tools import *
-from odoo.tools.safe_eval import safe_eval, test_python_expr
-
-from ..tools.utils import *
 import logging
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+from odoo.tools import datetime
+
+from ..tools.utils import ensure_list_create, have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             return None
         return self.env[approval_task_line_model].get_all_approval_task_line(
             transaction_model_name=rec.transaction_model_name,
-            transaction_id=rec.transaction_id
+            transaction_id=rec.transaction_id,
         )
 
     def get_next_approval_task_line(self):
@@ -213,8 +213,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_template.invoke_method(
             transaction_object, 'validate_request_approval',
             dict(
-            approval_instance=approval_instance,
-            approval_template=approval_template)
+                approval_instance=approval_instance,
+                approval_template=approval_template,
+            )
         )
 
         config_approval_task_line = approval_template.get_config_instance(approval_instance) or {}
@@ -223,11 +224,11 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_template.invoke_method(
             transaction_object, 'approval_start',
             dict(
-            approval_instance=approval_instance,
-            approval_template=approval_template,
-            approval_task_line=approval_task_line,
-            approval_task_line_next=approval_task_line,
-            next_approval_task_line=approval_task_line,
+                approval_instance=approval_instance,
+                approval_template=approval_template,
+                approval_task_line=approval_task_line,
+                approval_task_line_next=approval_task_line,
+                next_approval_task_line=approval_task_line,
             )
         )
 
@@ -281,14 +282,14 @@ class ApprovalInstanceMixin(models.AbstractModel):
         check_approval = self.get_next_approval_task_line()
         check_approval.action_approve(
             approval_instance=self,
-            transaction_object=self.get_transaction_object()
+            transaction_object=self.get_transaction_object(),
         )
 
     def action_reject(self):
         check_approval = self.get_next_approval_task_line()
         return check_approval.action_reject(
             approval_instance=self,
-            transaction_object=self.get_transaction_object()
+            transaction_object=self.get_transaction_object(),
         )
 
     def action_cancel(self):
@@ -301,7 +302,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         check_approval = self.get_next_approval_task_line()
         check_approval.do_approve(
             approval_instance=self,
-            transaction_object=self.get_transaction_object()
+            transaction_object=self.get_transaction_object(),
         )
 
     def before_approve(self, **kwargs):
@@ -347,7 +348,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 trx_update_value[state_field] = state_approved
 
         if trx_update_value:
-            _logger.info("Info Update state %s ",str(trx_update_value))
+            _logger.info("Info Update state %s ", str(trx_update_value))
             transaction_object.write(trx_update_value)
         elif is_approval_done:
             _logger.warning("No Update state when is_approval_done")
@@ -367,7 +368,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             approval_template=approval_template,
             approval_instance=approval_instance,
             transaction_id=approval_instance.transaction_id,
-            transaction_model_name=approval_instance.transaction_model_name
+            transaction_model_name=approval_instance.transaction_model_name,
         )
         if approval_template.notes_chatter_approved:
             if have_method(transaction_object, 'get_approved_message'):
@@ -437,9 +438,9 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         if trx_update_value:
             transaction_object.write(trx_update_value)
-            _logger.info("No update state %s",str(trx_update_value))
+            _logger.info("No update state %s", str(trx_update_value))
         elif is_approval_done:
-            _logger.warning("No Update state")
+            _logger.warning("No update state")
 
         if not approval_instance.is_status_waiting_approval() or is_approval_done:
             kw['is_approval_done'] = True
@@ -455,7 +456,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             approval_template=approval_template,
             approval_instance=approval_instance,
             transaction_id=approval_instance.transaction_id,
-            transaction_model_name=approval_instance.transaction_model_name
+            transaction_model_name=approval_instance.transaction_model_name,
         )
         if approval_template.notes_chatter_rejected:
             if have_method(transaction_object, 'get_rejected_message'):
@@ -530,11 +531,11 @@ class ApprovalInstance(models.Model):
             user_ids = self.user_ids.browse()
             group_ids = self.group_ids.browse()
             if next_approval_task_line:
-                if have_method(next_approval_task_line,'get_users_for_approval'):
+                if have_method(next_approval_task_line, 'get_users_for_approval'):
                     user_ids = next_approval_task_line.get_users_for_approval()
-                elif have_method(next_approval_task_line,'get_users'):
+                elif have_method(next_approval_task_line, 'get_users'):
                     user_ids = next_approval_task_line.get_users()
-                if have_method(next_approval_task_line,'get_groups'):
+                if have_method(next_approval_task_line, 'get_groups'):
                     group_ids = next_approval_task_line.get_groups()
             rec.user_ids = user_ids.ids if user_ids else False
             rec.group_ids = group_ids.ids if group_ids else False

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.exceptions import UserError, AccessError
-from odoo.models import BaseModel
-from ..tools.utils import have_method
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
-from odoo import api, fields, models, SUPERUSER_ID, _
-from datetime import datetime
-from odoo.exceptions import UserError, AccessError, ValidationError
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 

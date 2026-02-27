@@ -8,7 +8,6 @@
                 <div id="antareja_base_addons" class="app_settings_block"
                      data-string="approval_notif" string="Application Addons"
                      data-key="antareja_base_addons" groups="base.group_erp_manager">
-
                     <div id="antareja_base">
                         <h2>Application</h2>
                         <div class="row mt16 o_settings_container">

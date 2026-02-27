@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import base64
+import logging
+
 # v16 from odoo import tools,Command
-from odoo import models, fields, api, tools, Command
+from odoo import Command, api, fields, models, tools
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare
 from odoo.tools.safe_eval import safe_eval, test_python_expr
 from pytz import timezone
-from ..tools.utils import safe_call_method
 
-import base64
-import logging
+from ..tools.utils import safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
              "available for use; help about python expression is given in the help tab."
     )
 
-    def invoke_method(self, transaction_object, method_name,kwargs=None):
+    def invoke_method(self, transaction_object, method_name, kwargs=None):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
         safe_call_method(transaction_object, object_method_name, kwargs=kwargs)
@@ -80,10 +81,10 @@ class ApprovalTemplateMixin(models.AbstractModel):
         return self.state_field or state_field
 
     def get_state_reject(self):
-        return self and self.state_reject
+        return self.state_reject
 
     def get_state_approved(self):
-        return self and self.state_approved
+        return self.state_approved
 
     def prepare_dict(self):
         return {'model_id': self.model_id.id}
@@ -174,4 +175,3 @@ class ApprovalTemplate(models.Model):
     _sql_constraints = [
         ('model_id_unique', 'unique(model_id)', 'Model must be uniq!')
     ]
-#
