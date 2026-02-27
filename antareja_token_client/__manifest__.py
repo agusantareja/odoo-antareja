@@ -2,11 +2,8 @@
 
 {
     'name': "Token Client",
-    'summary': """
-        Token Client
-    """,
-    'description': """
-    """,
+    'summary': "Token Client",
+    'description': "",
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'API',
