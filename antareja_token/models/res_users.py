@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from urllib.parse import urlparse
+
 import werkzeug
 from odoo import models
 from odoo.exceptions import AccessDenied
-from urllib.parse import urlparse
 
 _logger = logging.getLogger(__name__)
 
