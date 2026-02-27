@@ -22,7 +22,7 @@
         'security/ir.model.access.csv',
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',
-        'views/user_delegate_views.xml',
+        'views/user_delegation_views.xml',
         'views/res_config_settings_views.xml',
         'views/menuitem_views.xml',
     ],
