@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, api
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ class NotificationTemplate(models.Model):
 
         self.ensure_one()
         if self.template_email and kwargs.get('send_notification_email', True):
-            #v16
+            # v16
             values = self.template_email.with_context(notification_to_user=notification_to_user).generate_email(
                 res_id, ['subject', 'body_html',
                          'email_from',

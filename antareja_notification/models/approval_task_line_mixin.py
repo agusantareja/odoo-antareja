@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-
 import logging
 
-from odoo.models import BaseModel
+from odoo import models
 
 _logger = logging.getLogger(__name__)
 
@@ -55,7 +53,7 @@ class ApprovalTaskLine(models.AbstractModel):
             notification_template = self.env['notification.template'].browse(kwargs.get("notification_template_id"))
 
         if notification_template:
-            res_id,model_name = self.get_res_id_for_notification(notification_template, **kwargs)
+            res_id, model_name = self.get_res_id_for_notification(notification_template, **kwargs)
             if res_id :
                 if 'company_id' in self._fields:
                     company = self.company_id
@@ -74,4 +72,4 @@ class ApprovalTaskLine(models.AbstractModel):
                 if 'res_id' in kw:
                     kw.pop('res_id')
 
-                notification_template.send_notification_to_users(users,res_id,**kw)
+                notification_template.send_notification_to_users(users, res_id, **kw)

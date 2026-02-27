@@ -2,13 +2,14 @@
 
 {
     'name': 'Antareja || Notification',
-    'version': '16.0.1.0.4',
+    'version': '16.0.1.0.6',
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
-    'description': """Module untuk mengirim notifikasi via email/WhatsApp dengan menggunakan template yang sudah 
-    disediakan untuk penyederhanaan pengiriman email/WhatsApp.
-    """,
+    'description': """
+Module untuk mengirim notifikasi via email/WhatsApp dengan menggunakan template yang sudah 
+disediakan untuk penyederhanaan pengiriman email/WhatsApp.
+""",
     'depends': ['base', 'mail', 'antareja_base',],
     'data': [
         'security/ir.model.access.csv',

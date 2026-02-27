@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, tools
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import *
-from odoo.tools.safe_eval import safe_eval, test_python_expr
 import logging
 
-from odoo.addons.antareja_base.tools.utils import safe_call_method
+from odoo import api, fields, models
+from odoo.addons.antareja_base.tools.utils import safe_call_method, have_method
+from odoo.exceptions import ValidationError
+from odoo.tools.safe_eval import safe_eval, test_python_expr
 
 _logger = logging.getLogger(__name__)
 
-def have_method(obj, method):
-    return hasattr(obj, method) and callable(getattr(obj, method))
 
 class NotificationMobileTemplate(models.Model):
     _name = "notification.mobile.template"
@@ -54,7 +51,7 @@ class NotificationMobileTemplate(models.Model):
         notification = {}
         for field in fields:
             Template = Template.with_context(safe=field in {'title'})
-            #v16
+            # v16
             notification[field] = Template._render_template(getattr(template, field), template.model, [res_id])[res_id]
         data ={
             'source_application': self.get_application_name(),
