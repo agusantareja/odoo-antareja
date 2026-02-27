@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, api
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ class NotificationTemplate(models.Model):
         self.ensure_one()
         if self.template_chatter:
             values = self.template_chatter.with_context(notification_to_user=notification_to_user).generate_email(res_id)
-            message=values['body_html']
+            message = values['body_html']
             return notification_to_user.send_odoobot_message(message)
 
         return None
@@ -166,7 +167,7 @@ class NotificationTemplate(models.Model):
                     #odoobot_id = self.env['ir.model.data']._xmlid_to_res_id("base.partner_root")
                     return rec.sudo().message_post(
                         body=message,
-                        author_id=odoobot_id
+                        author_id=odoobot_id,
                     )
         return None
 

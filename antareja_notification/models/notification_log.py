@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, api, _
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class NotificationLog(models.Model):
         if result:
             self.write({
                 'mail_id':result.id,
-                'mail_model':result._name
+                'mail_model':result._name,
             })
 
     def send_wa(self):
@@ -56,7 +57,7 @@ class NotificationLog(models.Model):
         if result:
             self.write({
                 'send_message_id': result.id,
-                'send_message_model': result._name
+                'send_message_model': result._name,
             })
 
     def send_chat(self):
@@ -66,7 +67,7 @@ class NotificationLog(models.Model):
         if result:
             self.write({
                 'chat_message_id': result.id,
-                'chat_message_model': result._name
+                'chat_message_model': result._name,
             })
 
     def send_mobile(self):
@@ -76,7 +77,7 @@ class NotificationLog(models.Model):
         if result:
             self.write({
                 'mobile_message_id': result.id,
-                'mobile_message_model': result._name
+                'mobile_message_model': result._name,
             })
 
     def send_post_message(self):
@@ -97,11 +98,9 @@ class NotificationLog(models.Model):
                 'res_id': res_id,
             }
 
-
     def action_show_mail(self):
         self.ensure_one()
         self._show_message(self, self.mail_model and self.mail_id)
-
 
     def action_show_send_message(self):
         self.ensure_one()
@@ -110,7 +109,6 @@ class NotificationLog(models.Model):
     def action_show_chat_message(self):
         self.ensure_one()
         self._show_message(self, self.chat_message_model and self.chat_message_id)
-
 
     def action_show_mobile_message(self):
         self.ensure_one()

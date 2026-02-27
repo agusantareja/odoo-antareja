@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, _
 import logging
+
+from odoo import _, models
+
 _logger = logging.getLogger(__name__)
 
-
-from odoo import models, _
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
@@ -38,4 +38,5 @@ class ResUsers(models.Model):
         result = channel.sudo().message_post(body=message, author_id=odoobot_id, message_type="comment",
                                              subtype="mail.mt_comment")
         #self.odoobot_state = 'onboarding_emoji'
+
         return result
