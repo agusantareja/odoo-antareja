@@ -26,8 +26,8 @@
     'depends': [
         'base',
         'account',
+        'cmp_metalindo_approval',
         'metalindo_vendor',
-        'metalindo_approval',
     ],
 
     # always loaded
