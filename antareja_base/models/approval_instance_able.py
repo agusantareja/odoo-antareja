@@ -28,12 +28,13 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
     @api.depends('approval_instance_id')
     def compute_access_approval(self):
         for rec in self:
-            rec.access_approval = rec.approval_instance_id.access_approval
+            rec.access_approval = rec.approval_instance_id and rec.approval_instance_id.access_approval
 
+    @api.model
     def search_filter_access_approval(self, operator, value):
         datas = self.search([])
-        ids= [data.id for data in datas if data.access_approval]
-        return [('id','in',ids)]
+        ids = [data.id for data in datas if data.access_approval]
+        return [('id', 'in', ids)]
 
     def action_ensure_approval_instance(self):
         rec = self.ensure_one()
@@ -50,43 +51,43 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
                 'edit': 0,
             }
         }
+
     def ensure_approval_instance(self):
         rec = self.ensure_one()
         return rec.approval_instance_id.create_or_get(transaction=rec)
 
     def action_request_approval(self):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.ensure_approval_instance()
         return approval_instance.request_approval()
 
     def action_approve(self):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.ensure_approval_instance()
         return approval_instance.action_approve()
 
     def action_reject(self):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.ensure_approval_instance()
         return approval_instance.action_reject()
 
     def reject_from_popup_reject(self,**kwargs):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.ensure_approval_instance()
         return approval_instance.reject_from_popup_reject(**kwargs)
 
     def action_clear_approval(self):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.ensure_approval_instance()
         return approval_instance.clear_approval()
 
     def compute_approval_instance_id(self):
         for rec in self:
-            rec.approval_instance_id = self.approval_instance_id.search(
-                [('model_id.model', '=', self._name), ('transaction_id', '=', rec.id)])
+            rec.approval_instance_id = self.approval_instance_id.get_instance_for_transaction(self._name, rec.id)
 
     def get_next_approval_task_line(self):
         rec = self.ensure_one()
-        approval_instance = rec.approval_instance_id.create_or_get(rec)
+        approval_instance = rec.approval_instance_id.get_instance_for_transaction(self._name, rec.id)
         return approval_instance and approval_instance.get_next_approval_task_line()
 
     def get_users_approval_notification(self, **kwargs):
@@ -104,14 +105,15 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         """
         Approval task as done
         """
-        self.ensure_one()
-        self.env['approval.instance'].create_or_get(self).unregister_approval_task_line(**kwargs)
+        rec = self.ensure_one()
+        approval_instance = rec.approval_instance_id.get_instance_for_transaction(self._name, rec.id)
+        approval_instance and approval_instance.unregister_approval_task_line(**kwargs)
         super(ApprovalInstanceAbleMixin, self).unregister_approval_task(**kwargs)
 
     def is_status_waiting_approval(self):
         rec = self.ensure_one()
         approval_instance = rec.approval_instance_id.create_or_get(rec)
-        return approval_instance.is_status_waiting_approval()
+        return approval_instance and approval_instance.is_status_waiting_approval()
 
     def get_all_approval_task_line(self):
         return self.approval_instance_id.get_all_approval_task_line()

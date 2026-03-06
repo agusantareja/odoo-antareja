@@ -60,8 +60,8 @@ class ResUsers(models.Model):
         return result.with_context(__user_with_delegatee_approval=True)
 
     def has_delegate_group_ext_id(self, group_ext_id):
-        group_id = self.env.ref(group_ext_id).id
-        return group_id and self.has_delegate_group_id(group_id)
+        group = self.env.ref(group_ext_id, raise_if_not_found=False)
+        return group and self.has_delegate_group_id(group.id)
 
     @api.model
     def has_delegate_group_id(self, group_id: int):

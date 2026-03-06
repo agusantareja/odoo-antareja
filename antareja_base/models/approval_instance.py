@@ -110,7 +110,10 @@ class ApprovalInstanceMixin(models.AbstractModel):
         return approval_instance.ensure_approval_template()
 
     def get_instance_for_transaction(self, transaction_model_name, transaction_id):
-        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)])
+        for rec in self:
+            if rec.transaction_model_name == transaction_model_name and rec.transaction_id == transaction_id:
+                return rec
+        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)], limit=1)
 
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
