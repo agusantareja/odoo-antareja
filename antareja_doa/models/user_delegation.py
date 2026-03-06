@@ -66,9 +66,10 @@ class UserDelegation(models.Model):
 
     @api.depends('delegator_id')
     def _compute_delegator_group_ids(self):
+        doa_group = self.env['res.users'].doa_exclude_groups()
         for rec in self:
             if rec.delegator_id:
-                rec.delegator_group_ids = rec.delegator_id.groups_id
+                rec.delegator_group_ids = rec.delegator_id.groups_id - rec.delegatee_id.groups_id - doa_group
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
 
@@ -285,9 +286,9 @@ class UserDelegation(models.Model):
 
         if group_id:
             if isinstance(group_id, list):
-                domain.append(('group_id', 'in', group_id))
+                domain.append(('delegator_id.group_id', 'in', group_id))
             else:
-                domain.append(('group_id', '=', group_id))
+                domain.append(('delegator_id.group_id', '=', group_id))
 
         return self.search(domain, limit=limit, order='start_date desc,end_date')
 
