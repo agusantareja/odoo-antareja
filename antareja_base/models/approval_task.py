@@ -317,7 +317,7 @@ class ApprovalTask(models.Model):
                 ress = None
             if ress and any([x[0] for x in ress]):
                 obj_ir_view = self.env["ir.ui.view"]
-                obj_ir_view_browse = obj_ir_view.search(
+                obj_ir_view_browse = obj_ir_view.sudo().search(
                     [("name", "=", rec.view_name), ("model", "=", rec.transaction_model_name)]
                     , limit=1)
                 if obj_ir_view_browse:

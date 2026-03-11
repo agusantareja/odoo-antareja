@@ -90,6 +90,11 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         approval_instance = rec.approval_instance_id.get_instance_for_transaction(self._name, rec.id)
         return approval_instance and approval_instance.get_next_approval_task_line()
 
+    def get_last_approval_task_line(self):
+        rec = self.ensure_one()
+        approval_instance = rec.approval_instance_id.get_instance_for_transaction(self._name, rec.id)
+        return approval_instance and approval_instance.get_last_approval_task_line()
+
     def get_users_approval_notification(self, **kwargs):
         return self.get_next_approval_task_line().get_users_for_notification(**kwargs)
 

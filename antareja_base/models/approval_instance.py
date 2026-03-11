@@ -148,6 +148,16 @@ class ApprovalInstanceMixin(models.AbstractModel):
             transaction_id=rec.transaction_id
         )
 
+    def get_last_approval_task_line(self):
+        rec = self.ensure_approval_template()
+        approval_task_line_model = rec.approval_template_id.approval_task_line_model
+        if not approval_task_line_model:
+            return None
+        return self.env[approval_task_line_model].get_last_approval_task_line(
+            transaction_id=rec.transaction_id,
+            transaction_model_name=rec.transaction_model_name,
+        )
+
     def check_approval_task_status(self):
         # chek bila status mmasih didalam approval maka register ulang
         # bila satus sudah tidak dalam approval bisa di clear
