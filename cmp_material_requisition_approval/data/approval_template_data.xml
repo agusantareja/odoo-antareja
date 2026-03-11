@@ -9,14 +9,15 @@
             <field name="view_name">material requisition</field>
             <field name="notification_approval_id" ref="notification_template_approval_task"/>
             <field name="code">
-if transaction_object.info_priority:
+#if transaction_object.info_priority:
     # kirimkan nama method yang akan di panggil saat setup approval line
-    response['transaction_approval_filter_matrix']='get_priority_filter_matrix'
+#    response['transaction_approval_filter_matrix']='get_priority_filter_matrix'
 # response['approval_line'] bila ingin custom approval line
 # transaction_value nilai dari value
-response['transaction_value']=transaction_object.total_cost
-response['transaction_currency']=transaction_object.currency_id
-response['transaction_requester']=user
+response['method_create_approval_task_line']='create_approval_task_line'
+#response['transaction_value']=transaction_object.total_cost
+#response['transaction_currency']=transaction_object.currency_id
+#response['transaction_requester']=user
             </field>
             <field name="invoke_validate_request_approval">validate_request_approval</field>
             <field name="invoke_approval_start">event_approval_start</field>
