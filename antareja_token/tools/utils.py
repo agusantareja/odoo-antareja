@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import json
 import base64
+import json
+import logging
+from functools import wraps
 
+from odoo.addons.antareja_base.tools.rest import invalid_response
 from odoo.http import request
 from odoo.service import security
-from functools import wraps
 from werkzeug.wrappers import Response
-from odoo.addons.antareja_base.tools.rest import invalid_response
 
 _logger = logging.getLogger(__name__)
 

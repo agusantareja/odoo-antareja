@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from datetime import datetime, timedelta
-from jwt import InvalidTokenError
-
 import logging
-import jwt
 import time
+from datetime import datetime, timedelta
+
+import jwt
+from jwt import InvalidTokenError
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
