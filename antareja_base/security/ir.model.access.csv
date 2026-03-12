@@ -1,9 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_approval_approval_task_user,approval.task user,model_approval_task,base.group_user,1,1,1,0
-access_approval_approval_task_admin,approval.task admin,model_approval_task,base.group_user,1,1,1,0
+access_approval_task_user,approval.task user,model_approval_task,base.group_user,1,1,1,0
+access_approval_task_admin,approval.task admin,model_approval_task,base.group_system,1,1,1,1
 
 access_approval_audit_log_user,approval.task.audit.log user,model_approval_audit_log,base.group_user,1,1,1,0
-access_approval_audit_log_admin,approval.task.audit.log,model_approval_audit_log,base.group_user,1,1,1,0
+access_approval_audit_log_admin,approval.task.audit.log admin,model_approval_audit_log,base.group_system,1,1,1,1
 
 access_approval_template_read_user,Read Approval Template,model_approval_template,base.group_user,1,0,0,0
 access_approval_template_system_user,CRUD Approval Template,model_approval_template,base.group_system,1,1,1,1

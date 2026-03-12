@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-
 import logging
+
+from odoo import api, fields, models
 
 from ..tools.utils import have_method
 
@@ -11,8 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
-    _description = """ implement untuk instance yang akan akan di tambahkan approval
-    """
+    _description = """Implement untuk instance yang akan akan di tambahkan approval"""
     access_approval = fields.Boolean(compute="compute_access_approval")
 
     def compute_access_approval(self):
@@ -205,7 +204,7 @@ class ApprovalTransactionTask(models.AbstractModel):
         list_ids = self.ids
         model_name = self._name
         result = super(ApprovalTransactionTask, self).unlink()
-        _logger.info(f"unlink {model_name} , {list_ids} propagate to approval.task")
+        _logger.info(f"unlink {model_name}, {list_ids} propagate to approval.task")
         self.env['approval.task'].search(
             [('transaction_model_name', '=', model_name), ('transaction_id', 'in', list_ids)]
         ).approval_done()
@@ -269,4 +268,4 @@ class ApprovalTransactionTask(models.AbstractModel):
         # get all ids to approve by transaction model
         approval_task = self.env['approval.task'].with_context(__transaction_model_name=self._name).search(
             [('user_have_access_to_approval', '=', True)])
-        return list(approval_task.mapped('transaction_id'))
+        return approval_task.mapped('transaction_id')

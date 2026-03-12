@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.exceptions import UserError
-from ..tools.utils import have_method, safe_call_method
 import logging
 
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+
+from ..tools.utils import have_method, safe_call_method
+
 _logger = logging.getLogger(__name__)
+
 
 class ApprovalTaskLineMixin(models.AbstractModel):
     _name = "approval.task.line.mixin"
@@ -68,9 +71,12 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return self.env['approval.instance'].browse()
 
     def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
-        if self:
-            transaction_id = self.transaction_id
-            transaction_model_name = self.transaction_model_name
+        for rec in self:
+            if rec.transaction_id and rec.transaction_model_name:
+                transaction_id = rec.transaction_id
+                transaction_model_name = rec.transaction_model_name
+                break
+
         if not transaction_model_name or not transaction_id:
             raise UserError(" Transaction not set ")
         return self.search(
@@ -85,6 +91,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 break
             previous = task
         return previous
+
+    def get_last_approval_task_line(self, transaction_id=None, transaction_model_name=None):
+        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id desc',limit=1)
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if not transaction_id or not transaction_model_name:

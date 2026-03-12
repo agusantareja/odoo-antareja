@@ -4,8 +4,6 @@ from . import res_users
 from . import res_groups
 from . import ir_config_parameter
 from . import application_server
-from . import application_server_auth
-from . import application_server_path
 from . import api_call
 from . import approval_transaction
 from . import approval_transaction_view
