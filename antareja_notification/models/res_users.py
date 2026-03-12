@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, _
 import logging
+
+from odoo import _, models
+
 _logger = logging.getLogger(__name__)
 
-
-from odoo import models, _
 
 class ResUsers(models.Model):
     _inherit = 'res.users'

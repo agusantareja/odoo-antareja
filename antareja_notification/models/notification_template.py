@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +17,8 @@ class NotificationTemplate(models.Model):
 
     active = fields.Boolean(default=True)
     name = fields.Char("Notification")
+    model_id = fields.Many2one('ir.model')
+    #model = fields.Char(related='model_id.model', store=True)
     model = fields.Char("Model")
     scope = fields.Char("Scope", default="INTRA")
     template_email = fields.Many2one('mail.template')
@@ -26,6 +29,30 @@ class NotificationTemplate(models.Model):
         help='Comment Post'
     )
     template_mobile = fields.Many2one('notification.mobile.template')
+
+    @api.model_create_multi
+    @api.returns('self', lambda value: value.id)
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('model_id'):
+                vals['model_id']=self.model_id.search([('model','=',vals.get('model'))],limit=1).id
+
+        results = super(NotificationTemplate,self).create(vals_list)
+        for res in results:
+            if res.model_id and res.model_id.model != res.model:
+                res.model = res.model_id.model
+        return results
+
+    def write(self, vals):
+        result = super(NotificationTemplate,self).write(vals)
+        if not self.env.context.get('skip_update_model_id'):
+            for res in self.with_context(skip_update_model_id=True):
+                if res.model_id.model != res.model:
+                    if res.model_id :
+                        res.write({'model':res.model_id.model})
+                    elif res.model:
+                        res.write({'model_id': self.model_id.search([('model','=',res.model)],limit=1).id})
+        return result
 
     def get_test_email(self):
         return self.env['ir.config_parameter'].sudo().get_param('send_message_cron.test_email') or "False"
