@@ -18,6 +18,7 @@
     'data': [
         'data/user_delegate_cron.xml',
         'data/user_delegate_sequence.xml',
+        'security/base_groups.xml',
         'security/ir.model.access.csv',
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',
