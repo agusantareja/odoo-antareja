@@ -28,6 +28,7 @@
         'views/application_server_auth_views.xml',
         'views/application_server_path_views.xml',
         'views/menuitem.xml',
+        'views/res_config_settings_views.xml',
     ],
 
 }
