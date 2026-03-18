@@ -23,6 +23,7 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'views/api_call_retry_views.xml',
         'views/application_server_views.xml',
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',

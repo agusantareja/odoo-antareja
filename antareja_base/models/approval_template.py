@@ -42,7 +42,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
     state_field = fields.Char()
     state_reject = fields.Char(help="State when reject")
     state_approved = fields.Char(help="State when approved. Leve blank when not need update")
-    state_waiting_approvals = fields.Char()
+    state_waiting_approvals = fields.Char(help="Waiting Approval for approval_line")
 
     invoke_validate_request_approval = fields.Char()
     invoke_approval_start = fields.Char()
@@ -65,7 +65,7 @@ class ApprovalTemplateMixin(models.AbstractModel):
     def invoke_method(self, transaction_object, method_name, kwargs=None):
         atts_method_name = f"invoke_{method_name}"
         object_method_name = getattr(self, atts_method_name)
-        save_call_method(transaction_object, object_method_name, **kwargs)
+        safe_call_method(transaction_object, object_method_name, kwargs=kwargs)
 
     def get_state_waiting_approvals(self):
         if self.state_waiting_approvals:

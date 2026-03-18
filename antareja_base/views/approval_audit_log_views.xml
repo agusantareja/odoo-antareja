@@ -6,6 +6,9 @@
             <tree>
                 <field name="transaction_display_name" />
                 <field name="user_id"/>
+                <field name="job_position" optional="hide"/>
+                <field name="delegator_id" optional="hide"/>
+                <field name="delegator_job_position" optional="hide"/>
                 <field name="action_type"/>
                 <field name="create_date"/>
                 <field name="notes"/>

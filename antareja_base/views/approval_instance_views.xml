@@ -23,6 +23,7 @@
                 <field name="user_ids" widget="many2many_tags"/>
                 <field name="group_ids" widget="many2many_tags"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
+                <button name="check_approval_task_status" string="Check Approval Task" type="object" icon="fa-solid fa-list-check text-success" groups="base.group_no_one"/>
             </tree>
         </field>
     </record>
@@ -49,7 +50,8 @@
 <!--                    <field name="state" widget="statusbar" />-->
 <!--                    <field name="status_approval"  invisible="1" />-->
 <!--                    <field name="stage_strategy_inline" invisible="1"/>-->
-                        <button name="action_approval_transaction" string="Transaction" type="object" class="oe_highlight"/>
+                    <button name="action_approval_transaction" string="Transaction" type="object" class="oe_highlight"/>
+                    <button name="check_approval_task_status" string="Check Approval Task" type="object" class="oe_highlight" icon="fa-solid fa-list-check text-success" groups="base.group_no_one"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
