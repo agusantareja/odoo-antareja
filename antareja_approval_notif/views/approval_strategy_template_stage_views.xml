@@ -1,0 +1,65 @@
+<odoo>
+    <!-- TREE VIEW -->
+    <record id="view_approval_strategy_template_stage_tree" model="ir.ui.view">
+        <field name="name">approval.strategy.template.stage.tree</field>
+        <field name="model">approval.strategy.template.stage</field>
+        <field name="arch" type="xml">
+            <tree string="Approval Strategy Template Stages" default_order="transaction_model_name, sequence">
+                <field name="active"/>
+                <field name="sequence"/>
+                <field name="transaction_model_name"/>
+                <field name="transaction_stage_field"/>
+                <field name="stage_strategy_config_name"/>
+                <field name="stage_strategy_config_model_name"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_approval_strategy_template_stage_form" model="ir.ui.view">
+        <field name="name">approval.strategy.template.stage.form</field>
+        <field name="model">approval.strategy.template.stage</field>
+        <field name="arch" type="xml">
+            <form string="Approval Strategy Template Stage">
+                <header>
+                    <button name="action_try_config"
+                            string="Try Config"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <group col="2">
+                        <field name="active"/>
+                        <field name="sequence"/>
+                        <field name="transaction_model_name"/>
+                        <field name="transaction_stage_field"/>
+                        <field name="stage_strategy_config_name"/>
+                        <field name="stage_strategy_config_model_name"/>
+                    </group>
+                    <notebook>
+                        <page string="Python Code">
+                            <field name="code" widget="text" placeholder="# Write Python code to compute result"/>
+                        </page>
+                        <page string="Result">
+                            <field name="result_output" readonly="1" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_approval_strategy_template_stage" model="ir.actions.act_window">
+        <field name="name">Approval Strategy Template Stages</field>
+        <field name="res_model">approval.strategy.template.stage</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your Approval Strategy Template Stages
+            </p>
+        </field>
+    </record>
+
+
+</odoo>
