@@ -1,0 +1,9 @@
+<odoo>
+
+    <template id="odoo_error_log_assets_backend" name="odoo_error_log assets" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/odoo_error_log/static/src/js/error_dialog_custom.js"/>
+        </xpath>
+    </template>
+
+</odoo>

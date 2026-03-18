@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_error_log_search" model="ir.ui.view">
+        <field name="name">error.log.search</field>
+        <field name="model">error.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="db_name"/>
+                <field name="name"/>
+                <field name="message"/>
+                <filter name="today_errors" string="Today's Errors" domain="[('date_time', '&gt;=', context_today())]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_error_log_tree" model="ir.ui.view">
+        <field name="name">error.log.tree</field>
+        <field name="model">error.log</field>
+        <field name="arch" type="xml">
+            <tree default_order='date_time desc'>
+                <field name="db_name"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="message"/>
+                <field name="date_time"/>
+                <field name="email_sent"/>
+                <field name="company_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_error_log_form" model="ir.ui.view">
+        <field name="name">error.log.form</field>
+        <field name="model">error.log</field>
+        <field name="arch" type="xml">
+            <form string="Error Log">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="db_name"/>
+                            <field name="name"/>
+                            <field name="date_time" readonly="1"/>
+                            <field name="user_id"/>
+                            <field name="user_name"/>
+                            <field name="user_ip"/>
+                            <field name="email_sent"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="message"/>
+                        </group>
+                    </group>
+                    <group>
+                            <field name="traceback" widget="html"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_error_log" model="ir.actions.act_window">
+        <field name="name">Error Logs</field>
+        <field name="res_model">error.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>
+                This view shows all logged errors in the system.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_error_log_root"
+              name="Error Logs"
+              parent="base.next_id_9"
+              action="action_error_log"/>
+
+</odoo>
