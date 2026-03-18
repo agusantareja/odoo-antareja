@@ -13,6 +13,7 @@ disediakan untuk penyederhanaan pengiriman email/WhatsApp.
     'depends': ['base', 'mail', 'antareja_base',],
     'data': [
         'security/ir.model.access.csv',
+        'views/approval_task_views.xml',
         'views/notification_template_views.xml',
         'views/notification_log_views.xml',
         'views/approval_template_views.xml',
