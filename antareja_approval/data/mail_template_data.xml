@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mail_template_email_notification_approval_task" model="mail.template">
+            <field name="name">Mail Notification Approval Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">Mail Notification Approval Task</field>
+            <field name="partner_to">${ctx.get('notification_to_user').partner_id.id}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} butuh approval anda. Terima kasih
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div></field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_email_notification_rejection_task" model="mail.template">
+            <field name="name">Mail Rejection Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">Mail Rejection Task</field>
+            <field name="partner_to">${ctx.get('notification_to_user').partner_id.id}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} ditolak oleh ${user.partner_id.name}. Silakan dicek kembali
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div>
+            </field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+
+        <record id="mail_template_mail_bot_notification_approval_task" model="mail.template">
+            <field name="name">Mail chanel bot Notification Approval Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">Mail chanel bot Notification Approval Task</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} butuh approval anda. Terima kasih
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div></field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_mail_bot_notification_rejection_task" model="mail.template">
+            <field name="name">Mail chanel bot Rejection Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">Mail chanel bot Rejection Task</field>
+            <field name="partner_to">${ctx.get('notification_to_user').partner_id.id}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} ditolak oleh ${user.partner_id.name}. Silakan dicek kembali
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div>
+            </field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_whatsapp_notification_approval_task" model="mail.template">
+            <field name="name">Whatsapp Notification Approval Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">${object.name}</field>
+            <field name="email_to">${ctx.get('notification_to_user').mobile_phone}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} butuh approval anda. Terima kasih
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div></field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_whatsapp_notification_rejection_task" model="mail.template">
+            <field name="name">Whatsapp Rejection Task</field>
+            <field name="model_id" ref="model_approval_transaction_task"/>
+            <field name="subject">${object.name}</field>
+            <field name="email_to">${ctx.get('notification_to_user').mobile_phone}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi ${ctx.get('notification_to_user').partner_id.name}, ${object.get_transaction_object().get_internal_description()} ditolak oleh ${user.partner_id.name}. Silakan dicek kembali
+                        <br/>
+                        <a href="${object.get_transaction_object().get_internal_url()}">Klik disini untuk melihat detail</a>
+                    </p>
+                </div>
+            </field>
+            <field name="lang">${ctx.get('notification_to_user').partner_id.lang}</field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
