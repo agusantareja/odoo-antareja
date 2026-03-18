@@ -7,8 +7,8 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-
 _strategy_config_name = "matrix_tiered"
+
 
 class ApprovalStrategyConfigStage(models.TransientModel):
     _name = "approval.strategy.config.stage." + _strategy_config_name
@@ -35,7 +35,8 @@ class ApprovalStrategyConfigStage(models.TransientModel):
                 source['notification_template_approved_id'] = matrix_rule.notification_template_approval_id.id
             source['approval_tasks'] = matrix_rule.get_approval_line(**param)
         else:
-            raise UserError("Approval Matrix Tiered Rule not found, please configure Approval Matrix Tiered Rule first.")
+            raise UserError(
+                "Approval Matrix Tiered Rule not found, please configure Approval Matrix Tiered Rule first.")
 
         # Create a new stage
         return super(ApprovalStrategyConfigStage, self).create_new_stage(source)
