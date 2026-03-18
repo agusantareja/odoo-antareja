@@ -6,7 +6,7 @@
     """,
     'category': 'Tools',
     'author': 'ChatGPT + Agus',
-    'depends': ['base', 'mail', 'antareja_approval'],
+    'depends': ['base', 'mail', 'antareja_approval_manager', 'antareja_notification'],
     'data': [
         'security/ir.model.access.csv',
         'views/approval_matrix_tiered_rule_views.xml',
