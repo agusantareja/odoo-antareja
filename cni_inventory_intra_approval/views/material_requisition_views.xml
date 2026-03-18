@@ -1,0 +1,64 @@
+<odoo>
+    <record id="view_purchase_order_form_inherit_approval" model="ir.ui.view">
+        <field name="name">material_requisition.view.form</field>
+        <field name="model">material.requisition</field>
+        <field name="inherit_id" ref="cni_inventory_intra.material_requisition_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_approve_cost_control']" position="replace"/>
+            <xpath expr="//button[@name='action_reject_cost_control']" position="replace"/>
+            <xpath expr="//button[@name='action_approve']" position="replace"/>
+            <xpath expr="//button[@name='action_reject']" position="replace"/>
+            <!-- bila form terkait delegate group nya yang berlaku di form-->
+            <xpath expr="//header" position="inside">
+                <field name="access_approval" invisible="1" readonly="1"/>
+                <button name="action_approve_transaction"
+                        string="Approve" type="object" class="oe_highlight"
+                        attrs="{'invisible': ['|',('access_approval','=',False),('request_status', '=', 'draft')]}"
+                />
+                <button name="action_reject_transaction"
+                        string="Reject" type="object" class="oe_highlight"
+                        attrs="{'invisible': ['|',('access_approval','=',False),('request_status', '=', 'draft')]}"
+                />
+
+                <button name="reset_line_approval"
+                        string="Reset Line Approval" type="object" class="oe_highlight" groups="base.group_no_one"/>
+
+                <button name="strategy_button_submit"
+                        string="Strategy Button Submit" type="object" class="oe_highlight" groups="base.group_no_one"/>
+                <button name="setup_approval_stage"
+                        string="Setup Approval Stages" type="object" class="oe_highlight" groups="base.group_no_one"/>
+                <button name="check_next_approval_task"
+                        string="Check Next Approval Task" type="object" class="oe_highlight" groups="base.group_no_one"/>
+            </xpath>
+
+            <!-- -->
+            <xpath expr="//notebook//page//field[@name='approval_ids']/tree" position="inside">
+                 <field name="user_execution_id" readonly="1" />
+            </xpath>
+
+            <!-- -->
+            <xpath expr="//form//sheet" position="inside">
+                <notebook id="approval_form" groups="base.group_no_one">
+                    <page name="approval_config" string="Approval Config">
+
+                        <field name="approval_stage_active" readonly="1"/>
+                        <field name="approval_stage_task_active" readonly="1"/>
+                    </page>
+                    <page string="Approval Task" >
+                        <group>
+                            <group>
+                                <field name="approval_instance_id" readonly="1" context="{'create':False,'edit':False}"/>
+                                <field name="approval_stage_id" readonly="1" context="{'create':False,'edit':False}"/>
+                                <field name="next_approval_task_id" readonly="1" context="{'create':False,'edit':False}"/>
+                            </group>
+                        </group>
+                        <field name="approval_stage_task_line" readonly="1" />
+                    </page>
+                    <page string="Audit Trail">
+                        <field name="approval_audit_log_line" readonly="1" />
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
