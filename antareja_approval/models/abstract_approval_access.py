@@ -15,7 +15,7 @@ class ApprovalAccessMixin(models.AbstractModel):
 
 class AbstractApprovalType(models.AbstractModel):
     _name = "abstract.approval.type"
-    _description = "Mixin : Approval Access Aproval"
+    _description = "Mixin : Approval Access Type"
     # Tipe approval, apakah user atau group
     type_approval = fields.Selection([
         ('user', 'User'),
@@ -56,6 +56,37 @@ class AbstractApprovalType(models.AbstractModel):
 
         return users
 
+    def prepare_approval_task_dict(self):
+        """Prepare dict untuk create record approval task"""
+        self.ensure_one()
+        kw = {}
+        users = self.env['res.users'].browse()
+        groups = self.env['res.groups'].browse()
+        if self.type_approval == 'user' and self.user_id:
+            users |= self.user_id
+
+        elif self.type_approval == 'group' and self.group_id:
+            groups |= self.group_id
+
+        elif self.type_approval == 'multi_user' and self.user_ids:
+            users = self.user_ids
+        elif self.type_approval == 'multi_group' and self.group_ids:
+            groups = self.group_ids
+        else:
+            # === OPSI FALLBACK ===
+            if self.user_id:
+                users |= self.user_id
+            if self.user_ids:
+                users |= self.user_ids
+            if self.group_id:
+                groups |= self.group_id
+            if self.group_ids:
+                groups |= self.group_ids
+        if users:
+            kw['user_ids'] = users
+        if groups:
+            kw['group_ids'] = groups
+        return kw
 
 class AbstractApprovalAccess(models.AbstractModel):
     _name = "abstract.approval.access"
@@ -149,3 +180,43 @@ class AbstractApprovalAccess(models.AbstractModel):
             else:
                 domain = approval_domain
         return super().search_read(domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+
+
+APPROVAL_STATUS_READY = 'ready'
+APPROVAL_STATUS_NOT_APPROVE = 'waiting_approval'
+APPROVAL_STATUS_APPROVED = 'approved'
+APPROVAL_STATUS_REJECTED = 'rejected'
+APPROVAL_STATUS_CANCELLED = 'cancelled'
+APPROVAL_STATUS_LIST = [
+    ('draft', 'Draft'),
+    ('waiting', 'Waiting'),
+    (APPROVAL_STATUS_NOT_APPROVE, 'Waiting Approval'),
+    (APPROVAL_STATUS_APPROVED, 'Approved'),
+    (APPROVAL_STATUS_REJECTED, 'Rejected'),
+    (APPROVAL_STATUS_CANCELLED, 'Cancelled')
+]
+
+
+class AbstractApprovalStatus(models.AbstractModel):
+    _name = "abstract.approval.status"
+
+    status_approval = fields.Selection(
+        APPROVAL_STATUS_LIST,
+        'Status Approval',
+        default='draft',
+    )
+
+    def set_waiting_state(self):
+        self.status_approval = 'waiting'
+
+    def set_waiting_approval_state(self):
+        self.status_approval = APPROVAL_STATUS_NOT_APPROVE
+
+    def set_approve_state(self):
+        self.status_approval = APPROVAL_STATUS_APPROVED
+
+    def set_reject_state(self):
+        self.status_approval = APPROVAL_STATUS_REJECTED
+
+    def set_canceled_state(self):
+        self.status_approval = APPROVAL_STATUS_CANCELLED

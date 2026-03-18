@@ -15,6 +15,7 @@
         'views/approval_transaction_task_views.xml',
         'views/approval_audit_log_views.xml',
         'views/approval_strategy_template_instance_views.xml',
+        'views/approval_strategy_template_stage_views.xml',
         'views/menuitem_views.xml',
         'wizard/popup_reject.xml',
         'wizard/approval_strategy_config_stage_views.xml',

@@ -22,6 +22,8 @@
         <field name="arch" type="xml">
             <form string="Approval Strategy Template Stage">
                 <header>
+                    <field name="active" invisible="1"/>
+                    <field name="sequence" invisible="1"/>
                     <button name="action_try_config"
                             string="Try Config"
                             type="object"
@@ -29,14 +31,19 @@
                 </header>
                 <sheet>
                     <group col="2">
-                        <field name="active"/>
-                        <field name="sequence"/>
                         <field name="transaction_model_name"/>
 <!--                        <field name="transaction_stage_field"/>-->
                         <field name="stage_strategy_config_name"/>
                         <field name="stage_strategy_config_model_name"/>
                     </group>
                     <notebook>
+                        <page string="Notification">
+                            <group col="2">
+                                <field name="notification_template_approval_id"/>
+                                <field name="notification_template_rejection_id"/>
+                                <field name="notification_template_approved_id"/>
+                            </group>
+                        </page>
                         <page string="Python Code">
                             <field name="code" widget="text" placeholder="# Write Python code to compute result"/>
                         </page>
@@ -46,18 +53,6 @@
                     </notebook>
                 </sheet>
             </form>
-        </field>
-    </record>
-
-    <!-- ACTION -->
-    <record id="action_approval_strategy_template_stage" model="ir.actions.act_window">
-        <field name="name">Approval Strategy Template Stages</field>
-        <field name="res_model">approval.strategy.template.stage</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your Approval Strategy Template Stages
-            </p>
         </field>
     </record>
 

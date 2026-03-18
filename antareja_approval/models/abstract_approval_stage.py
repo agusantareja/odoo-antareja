@@ -4,6 +4,7 @@ from odoo.addons.antareja_approval.tools.utils import to_integer, param_transact
 
 from odoo.exceptions import UserError
 
+
 APPROVAL_STATUS_READY = 'ready'
 APPROVAL_STATUS_NOT_APPROVE = 'waiting_approval'
 APPROVAL_STATUS_APPROVED = 'approved'
@@ -17,38 +18,6 @@ APPROVAL_STATUS_LIST = [
     (APPROVAL_STATUS_REJECTED, 'Rejected'),
     (APPROVAL_STATUS_CANCELLED, 'Cancelled')
 ]
-
-
-def have_method(obj, method):
-    return hasattr(obj, method) and callable(getattr(obj, method))
-
-
-class AbstractApprovalStatus(models.AbstractModel):
-    _name = "abstract.approval.status"
-
-    status_approval = fields.Selection(
-        APPROVAL_STATUS_LIST,
-        'Status Approval',
-        default='draft',
-    )
-
-    def set_waiting_state(self):
-        self.status_approval = 'waiting'
-
-    def set_waiting_approval_state(self):
-        self.status_approval = APPROVAL_STATUS_NOT_APPROVE
-
-    def set_approve_state(self):
-        self.status_approval = APPROVAL_STATUS_APPROVED
-
-    def set_reject_state(self):
-        self.status_approval = APPROVAL_STATUS_REJECTED
-
-    def set_canceled_state(self):
-        self.status_approval = APPROVAL_STATUS_CANCELLED
-
-
-
 
 
 # ===========================

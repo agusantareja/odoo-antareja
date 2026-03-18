@@ -118,6 +118,7 @@ class ApprovalAuditLog(models.Model):
         'approval.transaction.task',
         help="ID of the approval task this log belongs to"
     )
+    start_amount = fields.Float("Limit/Start Amount")
 
     def get_transaction_object(self):
         if not self.transaction_id or not self.transaction_model_name:
@@ -132,26 +133,3 @@ class ApprovalAuditLog(models.Model):
             return False
         # This method should be overridden in child classes if needed
         return self.env[self.approval_stage_model_name].browse(self.approval_stage_id)
-
-    def send_message(self):
-        rec = self.ensure_one()
-        if self.approval_task_id:
-            if rec.action_type == 'reject':
-                message = self.approval_task_id.get_reject_comment_message()
-            elif rec.action_type == 'approve':
-                message = self.approval_task_id.get_approved_comment_message()
-            else:
-                return
-            self.approval_task_id.notify_transaction_comment(message=message)
-
-    def create_audit_log(self, without_send_message=False, **kwargs):
-        # _field = self._fields
-        # create_dict = {key: value for key, value in kwargs.items() if key in _field}
-        # ignored_keys = [key for key in kwargs if key not in _field]
-        # if ignored_keys:
-        #     _logger.warning("Ignored unknown fields in audit log: %s", ignored_keys)
-        # result = self.create([create_dict])[0]
-        result = super(ApprovalAuditLog,self).create_audit_log(**kwargs)
-        if not without_send_message:
-            result.send_message()
-        return result
