@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_user_delegate_form_inherit" model="ir.ui.view">
+        <field name="name">user.delegate</field>
+        <field name="model">user.delegate</field>
+        <field name="inherit_id" ref="antareja_doa.view_user_delegate_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='delegatee_id']" position="after">
+                <field name="notification_option" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
