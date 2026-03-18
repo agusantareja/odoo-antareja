@@ -30,15 +30,15 @@ class ResUsers(models.Model):
         return "%s://%s/web_token_access?%s" % (result.scheme, result.netloc, query_str)
 
     def get_mobile_access_token(self, create=False):
-        return self.get_access_token(user_id=self.id, create=create)
+        return self.get_access_token(create=create)
 
     def get_access_token(self, create=False):
-        return self.get_access_token(user_id=self.id, create=create)
+        return self.env['antareja.token'].get_access_token(user=self, create=create)
 
     def _check_credentials(self, password):
         try:
             return super(ResUsers, self)._check_credentials(password)
         except AccessDenied:
             payload = self.env['antareja.token'].validate(password)
-            if not payload or payload.get('uid') != self.id:
+            if not payload or payload.get('uid') != self.env.uid:
                 raise

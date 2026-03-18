@@ -103,7 +103,7 @@ class AccessToken(models.Model):
             algorithm=self.get_algorithm()
         ), payload
 
-    def validate(self, token):
+    def validate(self, token, refresh_token=False):
         try:
             payload = jwt.decode(
                 token,
