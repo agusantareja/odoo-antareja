@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="whatsapp_template_notification_approval_task" model="whatsapp.template">
+            <field name="name">antareja_approval_whatsapp.whatsapp_template_notification_approval_task</field>
+            <field name="recipient">object.notification_to_user_id.partner_id</field>
+            <field name="model_id" ref="antareja_approval.model_approval_transaction_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_phone" model="whatsapp.template.param">
+            <field name="key">phone</field>
+            <field name="type">record</field>
+            <field name="value">phone</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_ref" model="whatsapp.template.param">
+            <field name="key">ref</field>
+            <field name="type">record</field>
+            <field name="value">object.approval_instance_id.name</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_scope" model="whatsapp.template.param">
+            <field name="key">scope</field>
+            <field name="type">fix</field>
+            <field name="value">APPROVAL</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_message" model="whatsapp.template.param">
+            <field name="key">message</field>
+            <field name="type">record</field>
+            <field name="value">Hi ${partner.name}, ${object.approval_instance_id.name} ${object.approval_instance_id.description} butuh approval anda. Terima kasih
+Klik disini untuk melihat detail
+${object.internal_url}</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="antareja_approval.notification_template_approval_task" model="notification.template">
+            <field name="template_whatsapp" ref="antareja_approval_whatsapp.whatsapp_template_notification_approval_task" />
+        </record>
+
+        <record id="whatsapp_template_notification_rejection_task" model="whatsapp.template">
+            <field name="name">antareja_approval_whatsapp.whatsapp_template_notification_rejection_task</field>
+            <field name="recipient">object.notification_to_user_id.partner_id</field>
+            <field name="model_id" ref="antareja_approval.model_approval_transaction_task"/>
+        </record>
+        <record id="whatsapp_template_notification_rejection_task_param_phone" model="whatsapp.template.param">
+            <field name="key">phone</field>
+            <field name="type">record</field>
+            <field name="value">phone</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task"/>
+        </record>
+        <record id="whatsapp_template_notification_rejection_task_param_ref" model="whatsapp.template.param">
+            <field name="key">ref</field>
+            <field name="type">record</field>
+            <field name="value">object.approval_instance_id.name</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task"/>
+        </record>
+        <record id="whatsapp_template_notification_rejection_task_param_scope" model="whatsapp.template.param">
+            <field name="key">scope</field>
+            <field name="type">fix</field>
+            <field name="value">APPROVAL</field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task"/>
+        </record>
+        <record id="whatsapp_template_notification_rejection_task_param_message" model="whatsapp.template.param">
+            <field name="key">message</field>
+            <field name="type">record</field>
+            <field name="value">Hi ${partner.name}, ${object.approval_instance_id.name} ${object.approval_instance_id.description} ditolak oleh ${user.partner_id.name} . Silakan dicek kembali
+Klik disini untuk melihat detail
+${object.internal_url}
+            </field>
+            <field name="template_id" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task"/>
+        </record>
+        <record id="antareja_approval.notification_template_rejection_task" model="notification.template">
+            <field name="template_whatsapp" ref="antareja_approval_whatsapp.whatsapp_template_notification_rejection_task" />
+        </record>
+
+    </data>
+</odoo>
