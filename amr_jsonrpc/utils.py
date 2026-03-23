@@ -113,3 +113,64 @@ def call_with_savepoint(self, method_name, args=None, kwargs=None, logger=_logge
         if rethrow:
             raise
     return None
+
+def call_safe(self, method_name, args=None, kwargs=None):
+    """
+    Memanggil method pada object secara aman.
+
+    - method optional
+    - method_name harus string
+    - method harus callable
+    - args disesuaikan dengan signature
+    """
+
+    if not isinstance(self, models.BaseModel):
+        return None
+
+    if not method_name or not isinstance(method_name, str):
+        return None
+
+    if not hasattr(self, method_name):
+        raise AttributeError(f"Method {method_name} not found")
+
+    method = getattr(self, method_name, None)
+    if not callable(method):
+        raise AttributeError(f"Callable method '{method_name}' not found on {self}")
+
+    # === signature aware ===
+    sig = inspect.signature(method)
+    params = sig.parameters
+
+    final_args = []
+    final_kwargs = {}
+    kwargs = dict(kwargs or {})
+    args = list(args or [])
+    for name, p in params.items():
+        if p.kind in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD
+        ):
+            if args:
+                final_args.append(args[0])
+                args = args[1:]
+            elif name in kwargs:
+                final_args.append(kwargs[name])
+                kwargs.pop(name)
+            elif p.default is not inspect.Parameter.empty:
+                final_args.append(p.default)
+            else:
+                raise TypeError(f"Missing required argument: {name}")
+
+        elif p.kind == inspect.Parameter.VAR_POSITIONAL:
+            final_args.extend(args)
+            args = ()
+
+        elif p.kind == inspect.Parameter.KEYWORD_ONLY:
+            if name in kwargs:
+                final_kwargs[name] = kwargs[name]
+            elif p.default is inspect.Parameter.empty:
+                raise TypeError(f"Missing keyword-only argument: {name}")
+
+        elif p.kind == inspect.Parameter.VAR_KEYWORD:
+            final_kwargs.update(kwargs)
+    return method(*final_args, **final_kwargs)
