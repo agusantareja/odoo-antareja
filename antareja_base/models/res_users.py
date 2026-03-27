@@ -44,7 +44,7 @@ class ResUsers(models.Model):
 
     def get_users_for_approval(self, company=None):
         if not self:
-            return
+            return self
         if self.env.context.get("__user_with_delegator_approval"):
             return self
         if company:

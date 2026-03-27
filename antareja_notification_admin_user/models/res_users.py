@@ -12,5 +12,5 @@ class ResUsers(models.Model):
 
     def get_users_for_notification(self, company=None):
         if not self:
-            return
+            return self
         return super(ResUsers,self.filtered(lambda u: not u.admin_user)).get_users_for_notification(company=company)
