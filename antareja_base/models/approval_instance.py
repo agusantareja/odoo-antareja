@@ -407,7 +407,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         reject_approval = rec.get_next_approval_task_line()
         kw = dict(kwargs)
         kw.setdefault('transaction_object', rec.get_transaction_object())
-        return reject_approval.reject_from_popup_reject( **kwargs)
+        return reject_approval.reject_from_popup_reject( **kw)
 
     def before_reject(self, **kwargs):
         if not self:
