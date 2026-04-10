@@ -361,7 +361,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 trx_update_value[state_field] = state_approved
 
         if trx_update_value:
-            _logger.info("Info Update state %s ", str(trx_update_value))
+            _logger.info("Info Update state %s ", trx_update_value)
             transaction_object.write(trx_update_value)
         elif is_approval_done:
             _logger.warning("No Update state when is_approval_done")
@@ -407,7 +407,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         reject_approval = rec.get_next_approval_task_line()
         kw = dict(kwargs)
         kw.setdefault('transaction_object', rec.get_transaction_object())
-        return reject_approval.reject_from_popup_reject( **kwargs)
+        return reject_approval.reject_from_popup_reject( **kw)
 
     def before_reject(self, **kwargs):
         if not self:
@@ -451,7 +451,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         if trx_update_value:
             transaction_object.write(trx_update_value)
-            _logger.info("No update state %s", str(trx_update_value))
+            _logger.info("No update state %s", trx_update_value)
         elif is_approval_done:
             _logger.warning("No update state")
 

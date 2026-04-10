@@ -189,7 +189,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 '__reject_reason')
         })
 
-
     def set_waiting_status(self, **kwargs):
         if have_method(self, "set_waiting_approval_state"):
             self.set_waiting_approval_state()
