@@ -88,15 +88,15 @@ class MobileApprovalClient(models.Model):
     # -------------------------------------------------------
     # SEND
     # -------------------------------------------------------
-    def get_endpoint_approval(self):
-        config = self.env['ir.config_parameter'].sudo()
-        base_url = config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_endpoint')
-        url = f"{base_url}/api/intra/mobile/approval"
-        headers = {
-            "token": config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_token'),
-            "Accept": "application/json"
-        }
-        return url,headers
+    # def get_endpoint_approval(self):
+    #     config = self.env['ir.config_parameter'].sudo()
+    #     base_url = config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_endpoint')
+    #     url = f"{base_url}/api/intra/mobile/approval"
+    #     headers = {
+    #         "token": config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_token'),
+    #         "Accept": "application/json"
+    #     }
+    #     return url,headers
 
     def send(self):
         self.ensure_one()
@@ -106,15 +106,16 @@ class MobileApprovalClient(models.Model):
             payload = json.dumps(payload_dict)
             # url, headers = self.get_endpoint_approval()
             server_auth = self.get_server_auth()
-            response = server_auth.rest_post(path=self.get_mobile_approval_path(), data=json.dumps(payload))
-            # response = requests.post(url, data=payload, headers=headers)
-            response.raise_for_status()
-            self.write({
-                'response': response.text,
-                'payload': payload,
-                'state': 'done'
-            })
-            return True
+            with server_auth.create_session() as s:
+                response = s.rest_post(path=self.get_mobile_approval_path(), data=json.dumps(payload))
+                # response = requests.post(url, data=payload, headers=headers)
+                response.raise_for_status()
+                self.write({
+                    'response': response.text,
+                    'payload': payload,
+                    'state': 'done'
+                })
+                return True
         except Exception:
             stack = traceback.format_exc()
             self.write({
