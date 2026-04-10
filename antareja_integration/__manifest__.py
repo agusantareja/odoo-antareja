@@ -1,34 +1,31 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': "Antarja || Integration",
-    'summary': """Integration""",
+    'name': "Antareja || Integration",
+    'summary': "Integration",
 
-    'description': """
-        Integration 
-    """,
+    'description': "Integration",
 
     'author': "IT Antareja",
     'website': "http://www.yourcompany.com",
 
     'category': 'Tools',
-    'version': '16.0.3.0.0',
+    'version': '16.0.3.0.1',
 
     # any module necessary for this one to work correctly
     'depends': [
         'base',
         'amr_jsonrpc',
-        'antareja_base'
+        'antareja_base',
     ],
     # always loaded
     'data': [
-        'data/cron.xml',
         'security/ir.model.access.csv',
+        'data/cron.xml',
         'views/application_server_views.xml',
         'views/application_server_auth_views.xml',
         'views/application_server_path_views.xml',
         'views/menuitem.xml',
         'views/res_config_settings_views.xml',
     ],
-
 }
