@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
-    _description = """Implement untuk instance yang akan akan di tambahkan approval"""
+    _description = "Implement untuk instance yang akan akan di tambahkan approval"
     access_approval = fields.Boolean(compute="compute_access_approval")
 
     def compute_access_approval(self):
@@ -256,9 +256,10 @@ class ApprovalTransactionTask(models.AbstractModel):
         all_approval_task_line = self.get_all_approval_task_line()
         if all_approval_task_line:
             for line in all_approval_task_line:
+                user = line.user_execution_id
                 signatures.append({
                     'sign_title': line.sign_title or 'Approved by',
-                    'sign_user': line.user_execution_id,
+                    'sign_user': user,
                     'approval_task_line': line,
                 })
 
