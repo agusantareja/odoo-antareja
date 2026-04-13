@@ -14,13 +14,9 @@ class ApplicationServerAuth(models.Model):
 
     active = fields.Boolean(default=True)
     name = fields.Char()
-    application_server_id = fields.Many2one(
-        'application.server'
-    )
-    application_server_path_ids = fields.One2many(
-        'application.server.path',
-        'application_server_auth_id'
-    )
+    application_server_id = fields.Many2one('application.server')
+    application_server_path_ids = fields.One2many('application.server.path', 'application_server_auth_id')
+
     @api.model
     def rest_login_path(self):
         return '/application/token'
