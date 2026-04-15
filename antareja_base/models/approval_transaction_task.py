@@ -247,10 +247,12 @@ class ApprovalTransactionTask(models.AbstractModel):
         raise NotImplemented
 
     def get_approval_users_signature(self):
+        _logger.info('approval.transaction.task.able.mixin#get_approval_users_signature')
         self.ensure_one()
         signatures = [{
             'sign_title': 'Created by',
             'sign_user': self.create_uid,
+            'sign_date': self.create_date.strftime('%d %b %Y'),
             'approval_task_line': False,
         }]
         all_approval_task_line = self.get_all_approval_task_line()
