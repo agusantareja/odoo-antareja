@@ -13,11 +13,13 @@ class AuthRestToken(models.AbstractModel):
     _name = 'client.auth.mixin'
 
     auth_type = fields.Selection([
-        ('odoo-rcp', 'Odoo RCP'),
-        ('jwt-odoo-rcp', 'JWT Odoo RCP'),
+        ('odoo-rpc', 'Odoo RPC'),
+        ('jwt-odoo-rpc', 'JWT Odoo RPC'),
         ('rest-token', 'Rest Token'),
         ('jwt-rest-token', 'JWT Rest Token'),
         ('basic', 'Basic'),
+        ('odoo-rcp', 'Odoo RCP Deprecated'),
+        ('jwt-odoo-rcp', 'JWT Odoo RCP Deprecated'),
     ], default='rest-token')
     # rest-token
     token_in = fields.Selection([
@@ -30,12 +32,10 @@ class AuthRestToken(models.AbstractModel):
     token_key = fields.Char(
         default='token'
     )
-
     access_token = fields.Char()
     refresh_token = fields.Char()
     refresh_endpoint = fields.Char()
     expires_at = fields.Datetime()
-
     username = fields.Char()
     password = fields.Char()
 

@@ -76,7 +76,3 @@ class GetTokenWizard(models.TransientModel):
             'refresh_token': data.get('refresh_token'),
             'expires_at': expires_at
         })
-        # ICP = self.env['ir.config_parameter'].sudo()
-        # ICP.set_param('amr.oauth.access_token', data.get('access_token'))
-        # ICP.set_param('amr.oauth.refresh_token', data.get('refresh_token'))
-        # ICP.set_param('amr.oauth.expires_at', expires_at)
