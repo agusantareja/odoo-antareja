@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import time
+from odoo import models, fields, api
 from datetime import datetime, timedelta
-
-import jwt
 from jwt import InvalidTokenError
-from odoo import api, fields, models
+
+import logging
+import jwt
+import time
 
 _logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class AccessToken(models.Model):
 
     @api.model
     def get_issuer(self):
-        return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        return self.env['ir.config_parameter'].sudo().get_param('antareja_token.issuer') or self.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
     @api.model
     def get_audience(self):
@@ -126,7 +126,7 @@ class AccessToken(models.Model):
             pass
         return None
 
-    def client_token_validation(self,token):
+    def client_token_validation(self, token):
         return False
 
     def create_access_token(self, user, retention_in=None):

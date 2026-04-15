@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 import werkzeug
-from odoo import fields, http
-from odoo.addons.antareja_base.tools.rest import (invalid_response,
-                                                  valid_response)
+from odoo import http, fields
 from odoo.http import request
-from werkzeug.urls import url_encode
-
-from ..tools.utils import get_bearer_token, set_session
+from werkzeug import url_encode
+from ..tools.utils import set_session, get_bearer_token
+from odoo.addons.antareja_base.tools.rest import valid_response, invalid_response
 
 _logger = logging.getLogger(__name__)
 
@@ -20,7 +17,7 @@ def _password_grant(data):
     ], limit=1)
 
     if not user:
-        return invalid_response(400, "invalid_grant")
+        return invalid_response(401, "invalid_grant")
     try:
         user.with_user(user)._check_credentials(data.get('password'))
     except Exception:
@@ -78,7 +75,7 @@ class ControllerMobileAccess(http.Controller):
         return invalid_response(401, "unsupported_grant_type")
 
     @http.route('/application/profile', type='http', auth='none', methods=['GET'], csrf=False)
-    def api_application_introspect(self, access_token):
+    def api_application_profile(self, access_token):
         active = False
         token = access_token or get_bearer_token()
         if token:
