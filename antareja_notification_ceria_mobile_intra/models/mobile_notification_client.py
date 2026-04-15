@@ -85,8 +85,8 @@ class MobileNotificationClient(models.Model):
             }
             # url, headers = self.get_endpoint()
             server_auth = self.get_server_auth()
-            with server_auth.create_session() as sr:
-                response = sr.rest_post(path=self.get_mobile_notification_path(), data=json.dumps(payload))
+            with server_auth.create_session() as s:
+                response = s.rest_post(path=self.get_mobile_notification_path(), data=json.dumps(payload))
                 # response = requests.post(url, data=json.dumps(payload), headers=headers)
                 response.raise_for_status()
                 self.write({
@@ -94,7 +94,7 @@ class MobileNotificationClient(models.Model):
                     'payload': json.dumps(payload),
                     'state': 'done'
                 })
-            return True
+                return True
 
         except Exception:
             stack = traceback.format_exc()
