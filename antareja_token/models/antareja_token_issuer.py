@@ -15,11 +15,11 @@ class AntarejaTokenIssuer(models.Model):
     _order = 'sequence, name'
 
     sequence = fields.Integer(default=10)
-    name = fields.Char('Issuer', required=True, help='Issuer Name')
+    name = fields.Char('Issuer', required=True, help='Issuer Name exp https://domain')
     issuer_type = fields.Selection([('token-trusted', 'Token Trusted')], string='Issuer Type', required=True, default='jwt')
-    auth_endpoint = fields.Char('Authentication URL')  # OAuth provider URL to authenticate users
-    validation_endpoint = fields.Char('Validation URL')  # OAuth provider URL to validate tokens
-    data_endpoint = fields.Char('Data URL')
+    auth_endpoint = fields.Char('Authentication URL', help='Issuer Name {http://domain}/application/token')  # OAuth provider URL to authenticate users
+    validation_endpoint = fields.Char('Validation URL', help='Validation Endpoint {http://domain}/application/introspect')  # OAuth provider URL to validate tokens
+    data_endpoint = fields.Char('Data URL', help='validation_endpoint {http://domain}/application/profile')
 
     def validate(self, token, payload=None):
         if self.issuer_type == 'token-trusted':

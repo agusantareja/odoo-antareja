@@ -33,7 +33,7 @@ class AccessToken(models.Model):
 
     @api.model
     def get_issuer(self):
-        return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        return self.env['ir.config_parameter'].sudo().get_param('antareja_token.issuer') or self.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
     @api.model
     def get_audience(self):

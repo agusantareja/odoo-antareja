@@ -12,8 +12,8 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
     'category': 'API',
-    'version': '16.0.0.0.8',
-    'depends': ['base', 'antareja_base'],
+    'version': '16.0.0.1.0',
+    'depends': ['base', 'antareja_base', ],
     'external_dependencies': {
         'python': ['pyjwt'],
     },
