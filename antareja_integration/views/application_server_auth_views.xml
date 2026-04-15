@@ -11,7 +11,7 @@
         </field>
     </record>
 
-    <record id="view_application_server_auth_form" model="ir.ui.view">
+    <record id="view_application_server_auth_form_views_2" model="ir.ui.view">
         <field name="name">application.server.auth.form</field>
         <field name="model">application.server.auth</field>
         <field name="priority" eval="10"/>
