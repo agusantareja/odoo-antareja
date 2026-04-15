@@ -412,11 +412,11 @@ class OdooSession(requests.Session):
             remote_model = RestModelObject(model_name, self, **kwargs)
         return remote_model
 
-    def rest_post(self,url=None,path=None,data=None, json=None,**kwargs):
+    def rest_post(self, url=None, path=None, data=None, json=None, **kwargs):
         url = url or self.get_rest_url(path)
-        return self.post(url,data=data,json=json,**kwargs)
+        return self.post(url, data=data, json=json, **kwargs)
 
-    def rest_get(self,url,path=None,**kwargs):
+    def rest_get(self, url, path=None, **kwargs):
         url = url or self.get_rest_url(path)
         return self.get(url, **kwargs)
 
