@@ -8,9 +8,15 @@
                 <search>
                     <field name="title"/>
                     <field name="body"/>
+                    <field name="to_user_id"/>
+                    <group>
+                        <filter name="filter_source_model" string="Source Model" context="{'group_by':'source_model'}"/>
+                        <filter name="filter_user" string="User" context="{'group_by':'to_user_id'}"/>
+                    </group>
                 </search>
             </field>
         </record>
+
 		<record id="view_ceria_mobile_notification_tree" model="ir.ui.view">
             <field name="name">ceria.mobile.notification.tree</field>
             <field name="model">ceria.mobile.notification</field>

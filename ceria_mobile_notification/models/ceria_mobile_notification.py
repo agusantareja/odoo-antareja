@@ -58,7 +58,11 @@ class CeriaMobileNotification(models.Model):
     # SEND
     # -------------------------------------------------------
     def get_devices_token(self):
-        return [mobile_device.token_fcm for mobile_device in self.to_user_id.ceria_mobile_device_ids if mobile_device.token_fcm]
+        if self.to_user_id:
+            mobile_device_ids = self.to_user_id.ceria_mobile_device_ids.search([('user_id','=',self.to_user_id.id)],order='last_active desc')
+            return [mobile_device.token_fcm for mobile_device in mobile_device_ids if mobile_device.token_fcm]
+        else:
+            return []
 
     def send(self):
         self.ensure_one()
@@ -92,17 +96,22 @@ class CeriaMobileNotification(models.Model):
                 image=self.image or None
             )
             errors={}
+            err = None
             send=False
             for token in tokens:
                 message = messaging.Message(data=data, notification=notification, token=token)
                 try:
-                    messaging.send(message)
+                    response = messaging.send(message)
+                    _logger.info("Mobile Notif to user [%s], (%s) , using token %s", self.to_user_id.name, response, token)
                     send=True
                 except Exception:
                     err = traceback.format_exc()
                     if self.env['ceria.mobile.device'].check_activate_token_fcm(token):
-                        errors['token'] =err
+                        errors['token'] = err
                         _logger.warning(err)
+                    else:
+                        _logger.error(err)
+
             if send or not errors:
                 self.write({
                     'payload': json.dumps(payload,indent=4),
@@ -154,9 +163,10 @@ class CeriaMobileNotification(models.Model):
                     'body',
                     'image',
                 }
-                mobile_notification.update({k: v for k, v in notification.items() if k in notification_fields})
+                mobile_notification.update({k: v for k, v in notification.items() if v and k in notification_fields})
             data = accept_data.get('data') or {}
             notification_to_user = None
+            to_user_id = None
             if data and isinstance(data,dict):
                 allowed_fields = {
                     'notification_type',
@@ -166,14 +176,28 @@ class CeriaMobileNotification(models.Model):
                 }
                 mobile_notification.update({k: v for k, v in data.items() if k in allowed_fields})
                 notification_to_user = data.get('notification_to_user')
+            mobile_notification.setdefault("body",accept_data.get("body"))
+            mobile_notification.setdefault("title", accept_data.get("title"))
+            notification_to_user = accept_data.get('email') or notification_to_user
             if notification_to_user:
                 to_user_id = self.to_user_id.search(['|',('partner_id.email','=',notification_to_user),('login','=',notification_to_user)],limit=1)
-            else:
-                raise ValueError("notification_to_user not found")
+
+                self.to_user_id.search(
+                    ['|', ('partner_id.email', '=', notification_to_user), ('login', '=', notification_to_user)],
+                    limit=1)
+            mobile_phone = accept_data.get('phone')
+            if not to_user_id:
+                phones= [mobile_phone]
+                if mobile_phone.startswith("62"):
+                    phones.append("0" + mobile_phone[2:])
+                _logger.info("found for phone: %s ", phones)
+                employee = self.env['hr.employee'].search([('mobile_phone', 'in', phones)], limit=1)
+                to_user_id = employee.user_id
 
             if to_user_id:
                 mobile_notification['to_user_id']=to_user_id.id
             else:
+                _logger.error("User not found for phone: %s , email or user%s ",mobile_phone,notification_to_user)
                 raise ValueError("User not found")
             self.write({**mobile_notification, 'state': 'ready_to_send'})
             self.event_update_approval(data)
@@ -199,17 +223,18 @@ class CeriaMobileNotification(models.Model):
 
 
     def event_update_approval(self,data=None):
-        rec = self.ensure_one()
-        if rec.notification_type == 'approval' and rec.to_user_id:
-            if not data:
-                accept_data = json.loads(self.accept_data or "{}")
-                data = accept_data.get('data') or {}
-
-            prepare_data = dict(data)
-
-            prepare_data['user_id'] = self.to_user_id.id
-            prepare_data['source_application'] = self.source_application
-            prepare_data['source_model'] = self.source_model
-            prepare_data['source_res_id'] = self.source_res_id
-
-            rec.mobile_approval_id=self.env["ceria.mobile.approval"].create_approval_user(**prepare_data)
+        pass
+        # rec = self.ensure_one()
+        # if rec.notification_type == 'approval' and rec.to_user_id:
+        #     if not data:
+        #         accept_data = json.loads(self.accept_data or "{}")
+        #         data = accept_data.get('data') or {}
+        #
+        #     prepare_data = dict(data)
+        #
+        #     prepare_data['user_id'] = self.to_user_id.id
+        #     prepare_data['source_application'] = self.source_application
+        #     prepare_data['source_model'] = self.source_model
+        #     prepare_data['source_res_id'] = self.source_res_id
+        #
+        #     rec.mobile_approval_id=self.env["ceria.mobile.approval"].create_approval_user(**prepare_data)
