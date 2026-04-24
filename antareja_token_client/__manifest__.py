@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': "Token Client",
-    'summary': "Token Client",
+    'name': "Client Token",
+    'summary': "Client Token",
     'description': "",
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.yourcompany.com",
