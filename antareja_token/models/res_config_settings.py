@@ -6,7 +6,7 @@ from odoo import models, fields
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    antareja_token_issuer = fields.Integer("Issuer", config_parameter='antareja_token.issuer', )
+    antareja_token_issuer = fields.Char("Issuer", config_parameter='antareja_token.issuer',)
     antareja_token_expires_in = fields.Integer("Expired in (sec)", config_parameter='antareja_token.expires_in',)
     antareja_token_retention_in = fields.Integer("Retention in (sec)", config_parameter='antareja_token.retention_in',)
     antareja_token_secret = fields.Char("Secret", config_parameter='antareja_token.secret',)
