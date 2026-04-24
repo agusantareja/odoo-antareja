@@ -2,7 +2,7 @@
 
 {
     'name': 'Antareja || Notification',
-    'version': '16.0.1.0.6',
+    'version': '16.0.1.0.7',
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",

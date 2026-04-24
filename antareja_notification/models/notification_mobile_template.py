@@ -81,8 +81,10 @@ class NotificationMobileTemplate(models.Model):
         }
         return self.send_notification(payload)
 
+    @api.model
     def send_notification(self,payload):
-        raise NotImplemented
+        _logger.error("implemntation not found")
+        pass
     # notification.mobile.target (internal,remote,firebase)
 
     @api.model
