@@ -4,12 +4,10 @@ import logging
 
 import werkzeug
 from odoo import fields, http
-from odoo.addons.antareja_base.tools.rest import (invalid_response,
-                                                  valid_response)
 from odoo.http import request
 from werkzeug.urls import url_encode
-
 from ..tools.utils import get_bearer_token, set_session
+from odoo.addons.antareja_base.tools.rest import valid_response, invalid_response
 
 _logger = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ def _password_grant(data):
     ], limit=1)
 
     if not user:
-        return invalid_response(400, "invalid_grant")
+        return invalid_response(401, "invalid_grant")
     try:
         user.with_user(user)._check_credentials(data.get('password'))
     except Exception:

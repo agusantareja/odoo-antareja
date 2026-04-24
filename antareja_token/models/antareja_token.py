@@ -126,7 +126,8 @@ class AccessToken(models.Model):
             pass
         return None
 
-    def client_token_validation(self,token):
+    @api.model
+    def client_token_validation(self, token):
         return False
 
     def create_access_token(self, user, retention_in=None):
