@@ -58,7 +58,11 @@ class CeriaMobileNotification(models.Model):
     # SEND
     # -------------------------------------------------------
     def get_devices_token(self):
-        return [mobile_device.token_fcm for mobile_device in self.to_user_id.ceria_mobile_device_ids if mobile_device.token_fcm]
+        if self.to_user_id:
+            mobile_device_ids = self.to_user_id.ceria_mobile_device_ids.search([('user_id','=',self.to_user_id.id)],order='last_active desc')
+            return [mobile_device.token_fcm for mobile_device in mobile_device_ids if mobile_device.token_fcm]
+        else:
+            return []
 
     def send(self):
         self.ensure_one()

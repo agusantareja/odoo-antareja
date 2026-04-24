@@ -50,7 +50,7 @@ class MainController(http.Controller):
     @http.route('/api/intra/mobile/notification', methods=['POST'], type='http', auth='none', csrf=False)
     @check_valid_token
     def post_mobile_notification(self,**post):
-        data = None
+        data = {}
         result = False
         data_str = request.httprequest.data.decode("utf-8")
         if data_str:
@@ -67,12 +67,28 @@ class MainController(http.Controller):
                 notif = env['ceria.mobile.notification'].create_payload(**data)
                 if notif:
                     notif.process()
+                    if notif.state=='error':
+                        return invalid_response(400, "Can not process notification", notif.errors_message)
+
                     result = {
                         'status' : 'success',
                         'message': 'Created Notification ID %s'%notif.id,
                     }
                 else:
                     return invalid_response(400,"Can not crate notification","")
+
+                if data.get('send_force'):
+                    notif.send()
+                    if notif.state=='send_error':
+                        return invalid_response(
+                            506,
+                            'send_error',
+                            'Created Notification ID %s : \n error: %s' %(notif.id,notif.errors_message))
+                    else:
+                        result = {
+                            'status': 'success',
+                            'message': 'Notification ID %s send' % notif.id,
+                        }
 
         return valid_response(200,result)
 
