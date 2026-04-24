@@ -46,6 +46,7 @@ class MobileApprovalClient(models.Model):
     def get_application_name(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja.application_name')
 
+    @api.model
     def get_mobile_approval_path(self):
         return "/api/intra/mobile/approval"
 
