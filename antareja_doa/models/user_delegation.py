@@ -73,7 +73,6 @@ class UserDelegation(models.Model):
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
 
-
     def name_get(self):
         return [(record.id, f"[{record.name}] {record.delegator_id.name} to {record.delegatee_id.name}") for record in
                 self]
@@ -178,9 +177,22 @@ class UserDelegation(models.Model):
         active_records = self.filtered(lambda r: r.state == 'active')
         proxies = active_records.mapped('delegatee_id')
         res = super().unlink()
-        for proxy in proxies:
-            self.get_delegations_user_group_for_proxy.clear_cache(self, proxy.id)
+        if proxies:
+            self.get_delegations_user_group_for_delegatee.clear_cache(self)
+            self.check_model_access_with_delegation.clear_cache(self)
+            self.get_allowed_models_with_delegation.clear_cache(self)
+
         return res
+
+    def write(self, write_vals):
+        r = super(UserDelegation, self).write(write_vals)
+        if not write_vals.get('state') == 'active':
+            # proxies = self.mapped('delegatee_id')
+            #if proxies:
+                # for proxy in proxies:
+            self.get_delegations_user_group_for_delegatee.clear_cache(self)
+            self.check_model_access_with_delegation.clear_cache(self)
+        return r
 
     @api.constrains('delegator_id', 'delegatee_id', 'start_date', 'end_date', 'state')
     def _check_duplicate_active_delegation(self):
@@ -247,12 +259,11 @@ class UserDelegation(models.Model):
 
             if need_clear and rec.delegatee_id:
                 _logger.debug("Clearing cache for delegatee_id=%s due to state/field change.", rec.delegatee_id.id)
-                self.get_delegations_user_group_for_proxy.clear_cache(self, rec.delegatee_id.id)
+                self.get_delegations_user_group_for_delegatee.clear_cache(self, rec.delegatee_id.id)
 
                 if rec.delegator_id:
                     for group in rec.delegator_id.groups_id:
                         self.has_delegate_group.clear_cache(self, rec.delegatee_id.id, group.id)
-
 
     def get_all_delegations(self, delegatee_id=None, delegator_id=None, group_id=None, company_id=None, limit=None):
         """
@@ -342,13 +353,15 @@ class UserDelegation(models.Model):
         }
 
     def read(self, fields=None, load='_classic_read'):
-        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get(
+                '__read_data_for_sync_external_application'):
             if fields:
                 if 'delegator_group_ids' in fields:
                     fields.remove('delegator_group_ids')
 
         result = super(UserDelegation, self).read(fields=fields, load=load)
-        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get(
+                '__read_data_for_sync_external_application'):
             delegator = {}
             for rec in self:
                 delegator[rec.id] = {
@@ -369,3 +382,74 @@ class UserDelegation(models.Model):
                     )
 
         return result
+
+    @tools.ormcache('delegatee_id')
+    def get_delegations_user_group_for_delegatee(self, delegatee_id):
+
+        _logger.debug("Getting delegation info from DB for delegatee_id=%s (SQL)", delegatee_id)
+        self._cr.execute("""
+                    SELECT DISTINCT ud.id, ud.delegator_id, gu.gid
+                    FROM user_delegation ud
+                    JOIN res_groups_users_rel gu ON gu.uid = ud.delegator_id
+                    WHERE
+                        ud.delegatee_id = %s
+                        AND ud.state = 'active'
+                        AND ud.start_date <= CURRENT_DATE
+                        AND ud.end_date >= CURRENT_DATE
+                """, (delegatee_id,))
+        rows = self._cr.fetchall()
+
+        # Pisahkan jadi dua set
+        user_ids = set()
+        group_ids = set()
+        user_delegate_ids = set()
+        for udid, uid, gid in rows:
+            user_ids.add(uid)
+            group_ids.add(gid)
+            user_delegate_ids.add(udid)
+        group_ids = group_ids - set(self.env['res.users'].doa_exclude_groups().ids)
+        return {
+            'user_ids': list(user_ids),
+            'group_ids': list(group_ids),
+            'user_delegate_ids': list(user_delegate_ids),
+        }
+
+    @tools.ormcache('uid', 'model', 'mode')
+    def check_model_access_with_delegation(self, uid, model, mode='read'):
+        data = self.env['user.delegation'].get_delegations_user_group_for_delegatee(uid)
+        group_ids = data['group_ids']
+        if not group_ids:
+            return False
+
+        self._cr.execute("""SELECT MAX(CASE WHEN perm_{mode} THEN 1 ELSE 0 END)
+                                          FROM ir_model_access a
+                                          JOIN ir_model m ON (m.id = a.model_id)
+                                         WHERE m.model = %s
+                                           AND a.group_id = ANY(%s)
+                                           AND a.active IS TRUE""".format(mode=mode),
+                         (model, group_ids,))
+        r = self._cr.fetchone()[0]
+        return bool(r)
+
+    # Version 16
+    @tools.ormcache('uid', 'mode')
+    def get_allowed_models_with_delegation(self, uid, mode='read'):
+        assert mode in ('read', 'write', 'create', 'unlink'), 'Invalid access mode'
+        data = self.env['user.delegation'].get_delegations_user_group_for_delegatee(uid)
+        group_ids = data['group_ids']
+        self.flush_model()
+        self.env.cr.execute(f"""
+                SELECT m.model
+                  FROM ir_model_access a
+                  JOIN ir_model m ON (m.id = a.model_id)
+                WHERE a.perm_{mode}
+                   AND a.active
+                   AND (
+                        a.group_id IS NULL OR
+                        a.group_id = ANY(%s)
+                    )
+                GROUP BY m.model
+            """, (group_ids,))
+        r = frozenset(v[0] for v in self.env.cr.fetchall())
+        _logger.info("r",r)
+        return r
