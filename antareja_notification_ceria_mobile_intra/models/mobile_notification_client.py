@@ -2,7 +2,6 @@
 
 from odoo import api, fields, models
 import json
-import requests
 import traceback
 
 
@@ -86,15 +85,16 @@ class MobileNotificationClient(models.Model):
             }
             # url, headers = self.get_endpoint()
             server_auth = self.get_server_auth()
-            response = server_auth.rest_post(path=self.get_mobile_notification_path(), data=json.dumps(payload))
-            # response = requests.post(url, data=json.dumps(payload), headers=headers)
-            response.raise_for_status()
-            self.write({
-                'response': response.text,
-                'payload': json.dumps(payload),
-                'state': 'done'
-            })
-            return True
+            with server_auth.create_session() as s:
+                response = s.rest_post(path=self.get_mobile_notification_path(), data=json.dumps(payload))
+                # response = requests.post(url, data=json.dumps(payload), headers=headers)
+                response.raise_for_status()
+                self.write({
+                    'response': response.text,
+                    'payload': json.dumps(payload),
+                    'state': 'done'
+                })
+                return True
 
         except Exception:
             stack = traceback.format_exc()
