@@ -46,6 +46,7 @@
                                 <field name="name"/>
                                 <field name="create_date" string="Request Date"/>
                                 <field name="user_ids" widget="many2many_tags"/>
+                                <field name="url" />
                             </group>
                             <group>
                                 <field name="request_type"/>

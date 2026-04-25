@@ -2,12 +2,11 @@
 
 {
     'name': 'Antareja ||Approval Ceria Mobile Intra',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.2',
     "category": "Extra Tools",
     "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
-    'description': """ Ceria mobile yang ada di intra karena 
-    """,
+    'description': "Ceria mobile yang ada di intra. Clien or addapter connect to intra",
     'depends': ['base', 'mail','antareja_base','antareja_integration'],
     'data': [
         'data/cron.xml',

@@ -46,6 +46,7 @@ class MobileApprovalClient(models.Model):
     def get_application_name(self):
         return self.env['ir.config_parameter'].sudo().get_param('antareja.application_name')
 
+    @api.model
     def get_mobile_approval_path(self):
         return "/api/intra/mobile/approval"
 
@@ -88,15 +89,16 @@ class MobileApprovalClient(models.Model):
     # -------------------------------------------------------
     # SEND
     # -------------------------------------------------------
-    def get_endpoint_approval(self):
-        config = self.env['ir.config_parameter'].sudo()
-        base_url = config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_endpoint')
-        url = f"{base_url}/api/intra/mobile/approval"
-        headers = {
-            "token": config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_token'),
-            "Accept": "application/json"
-        }
-        return url,headers
+    # def get_endpoint_approval(self):
+    #     config = self.env['ir.config_parameter'].sudo()
+    #     base_url = config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_endpoint')
+    #     url = f"{base_url}/api/intra/mobile/approval"
+    #     headers = {
+    #         "token": config.get_param('antareja_approval_ceria_mobile_intra.mobile_approval_token'),
+    #         "Accept": "application/json"
+    #     }
+    #     return url,headers
+
 
     def send(self):
         self.ensure_one()
@@ -104,10 +106,9 @@ class MobileApprovalClient(models.Model):
         try:
             payload_dict = self.prepare_send_data()
             payload = json.dumps(payload_dict)
-            # url, headers = self.get_endpoint_approval()
             server_auth = self.get_server_auth()
-            response = server_auth.rest_post(path=self.get_mobile_approval_path(), data=json.dumps(payload))
-            # response = requests.post(url, data=payload, headers=headers)
+            with server_auth.create_session() as sr:
+                response = sr.rest_post(path=self.get_mobile_approval_path(), data=payload)
             response.raise_for_status()
             self.write({
                 'response': response.text,
