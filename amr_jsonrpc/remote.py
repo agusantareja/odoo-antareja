@@ -152,9 +152,9 @@ def apply_odoo_rpc_auth(self, odoo_session):
 def apply_auth(self, odoo_session: requests.Session):
     if self.auth_type in ('basic',):
         apply_basic_auth(self, odoo_session)
-    elif self.auth_type in ('odoo-rcp',):
+    elif self.auth_type in ('odoo-rcp','odoo-rpc'):
         apply_odoo_rpc_auth(self, odoo_session)
-    elif self.auth_type in ('jwt-odoo-rcp',):
+    elif self.auth_type in ('jwt-odoo-rcp','jwt-odoo-rpc'):
         apply_odoo_rpc_token_auth(self, odoo_session)
     elif self.auth_type in ('token', 'rest-token', 'jwt-rest-token'):
         apply_token_auth(self, odoo_session)
@@ -406,17 +406,17 @@ class OdooSession(requests.Session):
         return data.get("result") or []
 
     def create_remote_model(self, model_name, **kwargs):
-        if self.auth_model.auth_type in ('odoo-rcp', 'jwt-odoo-rcp',):
+        if self.auth_model.auth_type in ('odoo-rpc', 'jwt-odoo-rpc', 'odoo-rcp', 'jwt-odoo-rcp',):
             remote_model = JsonRPCRemoteModel(model_name, self, **kwargs)
         else:
             remote_model = RestModelObject(model_name, self, **kwargs)
         return remote_model
 
-    def rest_post(self,url=None,path=None,data=None, json=None,**kwargs):
+    def rest_post(self, url=None, path=None, data=None, json=None, **kwargs):
         url = url or self.get_rest_url(path)
-        return self.post(url,data=data,json=json,**kwargs)
+        return self.post(url, data=data, json=json, **kwargs)
 
-    def rest_get(self,url,path=None,**kwargs):
+    def rest_get(self, url, path=None, **kwargs):
         url = url or self.get_rest_url(path)
         return self.get(url, **kwargs)
 
@@ -615,7 +615,7 @@ if __name__ == "__main__":
     partners = remote_rest_partner.read([1, 2, 3, 4], fields=['name', 'email'])
     print("WITHOUT SESSION MODE read:", partners)
 
-    auth_model2 = AuthModel('jwt-odoo-rcp', 'admin', access_token='admin')
+    auth_model2 = AuthModel('jwt-odoo-rpc', 'admin', access_token='admin')
     session_auth2 = OdooSession(auth_model2)
     session_auth2.connect()
     remote_partner = JsonRPCRemoteModel("res.partner", session_auth2, context={'lang': 'en_US'})
