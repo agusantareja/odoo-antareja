@@ -35,11 +35,13 @@
                             <field name="start_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             <field name="end_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                         </group>
-
                     </group>
                     <notebook>
                         <page string="Notes" name="page_notes">
                             <field name="note" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        </page>
+                        <page string="Delegate Group">
+                            <field name="delegator_group_ids" widget="many2many_tags"/>
                         </page>
                     </notebook>
                 </sheet>

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-
-import logging
-
 from odoo import models, fields, api, tools
+from odoo.fields import Many2one, One2many, Many2many
 from datetime import date
 from odoo.exceptions import ValidationError
 
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -67,11 +66,13 @@ class UserDelegation(models.Model):
 
     @api.depends('delegator_id')
     def _compute_delegator_group_ids(self):
+        doa_group = self.env['res.users'].doa_exclude_groups()
         for rec in self:
             if rec.delegator_id:
-                rec.delegator_group_ids = rec.delegator_id.groups_id
+                rec.delegator_group_ids = rec.delegator_id.groups_id - rec.delegatee_id.groups_id - doa_group
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
+
 
     def name_get(self):
         return [(record.id, f"[{record.name}] {record.delegator_id.name} to {record.delegatee_id.name}") for record in
@@ -129,9 +130,9 @@ class UserDelegation(models.Model):
             rec.is_prepared_condition = rec.state in self.get_prepared_state() and (
                     rec.delegator_id.id == self.env.user.id or self.user_has_groups('base.group_erp_manager'))
 
-    filter_user_delegation = fields.Boolean(store=False, search="search_filter_user_delegation")
+    filter_user_delegate = fields.Boolean(store=False, search="search_filter_user_delegate")
 
-    def search_filter_user_delegation(self, operator, operand):
+    def search_filter_user_delegate(self, operator, operand):
         if self.user_has_groups('base.group_erp_manager'):
             return []
         else:
@@ -252,6 +253,7 @@ class UserDelegation(models.Model):
                     for group in rec.delegator_id.groups_id:
                         self.has_delegate_group.clear_cache(self, rec.delegatee_id.id, group.id)
 
+
     def get_all_delegations(self, delegatee_id=None, delegator_id=None, group_id=None, company_id=None, limit=None):
         """
         Ambil delegasi aktif untuk proxy tertentu.
@@ -284,9 +286,9 @@ class UserDelegation(models.Model):
 
         if group_id:
             if isinstance(group_id, list):
-                domain.append(('group_id', 'in', group_id))
+                domain.append(('delegator_id.group_id', 'in', group_id))
             else:
-                domain.append(('group_id', '=', group_id))
+                domain.append(('delegator_id.group_id', '=', group_id))
 
         return self.search(domain, limit=limit, order='start_date desc,end_date')
 

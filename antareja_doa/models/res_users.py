@@ -9,6 +9,14 @@ _logger = logging.getLogger(__name__)
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
+    @tools.ormcache()
+    def doa_exclude_groups(self):
+        res_groups=self.env['res.groups'].browse()
+        for group_name in ['base.group_user', 'base.group_system', 'base.group_erp_manager',
+                           'antareja_doa.group_doa_internal_user_create']:
+            res_groups |= self.env.ref(group_name)
+        return res_groups
+
     def has_group(self, group_ext_id=None):
         # use singleton's id if called on a non-empty recordset, otherwise
         # context uid
@@ -23,9 +31,10 @@ class ResUsers(models.Model):
 
         base_groups_access = super(ResUsers, self).has_group(group_ext_id)
         # Always return True for base.group_user
-        if base_groups_access or group_ext_id is None or group_ext_id in ['base.group_user', 'base.group_system',
-                                                                          'base.group_erp_manager',
-                                                                          'base.user_root', 'base.user_admin']:
+        if (base_groups_access or
+                group_ext_id is None or
+                group_ext_id in ['base.group_user', 'base.group_system', 'base.group_erp_manager',
+                                 'antareja_doa.group_doa_internal_user_create']):
             return base_groups_access
 
         base_groups_access = self.has_delegate_group_ext_id(group_ext_id)
@@ -107,4 +116,5 @@ class ResUsers(models.Model):
         if uid and uid != self._uid:
             self = self.with_user(uid)
 
-        return self.env['user.delegation'].get_notification_user_ids(user_ids=[self._uid], company_id=company_id)
+        return self.env['user.delegation'].get_notification_user_ids(user_ids=[self._uid],company_id=company_id)
+
