@@ -18,6 +18,7 @@ class AntarejaTokenAudience(models.Model):
     issuer_ids = fields.Many2many('antareja.token.issuer', string='Issuers')
 
     def get_token_audience(self, audience, issuer):
+        _logger.info("audience %s , issuer %s", audience, issuer)
         audience_id = self.sudo().search([('name', '=', audience)], limit=1)
         for issuer_id in audience_id.issuer_ids:
             if issuer_id.name == issuer:
@@ -64,7 +65,7 @@ class AntarejaTokenAudience(models.Model):
                 _logger.error(f"User Not found {login} , {email}")
                 return payload
         except InvalidTokenError:
-            _logger.error("InvalidTokenError")
+            _logger.exception("InvalidTokenError")
             if raise_exception:
                 raise
 

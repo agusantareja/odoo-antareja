@@ -63,7 +63,7 @@ def make_response_error(status=400, error="", error_description=""):
     )
 
 
-def check_token_authorization(_func=None,*,setup_session=False, header_name=('token','access_token'), param_name=None):
+def check_token_authorization(_func=None, *, setup_session=False, header_name=('token', 'access_token'), param_name=None):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -74,25 +74,25 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
             session_token = session.session_token
             accept_authorization = False
             try:
-                username,password = get_basic_auth()
+                username, password = get_basic_auth()
                 uid = request.session.authenticate(
                     request.session.db,
                     username,
                     password
                 )
-            except :
+            except:
                 uid = None
             if uid:
                 accept_authorization = True
             else:
-                # ambbil semua kemungkin token yang ada
+                # Ambil semua kemungkin token yang ada
                 token_list = [get_bearer_token()]
                 header_names = []
                 if header_name:
-                    if isinstance(header_name,str):
-                        header_names=[header_name]
-                    elif isinstance(header_name,(list, tuple)):
-                        header_names =header_name
+                    if isinstance(header_name, str):
+                        header_names = [header_name]
+                    elif isinstance(header_name, (list, tuple)):
+                        header_names = header_name
                 for name in header_names:
                     token_list.append(request.httprequest.headers.get(name))
                 if param_name:
@@ -132,7 +132,7 @@ def check_token_authorization(_func=None,*,setup_session=False, header_name=('to
                 )
             result = func(self, *args, **kwargs)
             if uid or setup_session:
-                # set kembali session sebelumnya
+                # Set kembali session sebelumnya
                 set_session(save_uid, save_login, session_token)
             return result
         return wrapper
