@@ -11,7 +11,6 @@ _logger = logging.getLogger(__name__)
 def have_method(obj, method):
     return hasattr(obj, method) and callable(getattr(obj, method))
 
-
 class WhatsAppLog(models.Model):
     _inherit = 'whatsapp.log'
     template_id = fields.Many2one('whatsapp.template')
@@ -19,7 +18,6 @@ class WhatsAppLog(models.Model):
         ('cancel', 'Cancel')
     ])
     send_message_post = fields.Boolean("Post Message on Record Chatter", default=True)
-
     def _referencable_models(self):
         return [(m.model, m.name) for m in self.env['ir.model'].search([])]
 
