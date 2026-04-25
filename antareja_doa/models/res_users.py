@@ -107,5 +107,4 @@ class ResUsers(models.Model):
         if uid and uid != self._uid:
             self = self.with_user(uid)
 
-        return self.env['user.delegation'].get_notification_user_ids(user_ids=[self._uid],company_id=company_id)
-
+        return self.env['user.delegation'].get_notification_user_ids(user_ids=[self._uid], company_id=company_id)

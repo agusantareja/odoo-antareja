@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+
+import logging
+
 from odoo import models, fields, api, tools
-from odoo.fields import Many2one, One2many, Many2many
 from datetime import date
 from odoo.exceptions import ValidationError
 
-import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -72,7 +73,6 @@ class UserDelegation(models.Model):
             else:
                 rec.delegator_group_ids = [(5, 0, 0)]
 
-
     def name_get(self):
         return [(record.id, f"[{record.name}] {record.delegator_id.name} to {record.delegatee_id.name}") for record in
                 self]
@@ -129,9 +129,9 @@ class UserDelegation(models.Model):
             rec.is_prepared_condition = rec.state in self.get_prepared_state() and (
                     rec.delegator_id.id == self.env.user.id or self.user_has_groups('base.group_erp_manager'))
 
-    filter_user_delegate = fields.Boolean(store=False, search="search_filter_user_delegate")
+    filter_user_delegation = fields.Boolean(store=False, search="search_filter_user_delegation")
 
-    def search_filter_user_delegate(self, operator, operand):
+    def search_filter_user_delegation(self, operator, operand):
         if self.user_has_groups('base.group_erp_manager'):
             return []
         else:
@@ -251,7 +251,6 @@ class UserDelegation(models.Model):
                 if rec.delegator_id:
                     for group in rec.delegator_id.groups_id:
                         self.has_delegate_group.clear_cache(self, rec.delegatee_id.id, group.id)
-
 
     def get_all_delegations(self, delegatee_id=None, delegator_id=None, group_id=None, company_id=None, limit=None):
         """
