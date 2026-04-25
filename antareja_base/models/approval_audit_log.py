@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from ..tools.utils import have_method
+
 import logging
 
 _logger = logging.getLogger(__name__)
 
+
+def have_method(obj, method):
+    return hasattr(obj, method) and callable(getattr(obj, method))
 
 class ApprovalAuditLog(models.Model):
     _name = 'approval.audit.log'

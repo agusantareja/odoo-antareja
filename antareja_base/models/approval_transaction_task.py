@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTransactionTask(models.AbstractModel):
     _name = "approval.transaction.task.able.mixin"
-    _description = """Implement untuk instance yang akan akan di tambahkan approval"""
+    _description = "Implement untuk instance yang akan akan di tambahkan approval"
     access_approval = fields.Boolean(compute="compute_access_approval")
 
     def compute_access_approval(self):
@@ -222,11 +222,11 @@ class ApprovalTransactionTask(models.AbstractModel):
 
     def write(self, vals):
         # handling bila keluar approval
-        if have_method(self,'is_status_waiting_approval'):
+        if have_method(self, 'is_status_waiting_approval'):
             in_waiting_approval = [res.id for res in self if res.is_status_waiting_approval()]
         else:
-            in_waiting_approval= []
-        result = super(ApprovalTransactionTask,self).write(vals)
+            in_waiting_approval = []
+        result = super(ApprovalTransactionTask, self).write(vals)
         if in_waiting_approval:
             for rec in self:
                 if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
@@ -234,7 +234,7 @@ class ApprovalTransactionTask(models.AbstractModel):
                     rec.unregister_approval_task(skip_create_approval_log=True)
         return result
 
-    def reject_from_popup_reject(self,**kwargs):
+    def reject_from_popup_reject(self, **kwargs):
         raise NotImplemented
 
     def get_next_approval_task_line(self):
@@ -247,18 +247,21 @@ class ApprovalTransactionTask(models.AbstractModel):
         raise NotImplemented
 
     def get_approval_users_signature(self):
+        _logger.info('approval.transaction.task.able.mixin#get_approval_users_signature')
         self.ensure_one()
         signatures = [{
             'sign_title': 'Created by',
             'sign_user': self.create_uid,
+            'sign_date': self.create_date.strftime('%d %b %Y'),
             'approval_task_line': False,
         }]
         all_approval_task_line = self.get_all_approval_task_line()
         if all_approval_task_line:
             for line in all_approval_task_line:
+                user = line.user_execution_id
                 signatures.append({
                     'sign_title': line.sign_title or 'Approved by',
-                    'sign_user': line.user_execution_id,
+                    'sign_user': user,
                     'approval_task_line': line,
                 })
 

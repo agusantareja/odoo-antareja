@@ -16,6 +16,10 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     transaction_id = fields.Integer()
     transaction_model_name = fields.Char()
+    approval_instance_id = fields.Many2one(
+        'approval.instance',
+        ondelete='set null',
+    )
     approval_task_id = fields.Many2one(
         'approval.task',
         ondelete='set null',
@@ -71,9 +75,12 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return self.env['approval.instance'].browse()
 
     def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
-        if self:
-            transaction_id = self.transaction_id
-            transaction_model_name = self.transaction_model_name
+        for rec in self:
+            if rec.transaction_id and rec.transaction_model_name:
+                transaction_id = rec.transaction_id
+                transaction_model_name = rec.transaction_model_name
+                break
+
         if not transaction_model_name or not transaction_id:
             raise UserError(" Transaction not set ")
         return self.search(
@@ -88,6 +95,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 break
             previous = task
         return previous
+
+    def get_last_approval_task_line(self, transaction_id=None, transaction_model_name=None):
+        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id desc',limit=1)
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if not transaction_id or not transaction_model_name:
@@ -172,7 +182,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             'date_execution': fields.Datetime.now(),
         })
 
-
     def set_rejected_status(self, **kwargs):
         if have_method(self, "set_reject_state"):
             self.set_reject_state()
@@ -183,7 +192,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 '__reject_reason')
         })
 
-
     def set_waiting_status(self, **kwargs):
         if have_method(self, "set_waiting_approval_state"):
             self.set_waiting_approval_state()
@@ -192,7 +200,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             'date_execution': False,
             'reject_reason': False,
         })
-
 
     def action_approve(self,**kwargs):
         rec = self.ensure_one()
@@ -245,9 +252,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             if have_method(transaction_object, 'event_after_approve'):
                 safe_call_method(transaction_object, 'event_after_approve')
 
-    def reject_method_legacy(self,reason=None, **kwargs):
+    def reject_method_legacy(self, reason=None, **kwargs):
         raise NotImplemented
-        #return approval_task_line_next, approval_task_line_between
 
     def do_reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
@@ -311,19 +317,20 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'
-    _inherit = ['approval.task.line.mixin',
+    _inherit = ['approval.task.line.assignment.mixin',
+                'approval.task.line.mixin',
                 'abstract.approval.status',
                 'abstract.approval.access',
                 'approval.transaction.view.able.mixin'
                 ]
     _description = 'This is Approval Task Line for Approval helper waiting approval'
     _order = 'id'
-    approval_instance_id = fields.Many2one('approval.instance')
-    requester_id = fields.Many2one(
-        'res.users', 'Requester',
-        default=lambda self: self.env.user,
-        help="User who requested the approval."
-    )
+    # approval_instance_id = fields.Many2one('approval.instance')
+    # requester_id = fields.Many2one(
+    #     'res.users', 'Requester',
+    #     default=lambda self: self.env.user,
+    #     help="User who requested the approval."
+    # )
     reject_to_method = fields.Selection(default='to_requestor')
     # user_execution_id = fields.Many2one(
     #     'res.users',
@@ -332,6 +339,26 @@ class ApprovalTaskLine(models.Model):
     # )
     # date_execution = fields.Datetime('Date Execution')
     # reject_reason = fields.Text('Reject Reason')
+
+    def name_get(self):
+        result = []
+        for rec in self:
+            type_name = rec.id
+            if rec.responsible_user_id:
+                type_name = f"{rec.responsible_user_id.name}"
+            elif rec.type_approval == 'user' and rec.user_id:
+                type_name = f"User - {rec.user_id.name}"
+            elif rec.type_approval == 'group' and rec.group_id:
+                type_name = f"Group - {rec.group_id.name}"
+            elif rec.type_approval == 'multi_group' and rec.group_ids:
+                groups_name = ",".join([r.name for r in rec.group_ids])
+                type_name = f"Groups - [{groups_name}]"
+            elif rec.type_approval == 'multi_user' and rec.user_ids:
+                groups_name = ",".join([r.name for r in rec.user_ids])
+                type_name = f"Users - [{groups_name}]"
+            result.append((rec.id, type_name))
+
+        return result
 
     def set_approved_status(self, **kwargs):
         self.ensure_one()

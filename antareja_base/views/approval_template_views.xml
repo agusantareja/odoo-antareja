@@ -10,7 +10,7 @@
 <!--                <field name="name"/>-->
                 <field name="model_id"/>
                 <field name="model" string="Model Name"/>
-                <field name="view_name"/>
+<!--                <field name="view_name"/>-->
             </tree>
         </field>
     </record>
@@ -36,7 +36,7 @@
 <!--                            <field name="sequence"/>-->
                             <field name="model_id"/>
                             <field name="approval_task_line_model_id"/>
-                            <field name="view_name"/>
+<!--                            <field name="view_name"/>-->
                         </group>
                     </group>
                     <notebook>
@@ -103,6 +103,16 @@
         </field>
     </record>
 
+    <record id="approval_template_migrate_action" model="ir.actions.server" >
+        <field name="name">Migrate Approval Template</field>
+        <field name="model_id" ref="antareja_base.model_approval_template" />
+        <field name="binding_model_id" ref="antareja_base.model_approval_template" />
+        <field name="state">code</field>
+        <field name="code">
+records.migrate_approval_task()
+        </field>
+    </record>
+
     <!-- ACTION -->
     <record id="action_approval_template" model="ir.actions.act_window">
         <field name="name">Approval Template</field>
@@ -114,6 +124,4 @@
             </p>
         </field>
     </record>
-
-
 </odoo>
