@@ -1,4 +1,9 @@
 <odoo>
+    <menuitem id="antareja_notification_parent_menu"
+                  name="Notification"
+                  parent="base.menu_custom"
+                  sequence="10"
+    />
     <menuitem id="antareja_notification_template_menu"
               parent="antareja_base.base_notification_menu"
               action="notification_template_action"

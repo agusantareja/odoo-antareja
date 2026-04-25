@@ -38,5 +38,4 @@ class ResUsers(models.Model):
         result = channel.sudo().message_post(body=message, author_id=odoobot_id, message_type="comment",
                                              subtype="mail.mt_comment")
         #self.odoobot_state = 'onboarding_emoji'
-
         return result

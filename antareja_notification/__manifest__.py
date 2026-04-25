@@ -4,7 +4,7 @@
     'name': 'Antareja || Notification',
     'version': '13.0.1.0.6',
     "category": "Extra Tools",
-    "license": "LGPL-3",
+    "license" : "LGPL-3",
     'author': "Agus Muhammad Ramdan, Antareja Sinergi Sejahtera",
     'description': """
 Module untuk mengirim notifikasi via email/WhatsApp dengan menggunakan template yang sudah 
