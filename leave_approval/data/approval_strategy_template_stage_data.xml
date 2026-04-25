@@ -1,0 +1,101 @@
+<odoo>
+    <data>
+
+        <record id="stage_inline_lr_id" model="approval.strategy.template.stage">
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">leave.leave_request</field>
+            <field name="transaction_stage_field">stage_inline_lr_id</field>
+            <field name="stage_strategy_name">Employee Hierarchy Approval</field>
+            <field name="stage_strategy_config_name">inline_lr</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.inline_lr</field>
+            <field name="stage_strategy_inline" eval="True" />
+            <field name="stage_strategy_inline_model_name">leave.leave_approval</field>
+            <field name="stage_mandatory" eval="True" />
+            <field name="stage_dynamic_approval" eval="False" />
+            <field name="status_waiting_approval">submitted</field>
+            <field name="status_approved">approved</field>
+            <field name="status_reject">draft</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+transaction_stage_field = kwargs.get('transaction_stage_field')
+stage_strategy_name = kwargs.get('stage_strategy_name')
+stage_strategy_config_name = kwargs.get('stage_strategy_config_name')
+stage_strategy_config_model_name = kwargs.get('stage_strategy_config_model_name')
+
+config.update({
+    'transaction_stage_field': transaction_stage_field,
+    'stage_strategy_name': stage_strategy_name,
+    'stage_strategy_config_name': stage_strategy_config_name,
+    'stage_strategy_config_model_name': stage_strategy_config_model_name,
+    'description': (transaction_object and transaction_object.notes ) or 'Approval Leave',
+    'requester_id': transaction_object.employee_id.user_id.id,
+    #'stage_strategy_inline': True,
+    #'stage_strategy_inline_model_name': 'leave.leave_approval',
+    #'stage_mandatory': True,
+    #'stage_dynamic_approval': False,
+    # status activate
+    #'status_waiting_approval': 'submitted',
+    #'status_approved': 'approved',
+    #'status_reject': 'draft',
+    # Notification configuration
+    #'email_template_approval_id': self.env.ref('leave.leave_request_mail_template').id,
+    # 'email_template_approved_id': None,
+    # 'email_template_rejection_id': None
+
+})
+result=config
+                ]]></field>
+        </record>
+
+        <record id="stage_inline_cr_id" model="approval.strategy.template.stage">
+            <field name="sequence">10</field>
+            <field name="transaction_model_name">leave.compensatory_request</field>
+            <field name="transaction_stage_field">stage_inline_cr_id</field>
+            <field name="stage_strategy_name">Employee Hierarchy Approval</field>
+            <field name="stage_strategy_config_name">inline_cr</field>
+            <field name="stage_strategy_config_model_name">approval.strategy.config.stage.inline_cr</field>
+            <field name="stage_strategy_inline" eval="True" />
+            <field name="stage_strategy_inline_model_name">leave.compensatory_request_approval</field>
+            <field name="stage_mandatory" eval="True" />
+            <field name="stage_dynamic_approval" eval="False" />
+            <field name="status_waiting_approval">submitted</field>
+            <field name="status_approved">approved</field>
+            <field name="status_reject">draft</field>
+            <field name="active">True</field>
+            <field name="code"><![CDATA[
+config = kwargs.get('config', {})
+transaction_object = kwargs.get('transaction_object')
+transaction_stage_field = kwargs.get('transaction_stage_field')
+stage_strategy_name = kwargs.get('stage_strategy_name')
+stage_strategy_config_name = kwargs.get('stage_strategy_config_name')
+stage_strategy_config_model_name = kwargs.get('stage_strategy_config_model_name')
+
+config.update({
+    'transaction_stage_field': transaction_stage_field,
+    'stage_strategy_name': stage_strategy_name,
+    'stage_strategy_config_name': stage_strategy_config_name,
+    'stage_strategy_config_model_name': stage_strategy_config_model_name,
+    'description': (transaction_object and transaction_object.notes ) or 'Approval Leave',
+    'requester_id': transaction_object.employee_id.user_id.id,
+    #'stage_strategy_inline': True,
+    #'stage_strategy_inline_model_name': 'leave.compensatory_request_approval',
+    #'stage_mandatory': True,
+    #'stage_dynamic_approval': False,
+    # status activate
+    #'status_waiting_approval': 'submitted',
+    #'status_approved': 'approved',
+    #'status_reject': 'draft',
+    # Notification configuration
+    #'email_template_approval_id': self.env.ref('leave.compensatory_request_mail_template').id,
+    # 'email_template_approved_id': None,
+    # 'email_template_rejection_id': None
+
+})
+result=config
+                ]]></field>
+        </record>
+
+    </data>
+</odoo>
