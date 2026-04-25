@@ -27,7 +27,6 @@ class AbstractApprovalType(models.AbstractModel):
     group_id = fields.Many2one('res.groups', 'Approval By Group')
     user_ids = fields.Many2many('res.users', string='Approval By Users')
     group_ids = fields.Many2many('res.groups', string='Approval By Groups')
-
     def get_users(self):
         """Return daftar user unik sesuai type_approval"""
         self.ensure_one()
