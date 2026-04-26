@@ -276,7 +276,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             elif self.reject_to_method == 'to_previous':
                 approval_task_line_next = self.get_previous_approval_task_line()
             elif self.reject_to_method == 'legacy':
-                approval_task_line_next,approval_task_line_between = self.reject_method_legacy(reason,**kwargs)
+                approval_task_line_next, approval_task_line_between = self.reject_method_legacy(reason, **kwargs)
             else:
                 approval_task_line_next = kwargs.get('approval_task_line_next')
                 approval_task_line_between = kwargs.get('approve_task_line_between') or self.get_approval_start_task(

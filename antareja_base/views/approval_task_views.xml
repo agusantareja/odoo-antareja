@@ -41,8 +41,6 @@
                 <field name="approval_user_ids" string="Approval User" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
                 <button name="action_assign" string="Assignment User" type="object" class="oe_highlight"
                         icon="fa-solid fa-user-plus text-success" groups="base.group_no_one" help="Assign Responsible User"/>
-                <button name="action_reassign" string="Re Assignment User" type="object" class="oe_highlight"
-                        icon="fa-solid fa-exchange-alt text-success" groups="base.group_no_one" help="Reassign Responsible User"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
                 <button name="send_to_mobile_approval" string="Send to Mobile" type="object" icon="fa-solid fa-mobile"
                         groups="base.group_no_one"/>

@@ -114,7 +114,8 @@ class ApprovalInstanceMixin(models.AbstractModel):
         for rec in self:
             if rec.transaction_model_name == transaction_model_name and rec.transaction_id == transaction_id:
                 return rec
-        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)], limit=1)
+        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)],
+                           limit=1)
 
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
@@ -165,7 +166,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         self.ensure_approval_template()
         transaction_object = self.get_transaction_object()
         if not transaction_object or not self.approval_template_id:
-            self.env['approval.task'].search([('approval_instance_id','=',self.id)]).approval_done()
+            self.env['approval.task'].search([('approval_instance_id', '=', self.id)]).approval_done()
             self.unlink()
             return
 
@@ -173,7 +174,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
             self.register_approval_task_line(skip_send_notification=True)
         else:
             self.unregister_approval_task_line()
-
 
     def register_approval_task_line(self, **kwargs):
         approval_task_line = (kwargs.get('approval_task_line_next') or kwargs.get('next_approval_task_line')
@@ -188,7 +188,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 notification_approval and kwargs.update(notification_approval_id=notification_approval.id)
             kwargs['approval_instance'] = rec
             kwargs['transaction_model_name'] = rec.transaction_model_name,
-            kwargs['transaction_id']=rec.transaction_id
+            kwargs['transaction_id'] = rec.transaction_id
             kwargs['transaction_object'] = rec.get_transaction_object()
             approval_task_line.register_to_approval_task(**kwargs)
         return approval_task_line
