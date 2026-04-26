@@ -10,7 +10,6 @@ _logger = logging.getLogger(__name__)
 class UserDelegation(models.Model):
     _inherit = 'user.delegation'
 
-
     def internal_process_for_doa(self, data_external=None, sync_strategy=None,
                                       data_update=None, data_sync=None, **kwargs):
         delegator = self.lookup_user_external_data(data_external.get('delegator_id'))
@@ -31,5 +30,3 @@ class UserDelegation(models.Model):
         if item_dict.get('id') in [1, 2]:
             return self.env['res.users'].browse(item_dict.get('id'))
         return self.env['res.users'].search([('partner_id.email', '=', item_dict.get('email'))], limit=1)
-
-
