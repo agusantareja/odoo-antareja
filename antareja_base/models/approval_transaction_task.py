@@ -222,11 +222,11 @@ class ApprovalTransactionTask(models.AbstractModel):
 
     def write(self, vals):
         # handling bila keluar approval
-        if have_method(self,'is_status_waiting_approval'):
+        if have_method(self, 'is_status_waiting_approval'):
             in_waiting_approval = [res.id for res in self if res.is_status_waiting_approval()]
         else:
-            in_waiting_approval= []
-        result = super(ApprovalTransactionTask,self).write(vals)
+            in_waiting_approval = []
+        result = super(ApprovalTransactionTask, self).write(vals)
         if in_waiting_approval:
             for rec in self:
                 if rec.id in in_waiting_approval and not rec.is_status_waiting_approval():
@@ -234,7 +234,7 @@ class ApprovalTransactionTask(models.AbstractModel):
                     rec.unregister_approval_task(skip_create_approval_log=True)
         return result
 
-    def reject_from_popup_reject(self,**kwargs):
+    def reject_from_popup_reject(self, **kwargs):
         raise NotImplemented
 
     def get_next_approval_task_line(self):
@@ -252,7 +252,6 @@ class ApprovalTransactionTask(models.AbstractModel):
         signatures = [{
             'sign_title': 'Created by',
             'sign_user': self.create_uid,
-            #'sign_image': getattr(self.create_uid, 'sign', False),
             'sign_date': self.create_date.strftime('%d %b %Y'),
             'approval_task_line': False,
         }]

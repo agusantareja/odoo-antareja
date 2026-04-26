@@ -17,7 +17,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
-    'version': '16.0.2.2.1',
+    'version': '13.0.3.0.0',
     # any module necessary for this one to work correctly
     'depends': ['base', 'base_setup', 'mail'],
     # always loaded
@@ -27,11 +27,13 @@
         'views/application_server_views.xml',
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',
+        'views/approval_task_line_views.xml',
         'views/approval_template_views.xml',
         'views/approval_instance_views.xml',
         'views/res_config_settings_views.xml',
         'views/menuitem.xml',
         'wizard/popup_reject.xml',
+        'wizard/approval_task_line_assignment.xml',
     ],
     'demo': [],
     'installable': True,

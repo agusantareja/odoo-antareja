@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
+from ..tools.utils import have_method
 
 
 class ApprovalAccessMixin(models.AbstractModel):
@@ -10,6 +11,61 @@ class ApprovalAccessMixin(models.AbstractModel):
     access_approval = fields.Boolean(
         string="Can Approve",
     )
+
+
+class ApprovalTaskLineAssignmentMixin(models.AbstractModel):
+    _name = "approval.task.line.assignment.mixin"
+    _description = "Mixin : Approval Task Line Assignment"
+
+    responsible_user_id = fields.Many2one('res.users', 'Responsible User')
+
+    def search_responsible_user(self, user_id):
+        return self.search([('responsible_user_id', '=', user_id)])
+
+    def revoke_assignment(self):
+        self.write({
+            'responsible_user_id': False,
+        })
+
+    def do_assignment(self, new_user_id, reason=None):
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        self.env['approval.task.assignment.history'].sudo().create([{
+            'task_line_id': self.id,
+            'task_line_model': self._name,
+            'from_user_ids': [(6, 0, old_users.ids)] if old_users else [],
+            'new_user_id': int(new_user_id),
+            'reason': reason,
+            'reassigned_by': self.env.uid
+        }])
+        self.write({
+            'responsible_user_id': int(new_user_id),
+        })
+        if have_method(self, "register_to_approval_task"):
+            self.register_to_approval_task()
+
+    def action_assignment(self):
+        self.ensure_one()
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        # call wizard to select new user and reason
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reassign Approval Task',
+            'res_model': 'approval.task.line.assignment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_task_line_id': self.id,
+                'default_task_line_model': self._name,
+                'default_from_user_ids': old_users.ids if old_users else [],
+            }
+        }
+
 
 class ApprovalTaskLineAccess(models.AbstractModel):
     _name = "approval.task.line.access.mixin"

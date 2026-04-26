@@ -71,7 +71,7 @@ class ApprovalInstanceAbleMixin(models.AbstractModel):
         approval_instance = rec.ensure_approval_instance()
         return approval_instance.action_reject()
 
-    def reject_from_popup_reject(self,**kwargs):
+    def reject_from_popup_reject(self, **kwargs):
         rec = self.ensure_one()
         approval_instance = rec.ensure_approval_instance()
         return approval_instance.reject_from_popup_reject(**kwargs)

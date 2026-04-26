@@ -32,11 +32,11 @@ class ApprovalTemplateMixin(models.AbstractModel):
         """
 
     model_id = fields.Many2one('ir.model')
-    model = fields.Char(related='model_id.model', store=True)
+    model = fields.Char(related='model_id.model')
 
     # approval.task.line.mixin
     approval_task_line_model_id = fields.Many2one('ir.model')
-    approval_task_line_model = fields.Char(related='approval_task_line_model_id.model', store=True)
+    approval_task_line_model = fields.Char(related='approval_task_line_model_id.model')
 
     view_name = fields.Char()
 
@@ -175,3 +175,41 @@ class ApprovalTemplate(models.Model):
     _sql_constraints = [
         ('model_id_unique', 'unique(model_id)', 'Model must be uniq!')
     ]
+
+    def migrate_approval_task(self, raise_exception=True, skip_send_notification=True):
+        env = self.env
+        for template in self:
+            model, field_status, waiting_status = template.model, template.get_state_field(), template.get_state_waiting_approvals()
+            transaction_ids = [0]
+            records = env['approval.task'].search([('transaction_model_name', '=', template.model)])
+            for rec in records:
+                try:
+                    _logger.info("info %s ", rec)
+                    approval_instance = env['approval.instance'].create_or_get(
+                        transaction_model_name=rec.transaction_model_name,
+                        transaction_id=rec.transaction_id
+                    )
+                    if approval_instance.is_status_waiting_approval():
+                        approval_instance.register_approval_transaction_task(skip_send_notification=skip_send_notification)
+                        transaction_ids.append(rec.transaction_id)
+                    else:
+                        approval_instance.unregister_approval_transaction_task()
+                except:
+                    _logger.exception("register_approval_transaction_task 1")
+                    if raise_exception:
+                        raise
+
+            records = env[model].search([(field_status, 'in', waiting_status), ('id', 'not in', transaction_ids)])
+            for rec in records:
+                _logger.info("info %s ", rec)
+                try:
+                    approval_instance = env['approval.instance'].create_or_get(
+                        transaction_model_name=model,
+                        transaction_id=rec.id
+                    )
+                    approval_instance.register_approval_transaction_task()
+                    transaction_ids.append(rec.id)
+                except:
+                    _logger.exception("register_approval_transaction_task 1")
+                    if raise_exception:
+                        raise

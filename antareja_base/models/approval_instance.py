@@ -86,7 +86,8 @@ class ApprovalInstanceMixin(models.AbstractModel):
             )
         return record
 
-    def create_or_get(self, transaction=None, transaction_model_name=None, transaction_id=None,raise_exception_without_template=True, **kwargs):
+    def create_or_get(self, transaction=None, transaction_model_name=None, transaction_id=None,
+                      raise_exception_without_template=True, **kwargs):
         if transaction:
             transaction_model_name = transaction._name
             transaction_id = transaction.id
@@ -99,7 +100,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         if not approval_template_id:
             if raise_exception_without_template:
-                raise UserError("Approval Template not found")
+                raise UserError("Approval Template not found.")
             return self.browse()
 
         approval_instance = self.get_instance_for_transaction(transaction_model_name, transaction_id) or self.create({
@@ -113,7 +114,8 @@ class ApprovalInstanceMixin(models.AbstractModel):
         for rec in self:
             if rec.transaction_model_name == transaction_model_name and rec.transaction_id == transaction_id:
                 return rec
-        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)], limit=1)
+        return self.search([('model_id.model', '=', transaction_model_name), ('transaction_id', '=', transaction_id)],
+                           limit=1)
 
     @api.model_create_multi
     @api.returns('self', lambda value: value.id)
@@ -164,7 +166,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         self.ensure_approval_template()
         transaction_object = self.get_transaction_object()
         if not transaction_object or not self.approval_template_id:
-            self.env['approval.task'].search([('approval_instance_id','=',self.id)]).approval_done()
+            self.env['approval.task'].search([('approval_instance_id', '=', self.id)]).approval_done()
             self.unlink()
             return
 
@@ -172,7 +174,6 @@ class ApprovalInstanceMixin(models.AbstractModel):
             self.register_approval_task_line(skip_send_notification=True)
         else:
             self.unregister_approval_task_line()
-
 
     def register_approval_task_line(self, **kwargs):
         approval_task_line = (kwargs.get('approval_task_line_next') or kwargs.get('next_approval_task_line')
@@ -187,7 +188,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
                 notification_approval and kwargs.update(notification_approval_id=notification_approval.id)
             kwargs['approval_instance'] = rec
             kwargs['transaction_model_name'] = rec.transaction_model_name,
-            kwargs['transaction_id']=rec.transaction_id
+            kwargs['transaction_id'] = rec.transaction_id
             kwargs['transaction_object'] = rec.get_transaction_object()
             approval_task_line.register_to_approval_task(**kwargs)
         return approval_task_line
@@ -373,6 +374,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         else:
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
+            kw['request_approval_task'] = fields.Datetime.now()
             approval_instance.register_approval_task_line(**kw)
 
         approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
@@ -399,15 +401,15 @@ class ApprovalInstanceMixin(models.AbstractModel):
         rec = self.ensure_one()
         reject_approval = rec.get_next_approval_task_line()
         kw = dict(kwargs)
-        kw.setdefault('transaction_object',rec.get_transaction_object())
+        kw.setdefault('transaction_object', rec.get_transaction_object())
         reject_approval.reject(reason, **kw)
 
-    def reject_from_popup_reject(self,**kwargs):
+    def reject_from_popup_reject(self, **kwargs):
         rec = self.ensure_one()
         reject_approval = rec.get_next_approval_task_line()
         kw = dict(kwargs)
         kw.setdefault('transaction_object', rec.get_transaction_object())
-        return reject_approval.reject_from_popup_reject( **kw)
+        return reject_approval.reject_from_popup_reject(**kw)
 
     def before_reject(self, **kwargs):
         if not self:
@@ -462,6 +464,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         else:
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
+            kw['request_approval_task'] = fields.Datetime.now()
             approval_instance.register_approval_task_line(**kw)
 
         kw_rejected = dict(kwargs)
