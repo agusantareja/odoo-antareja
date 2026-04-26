@@ -11,7 +11,7 @@
             <field name="state_reject" eval="False"/>
             <field name="state_approved" eval="False"/>
             <field name="notes_chatter_rejected" eval="True"/>
-<!--            <field name="notification_approval_id" ref="antareja_doa_approval.doa_approver_notification_template"/>-->
+<!--            <field name="notification_approval_id" ref="antareja_doa_approval.doa_approval_notification_template"/>-->
             <field name="code">
 # skip task line
 response['method_create_approval_task_line']='create_approval_task_line'
