@@ -1,0 +1,52 @@
+<odoo>
+
+    <record id="view_approval_task_line_tree" model="ir.ui.view">
+        <field name="name">approval.task.line.tree</field>
+        <field name="model">approval.task.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="display_name" string="Description"/>
+                <field name="status_approval"/>
+                <field name="date_execution" />
+                <field name="user_execution_id" />
+                <field name="access_approval" optional="hide"/>
+                <field name="reject_reason" optional="hide"/>
+                <field name="sign_title" optional="hide"/>
+                <field name="access_approval" optional="hide"/>
+                <field name="requester_id" optional="hide"/>
+                <field name="company_id" optional="hide"/>
+                <field name="transaction_id" optional="hide"/>
+                <field name="transaction_model_name" optional="hide"/>
+                <field name="approval_instance_id" optional="hide"/>
+                <field name="reject_to_method" optional="hide"/>
+                <field name="type_approval" optional="hide"/>
+                <field name="user_id"  optional="hide" />
+                <field name="user_ids" widget="many2many_tags" optional="hide" />
+                <field name="group_id" optional="hide" />
+                <field name="group_ids" widget="many2many_tags" optional="hide" />
+                <field name="responsible_user_id" optional="hide"/>
+<!--                <field name="approval_instance_id" optional="hide" groups="base.group_no_one"/>-->
+<!--                <field name="approval_user_ids" string="Approval User" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>-->
+<!--                <button name="action_assign" string="Assignment User" type="object" class="oe_highlight"-->
+<!--                        icon="fa-solid fa-user-plus text-success" groups="base.group_no_one" help="Assign Responsible User"/>-->
+<!--                <button name="action_reassign" string="Re Assignment User" type="object" class="oe_highlight"-->
+<!--                        icon="fa-solid fa-exchange-alt text-success" groups="base.group_no_one" help="Reassign Responsible User"/>-->
+<!--                <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>-->
+<!--                <button name="send_to_mobile_approval" string="Send to Mobile" type="object" icon="fa-solid fa-mobile"-->
+<!--                        groups="base.group_no_one"/>-->
+<!--                <button name="send_notification" string="Send Notification" type="object"-->
+<!--                        icon="fa-solid fa-envelope text-success" groups="base.group_no_one"/>-->
+<!--                <button name="check_approval_task_status" string="Check Approval Task" type="object"-->
+<!--                        icon="fa-solid fa-dropbox text-success" groups="base.group_no_one"/>-->
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_approval_task_line_action" model="ir.actions.act_window">
+        <field name="name">Approval Task Line</field>
+        <field name="res_model">approval.task.line</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'create': 0,'edit': 0,'delete': 0}</field>
+    </record>
+
+</odoo>

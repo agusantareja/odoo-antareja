@@ -2,10 +2,9 @@
 
 import logging
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import AccessError, UserError
 from odoo.models import BaseModel
-
 from ..tools.utils import have_method
 
 _logger = logging.getLogger(__name__)
@@ -21,7 +20,11 @@ class ApprovalTask(models.Model):
     document = fields.Char()
     description = fields.Char()
     url = fields.Char(string="URL")
-    date = fields.Datetime(string='Create Time', readonly=True, default=fields.Datetime.now)
+    date = fields.Datetime(string='Requester Date', readonly=True, default=fields.Datetime.now)
+    request_approval_task = fields.Datetime(
+        string='Request Approval Task Date', readonly=True, default=fields.Datetime.now,
+        help="Waktu yang di catat Approval Task diberikan pada user atau group tertentu"
+    )
     transaction_id = fields.Integer(
         'Transaction ID'
     )
@@ -52,7 +55,7 @@ class ApprovalTask(models.Model):
     transaction_display_name = fields.Char(
         'Name',
         compute='_compute_transaction_display_name',
-        compute_sudo = True,
+        compute_sudo=True,
     )
     approval_res_id = fields.Integer(
         'Approval ID'
@@ -61,9 +64,22 @@ class ApprovalTask(models.Model):
         'Approval Model',
     )
     approval_instance_id = fields.Many2one(
-        'approval.instance',
-        ondelete='set null',
+        'approval.instance', ondelete='set null',
     )
+    approval_user_ids = fields.Many2many(
+        'res.users', compute='_compute_approval_users', compute_sudo=True
+    )
+    approval_user_ids = fields.Many2many(
+        'res.users', compute='_compute_approval_users', compute_sudo=True
+    )
+
+    assignment_able = fields.Boolean(
+        compute='_compute_assignment_able'
+    )
+
+    def _compute_approval_users(self):
+        for rec in self:
+            rec.approval_user_ids = rec.get_users_for_approval()
 
     def check_access_rights_and_rule(self, user_and_delegator):
         rec = self.ensure_one()
@@ -172,6 +188,7 @@ class ApprovalTask(models.Model):
                 return True
         return records.sudo().unlink()
 
+    @api.model
     def prepare_data(self, **kwargs):
         data = dict()
 
@@ -254,10 +271,12 @@ class ApprovalTask(models.Model):
             if not rec.document and not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
                 kw['document'] = transaction_object.get_internal_document()
 
-            if not rec.description and not kw.get('description') and have_method(transaction_object, 'get_internal_description'):
+            if not rec.description and not kw.get('description') and have_method(transaction_object,
+                                                                                 'get_internal_description'):
                 kw['description'] = transaction_object.get_internal_description()
 
-            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object, 'get_internal_requester_id'):
+            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object,
+                                                                                   'get_internal_requester_id'):
                 kw['requester_id'] = transaction_object.get_internal_requester_id()
 
             if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
@@ -273,11 +292,14 @@ class ApprovalTask(models.Model):
 
         return kw
 
+    def get_approval_task(self, transaction_id, transaction_model_name):
+        return self.search(
+            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
+            limit=1,
+        )
+
     def approval_setup(self, transaction_id, transaction_model_name, **kwargs):
-        approval_task = self.search([
-            ('transaction_id', '=', transaction_id),
-            ('transaction_model_name', '=', transaction_model_name),
-        ], limit=1)
+        approval_task = self.get_approval_task(transaction_id, transaction_model_name)
         prepare_dict = dict(kwargs)
         prepare_dict.update(
             transaction_id=transaction_id,
@@ -371,3 +393,21 @@ class ApprovalTask(models.Model):
                     transaction_object.check_approval_task_status()
             else:
                 rec.approval_done()
+
+    def _compute_assignment_able(self):
+        for rec in self:
+            rec.assignment_able = self.approval_model in self.env \
+                                  and have_method(self.env[self.approval_model], 'action_assignment')
+
+    def action_assign(self):
+        return self.action_assignment()
+
+    def action_reassign(self):
+        return self.action_assignment()
+
+    def action_assignment(self):
+        self.ensure_one()
+        if self.assignment_able and self.approval_res_id:
+            return self.env[self.approval_model].browse(self.approval_res_id).action_assignment()
+        else:
+            raise UserError("Assignment not available for this task")

@@ -16,6 +16,10 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     transaction_id = fields.Integer()
     transaction_model_name = fields.Char()
+    approval_instance_id = fields.Many2one(
+        'approval.instance',
+        ondelete='set null',
+    )
     approval_task_id = fields.Many2one(
         'approval.task',
         ondelete='set null',
@@ -178,7 +182,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             'date_execution': fields.Datetime.now(),
         })
 
-
     def set_rejected_status(self, **kwargs):
         if have_method(self, "set_reject_state"):
             self.set_reject_state()
@@ -197,7 +200,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             'date_execution': False,
             'reject_reason': False,
         })
-
 
     def action_approve(self,**kwargs):
         rec = self.ensure_one()
@@ -250,9 +252,8 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             if have_method(transaction_object, 'event_after_approve'):
                 safe_call_method(transaction_object, 'event_after_approve')
 
-    def reject_method_legacy(self,reason=None, **kwargs):
+    def reject_method_legacy(self, reason=None, **kwargs):
         raise NotImplemented
-        #return approval_task_line_next, approval_task_line_between
 
     def do_reject(self, reason=None, **kwargs):
         kw = dict(kwargs)
@@ -275,7 +276,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             elif self.reject_to_method == 'to_previous':
                 approval_task_line_next = self.get_previous_approval_task_line()
             elif self.reject_to_method == 'legacy':
-                approval_task_line_next,approval_task_line_between = self.reject_method_legacy(reason,**kwargs)
+                approval_task_line_next, approval_task_line_between = self.reject_method_legacy(reason, **kwargs)
             else:
                 approval_task_line_next = kwargs.get('approval_task_line_next')
                 approval_task_line_between = kwargs.get('approve_task_line_between') or self.get_approval_start_task(
@@ -313,21 +314,23 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def reject_from_popup_reject(self, **kwargs):
         return self.do_reject(**kwargs)
 
+
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'
-    _inherit = ['approval.task.line.mixin',
+    _inherit = ['approval.task.line.assignment.mixin',
+                'approval.task.line.mixin',
                 'abstract.approval.status',
                 'abstract.approval.access',
                 'approval.transaction.view.able.mixin'
                 ]
     _description = 'This is Approval Task Line for Approval helper waiting approval'
     _order = 'id'
-    approval_instance_id = fields.Many2one('approval.instance')
-    requester_id = fields.Many2one(
-        'res.users', 'Requester',
-        default=lambda self: self.env.user,
-        help="User who requested the approval."
-    )
+    # approval_instance_id = fields.Many2one('approval.instance')
+    # requester_id = fields.Many2one(
+    #     'res.users', 'Requester',
+    #     default=lambda self: self.env.user,
+    #     help="User who requested the approval."
+    # )
     reject_to_method = fields.Selection(default='to_requestor')
     # user_execution_id = fields.Many2one(
     #     'res.users',
@@ -336,6 +339,26 @@ class ApprovalTaskLine(models.Model):
     # )
     # date_execution = fields.Datetime('Date Execution')
     # reject_reason = fields.Text('Reject Reason')
+
+    def name_get(self):
+        result = []
+        for rec in self:
+            type_name = rec.id
+            if rec.responsible_user_id:
+                type_name = f"{rec.responsible_user_id.name}"
+            elif rec.type_approval == 'user' and rec.user_id:
+                type_name = f"User - {rec.user_id.name}"
+            elif rec.type_approval == 'group' and rec.group_id:
+                type_name = f"Group - {rec.group_id.name}"
+            elif rec.type_approval == 'multi_group' and rec.group_ids:
+                groups_name = ",".join([r.name for r in rec.group_ids])
+                type_name = f"Groups - [{groups_name}]"
+            elif rec.type_approval == 'multi_user' and rec.user_ids:
+                groups_name = ",".join([r.name for r in rec.user_ids])
+                type_name = f"Users - [{groups_name}]"
+            result.append((rec.id, type_name))
+
+        return result
 
     def set_approved_status(self, **kwargs):
         self.ensure_one()

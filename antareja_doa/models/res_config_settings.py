@@ -4,6 +4,7 @@ from odoo import models, fields, api
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    module_antareja_doa_activate = fields.Boolean("Activate Doa")
     module_antareja_doa_approval = fields.Boolean("Doa Approval")
     module_antareja_integration_doa = fields.Boolean("Doa Intra Integration")
 
