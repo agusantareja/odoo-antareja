@@ -17,6 +17,7 @@ _logger = logging.getLogger(__name__)
 
 class ApprovalTemplateMixin(models.AbstractModel):
     _name = 'approval.template.mixin'
+    _rec_name = 'model_id'
     DEFAULT_PYTHON_CODE = """# Available variables:
         #  - env: Odoo Environment on which the action is triggered
         #  - time, datetime, dateutil, timezone: useful Python libraries

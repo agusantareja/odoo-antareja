@@ -97,7 +97,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return previous
 
     def get_last_approval_task_line(self, transaction_id=None, transaction_model_name=None):
-        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id desc',limit=1)
+        return self.search(
+            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
+            order='id desc', limit=1)
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if not transaction_id or not transaction_model_name:
@@ -124,7 +126,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         else:
             kw = dict(kwargs)
 
-        transaction_object = kw.get('transaction_object') or safe_call_method(self, 'get_transaction_object',)
+        transaction_object = kw.get('transaction_object') or safe_call_method(self, 'get_transaction_object', )
         if transaction_object:
             if have_method(transaction_object, 'prepare_approval_task_dict'):
                 update = safe_call_method(transaction_object, 'prepare_approval_task_dict', kwargs=kw)
@@ -201,14 +203,12 @@ class ApprovalTaskLineMixin(models.AbstractModel):
             'reject_reason': False,
         })
 
-    def action_approve(self,**kwargs):
+    def action_approve(self, **kwargs):
         rec = self.ensure_one()
         rec.do_approve(**kwargs)
 
-    # def action_reject(self):
-    #     self.do_reject(reason="No Reason")
     @api.model
-    def action_reject(self,**kwargs):
+    def action_reject(self, **kwargs):
         return {
             'name': 'Reject Message',
             'type': 'ir.actions.act_window',
@@ -332,6 +332,7 @@ class ApprovalTaskLine(models.Model):
     #     help="User who requested the approval."
     # )
     reject_to_method = fields.Selection(default='to_requestor')
+
     # user_execution_id = fields.Many2one(
     #     'res.users',
     #     'User Execution',
@@ -385,14 +386,16 @@ class ApprovalTaskLine(models.Model):
     def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         transaction_id = transaction_id or self.transaction_id
         transaction_model_name = transaction_model_name or self.transaction_model_name
-        return self.search([('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)], order='id asc')
+        return self.search(
+            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
+            order='id asc')
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         # transaction_id = transaction_id or self.transaction_id
         # transaction_model_name = transaction_model_name or self.transaction_model_name
         # domain =  [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name),] + self.domain_waiting_status()
         # next_approval_task_line = self.sudo().search(domain, order='id asc', limit=1)
-        next_approval_task_line = super(ApprovalTaskLine,self).get_next_approval_task_line(
+        next_approval_task_line = super(ApprovalTaskLine, self).get_next_approval_task_line(
             transaction_id=transaction_id, transaction_model_name=transaction_model_name
         )
         if next_approval_task_line and next_approval_task_line.status_approval != 'waiting_approval':
@@ -424,6 +427,6 @@ class ApprovalTaskLine(models.Model):
         kwargs['users'] = self.requester_id
         self.send_notification(**kwargs)
 
-    def send_notification(self,**kwargs):
+    def send_notification(self, **kwargs):
         # implment di module notification
         pass

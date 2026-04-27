@@ -87,3 +87,12 @@ class ResUsers(models.Model):
         metode ini akan di override di modul antareja_doa
         """
         return self.browse()
+
+    @api.model
+    def get_delegate_user_group(self):
+        """Get all delegations user group for this proxy user."""
+        return {
+            'user_ids': [],
+            'group_ids': [],
+            'user_delegate_ids': []
+            }
