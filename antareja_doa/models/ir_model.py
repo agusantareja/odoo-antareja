@@ -13,6 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class IrModelAccess(models.Model):
     _inherit = 'ir.model.access'
+
     # versi 16
     def _get_allowed_models(self, mode='read'):
         return set(super(IrModelAccess,self)._get_allowed_models(mode) | self.env['user.delegation'].get_allowed_models_with_delegation(self.env.uid, mode))
