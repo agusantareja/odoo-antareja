@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from odoo import models, fields, api, _
-import traceback
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -53,13 +53,11 @@ class ExternalDataSyncCron(models.Model):
             last_sync_datetime = fields.Datetime.now()
             try:
                 data_sync.sync_strategy_id.sync_from_application_server()
-            except Exception as e:
-
-                _logger.error(
-                    "Error sync from server %s , model %s : %s",
+            except Exception:
+                _logger.exception(
+                    "Error sync from server %s, model %s",
                     data_sync.external_app_name,
                     data_sync.external_model,
-                    traceback.format_exc()
                 )
             finally:
                 data_sync.write({

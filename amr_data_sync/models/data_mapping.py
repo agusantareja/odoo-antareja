@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, _
 from datetime import datetime
+
+from odoo import _, fields, models
 from odoo.tools.safe_eval import safe_eval
 
-from ..tools.utils import is_callable_method, has_kwargs
+from ..tools.utils import has_kwargs, is_callable_method
 
 
 class ExternalDataMapping(models.Model):
