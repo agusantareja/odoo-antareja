@@ -20,7 +20,7 @@ class UserDelegation(models.Model):
             self.get_delegations_user_group_for_delegatee.clear_cache(self)
             self.check_model_access_with_delegation.clear_cache(self)
             self.get_allowed_models_with_delegation.clear_cache(self)
-
+            self.env['ir.model.access'].call_cache_clearing_methods()
         return res
 
     def write(self, write_vals):
@@ -31,6 +31,7 @@ class UserDelegation(models.Model):
                 # for proxy in proxies:
             self.get_delegations_user_group_for_delegatee.clear_cache(self)
             self.check_model_access_with_delegation.clear_cache(self)
+            self.env['ir.model.access'].call_cache_clearing_methods()
         return r
 
     @tools.ormcache('delegatee_id', 'group_id')

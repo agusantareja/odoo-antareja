@@ -18,5 +18,6 @@
     'data': [
         'views/approval_audit_log_views.xml',
         'views/approval_task_views.xml',
+        'views/approval_task_line_views.xml',
     ],
 }
