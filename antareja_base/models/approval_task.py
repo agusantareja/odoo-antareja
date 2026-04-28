@@ -69,9 +69,6 @@ class ApprovalTask(models.Model):
     approval_user_ids = fields.Many2many(
         'res.users', compute='_compute_approval_users', compute_sudo=True
     )
-    approval_user_ids = fields.Many2many(
-        'res.users', compute='_compute_approval_users', compute_sudo=True
-    )
 
     assignment_able = fields.Boolean(
         compute='_compute_assignment_able'
@@ -354,7 +351,10 @@ class ApprovalTask(models.Model):
 
     def get_users_for_notification(self, **kwargs):
         record = self.ensure_one()
-        users = kwargs.get('users') or record.get_users()
+        users = kwargs.get('users')
+        if not isinstance(users, models.BaseModel):
+            users = record.get_users()
+        # users = kwargs.get('users') or record.get_users()
         if users:
             return users.get_users_for_notification(company=self.company_id)
         else:
@@ -362,7 +362,10 @@ class ApprovalTask(models.Model):
 
     def get_users_for_approval(self, **kwargs):
         record = self.ensure_one()
-        users = kwargs.get('users') or record.get_users()
+        users = kwargs.get('users')
+        if not isinstance(users, models.BaseModel):
+            users = record.get_users()
+        #users = kwargs.get('users') or record.get_users()
         if users:
             return users.get_users_for_approval(company=self.company_id)
         else:
