@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-from odoo.tools.safe_eval import safe_eval
-from ..tools.utils import is_callable_method, get_callable_method, convert_from_external_data
-from odoo.addons.amr_jsonrpc import utils
 import ast
 import logging
+from collections import defaultdict
+
+from odoo import _, api, fields, models
+from odoo.addons.amr_jsonrpc import utils
+from odoo.exceptions import UserError
+from odoo.tools.safe_eval import safe_eval
+
+from ..tools.utils import (convert_from_external_data, get_callable_method,
+                           is_callable_method)
 
 _logger = logging.getLogger(__name__)
 

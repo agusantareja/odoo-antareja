@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import ast
 import datetime
+import json
+import logging
+import traceback
 from collections import defaultdict
 
-from odoo import models, fields, api, _
+from odoo import _, api, fields, models
+from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.exceptions import UserError
 from odoo.tools import date_utils
+
 from ..tools.utils import convert_from_external_data, insert_data_sql
-import json
-import traceback
-import logging
 
 _logger = logging.getLogger(__name__)
 
