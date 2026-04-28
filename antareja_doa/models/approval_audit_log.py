@@ -1,5 +1,6 @@
 from odoo import models, fields
 
+
 class ApprovalAuditLog(models.Model):
     _inherit = 'approval.audit.log'
     delegatee_user_id = fields.Many2one('res.users', string="Acting User")
