@@ -18,9 +18,7 @@
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
     'version': '13.0.3.0.0',
-    # any module necessary for this one to work correctly
     'depends': ['base', 'base_setup', 'mail'],
-    # always loaded
     'data': [
         'security/ir.model.access.csv',
         'views/api_call_retry_views.xml',
