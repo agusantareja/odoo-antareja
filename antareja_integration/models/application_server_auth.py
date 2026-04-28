@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, _
-import jwt
-import time
 import logging
+import time
+
+import jwt
+from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
