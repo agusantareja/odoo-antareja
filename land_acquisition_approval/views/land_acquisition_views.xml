@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="land_acquisition_view_form" model="ir.ui.view">
+            <field name="name">land_acquisition.view.form</field>
+            <field name="model">land.acquisition</field>
+            <field name="inherit_id" ref="land_acquisition.land_acquisition_view_form"/>
+            <field name="arch" type="xml">
+                <header position="inside">
+                    <button name="register_approval_task"
+                            string="Register Approval Task"
+                            type="object"
+                            class="btn-secondary"
+                            groups="base.group_no_one"
+
+                    />
+                    <button name="unregister_approval_task"
+                            string="Un Register Approval Task"
+                            type="object"
+                            class="btn-secondary"
+                            groups="base.group_no_one"
+
+                    />
+                </header>
+            </field>
+        </record>
+    </data>
+</odoo>
