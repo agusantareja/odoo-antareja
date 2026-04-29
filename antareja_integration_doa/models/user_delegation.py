@@ -31,5 +31,3 @@ class UserDelegation(models.Model):
         if item_dict.get('id') in [1, 2]:
             return self.env['res.users'].browse(item_dict.get('id'))
         return self.env['res.users'].search([('partner_id.email', '=', item_dict.get('email'))], limit=1)
-
-
