@@ -1,0 +1,19 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="reject_revision_form">
+            <field name="name">reject.revision.form</field>
+            <field name="model">reject.revision</field>
+            <field name="arch" type="xml">
+                <form string="Revision">
+                    <group>
+                        <field name="reason"/>
+                    </group>
+                    <footer>
+                        <button name="button_save" string="Reject" type="object" class="btn-primary" />
+                        <button string="Cancel" class="btn-secondary" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

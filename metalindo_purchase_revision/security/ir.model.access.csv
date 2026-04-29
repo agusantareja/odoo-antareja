@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_request_revision_purchase_user,access.request.revision.purchase.user,model_request_revision,purchase.group_purchase_user,1,1,1,1
+access_reject_revision_purchase_user,access.reject.revision.purchase.user,model_reject_revision,purchase.group_purchase_user,1,1,1,1
+access_po_version,access_po_version,model_po_version,purchase.group_purchase_user,1,1,1,1

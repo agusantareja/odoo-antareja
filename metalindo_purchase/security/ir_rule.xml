@@ -1,0 +1,35 @@
+<odoo>
+    <data>
+        <record model="ir.rule" id="recommend_qty_rule">
+            <field name="active" eval="True"/>
+            <field name="name">Recommended Quantity Company</field>
+            <field name="model_id" ref="model_recommend_qty" />
+            <field name="global" eval="True" />
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record model="ir.rule" id="purchase_plan_year_rule">
+            <field name="active" eval="True"/>
+            <field name="name">Year Purchase Plan Company</field>
+            <field name="model_id" ref="model_purchase_plan_year" />
+            <field name="global" eval="True" />
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record model="ir.rule" id="purchase_plan_rule">
+            <field name="active" eval="True"/>
+            <field name="name">Purchase Plan Company</field>
+            <field name="model_id" ref="model_purchase_plan" />
+            <field name="global" eval="True" />
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record model="ir.rule" id="view_realisasi_belanja_rule">
+            <field name="active" eval="True"/>
+            <field name="name">Realisasi Belanja Company</field>
+            <field name="model_id" ref="model_view_realisasi_belanja" />
+            <field name="global" eval="True" />
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

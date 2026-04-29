@@ -1,0 +1,142 @@
+<odoo>
+    <data>
+        <record id="cni_approval_request_purchase_order_form" model="ir.ui.view">
+            <field name="name">cni.approval.request.po.form</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//group" position="inside">
+                    <field name="exclusive" invisible="1"/>
+                    <field name="requisition_state" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//button[@name='button_confirm'][1]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='button_cancel']" position="before">
+                    <field name="approval_state" invisible="1"/>
+                    <field name="access_approval" invisible="1"/>
+                    <button name="action_ensure_approval_instance" string="Approval Instance" type="object"
+                            class="oe_highlight" icon="fa-solid fa-list-check text-success" groups="base.group_no_one"
+                    />
+                    <!-- submit -->
+                    <button name="action_request_approval" class="oe_highlight" states="draft,sent"
+                            string="Submit" type="object"
+                    />
+<!--                    <button name="button_approve_approval" class="oe_highlight"-->
+<!--                            attrs="{'invisible': ['|', ('state', '!=', 'waiting_for_approval'), ('access_approval', '=', False)]}"-->
+<!--                            confirm="Are you sure you want to approve?" string="Approve" type="object"/>-->
+<!--                    <button id="button_reject_approval" string="Reject"-->
+<!--                            name="%(metalindo_approval.cni_reject_approval_wizard_action)d" type="action"-->
+<!--                            attrs="{'invisible': ['|', ('state', '!=', 'waiting_for_approval'), ('access_approval', '=', False)]}"-->
+<!--                            context="{'model_name':'purchase.order','update_value':{'approval_state':'r','state':'draft'}}"/>-->
+
+                    <button name="action_approve" class="oe_highlight"
+                            confirm="Are you sure you want to approve?" string="Approve" type="object"
+                            attrs="{'invisible': ['|', ('state', '!=', 'waiting_for_approval'),('access_approval', '=', False)]}"
+                    />
+                    <button name="action_reject" string="Reject" type="object"
+                            attrs="{'invisible': ['|', ('state', '!=', 'waiting_for_approval'),('access_approval', '=', False)]}"
+                    />
+                </xpath>
+                <xpath expr="//button[@id='draft_confirm']" position="attributes">
+                    <attribute name="states">approved</attribute>
+                </xpath>
+                <xpath expr="//button[@id='bid_confirm']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="statusbar_visible">draft,waiting_for_approval,purchase</attribute>
+                </xpath>
+
+                <!-- Dikunci setelah approved -->
+                <xpath expr="//field[@name='order_line']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','!=','draft')]}</attribute>
+                </xpath>
+
+                <xpath expr="//notebook" position="inside">
+                    <page string="Approval">
+                        <field name="approval_ids" readonly="1">
+                            <tree string="Approval">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="group_id"/>
+                                <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="sts"/>
+                                <field name="reason"/>
+                                <field name="pelaksana_id"/>
+                                <field name="tanggal"/>
+                            </tree>
+                            <form string="Approval">
+                                <group>
+                                    <group>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="group_id"/>
+                                        <field name="limit" widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+                                        <field name="sts"/>
+                                    </group>
+                                    <group>
+                                        <field name="reason"/>
+                                        <field name="pelaksana_id"/>
+                                        <field name="tanggal"/>
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                    <!--
+                        <page string="Audit Trail">
+                          <group>
+                            <group>
+                              <field name="create_uid" readonly="1"></field>
+                              <field name="create_date" readonly="1"></field>
+                            </group>
+                            <group>
+                              <field name="write_uid" readonly="1"></field>
+                              <field name="write_date" readonly="1"></field>
+                            </group>
+                          </group>
+                        </page>
+                        -->
+                </xpath>
+
+                <xpath expr="//header" position="after">
+                    <div class="alert alert-info" role="alert"
+                         attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'waiting_for_approval', 'revision']), ('flag_reject', '=', True)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="alert_waiting_approval" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'waiting_for_approval']), ('flag_reject', '=', False)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="note_reject" readonly="1"/>
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <field name="flag_reject" invisible="1"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,184 @@
+<odoo>
+    <data>
+        <record id="metalindo_material_requisition_search" model="ir.ui.view">
+            <field name="name">cni.approval.material.requisition.form</field>
+            <field name="model">material.requisition</field>
+            <field name="inherit_id" ref="metalindo_direct_charge.metalindo_material_requisition_search" />
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='done']" position="before">
+                    <filter string="To Do" name="todo" domain="[('todo', '=', True)]" />
+                </xpath>
+                <xpath expr="//filter[@name='done']" position="after">
+                     <filter string="Outstanding" name="outstanding" domain="[('outstanding', '=', True)]" />
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="metalindo_direct_charge.purchase_material_requisition_action">
+            <field name="context">{'search_default_todo':1}</field>
+        </record>
+
+
+        <record id="cni_approval_material_requisition_form" model="ir.ui.view">
+            <field name="name">cni.approval.material.requisition.form</field>
+            <field name="model">material.requisition</field>
+            <field name="inherit_id" ref="metalindo_direct_charge.metalindo_material_requisition_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <field name="approval_state" invisible="1"/>
+                    <field name="access_approval" invisible="1"/>
+                    <button string="Request Approval" name="action_request_approval" type="object" class="oe_highlight"
+                            attrs="{'invisible': ['|', ('archive', '=', True), ('approval_state', '!=', 'b')]}"/>
+<!--                    <button string="Request Approval" name="button_request_approval" type="object" class="oe_highlight"-->
+<!--                            attrs="{'invisible': ['|', ('archive', '=', True), ('mr_status', '!=', 'draft')]}"-->
+<!--                    />-->
+                    <!--
+            Special approve button for `mr_status` == 'cost_control' (since there is a state change
+            that needs to be done after approving)
+          -->
+<!--                    <button string="Request Approval" name="action_request_approval" type="object" class="oe_highlight"-->
+<!--                            attrs="{'invisible': ['|', ('archive', '=', True), ('approval_state', '!=', 'b')]}"/> -->
+
+<!--                    <button string="Approve" name="button_approve_cost_control" type="object" class="oe_highlight"-->
+<!--                            attrs="{'invisible': ['|', ('archive', '=', True), ('mr_status', '!=', 'cost_control')]}"-->
+<!--                            groups="metalindo_approval.group_finance_cost_control" confirm="Are you sure you want to approve?"-->
+<!--                    />-->
+<!--                    <button string="Reject" name="action_open_reject_wizard" type="object"-->
+<!--                            attrs="{'invisible': ['|', ('mr_status','!=','cost_control'), ('is_approver', '=', False)]}"-->
+<!--                            groups="metalindo_approval.group_finance_cost_control"-->
+<!--                    />-->
+                    <button string="Reject" name="action_reject" type="object"
+                            attrs="{'invisible': ['|', ('approval_state', '!=', 'rf'), ('access_approval', '=', False)]}"
+                    />
+
+                    <button string="Revise" name="revise" type="object" confirm="Are you sure you want to revise this PR?"
+                            attrs="{'invisible': ['|', '|', ('is_can_revise', '=', False), ('any_requested', '=', False), ('mr_status', 'in', ['draft', 'waiting'])]}"
+                    />
+                    <button string="Assign Buyer" name="action_assign_buyer" type="object" class="oe_highlight"
+                            groups="metalindo_approval.group_metalindo_scm_superintendent"
+                            attrs="{'invisible': ['|',('buyer_id', '!=', False),('mr_status', 'not in', ['approved','waiting'])]}"
+                    />
+                    <field name="is_approver" invisible="1"/>
+                    <field name="is_cost_control" invisible="1"/>
+                    <field name="any_requested" invisible="1"/>
+                    <field name="is_can_update" invisible="1"/>
+                    <field name="is_can_revise" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_reject_request']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//sheet" position="after">
+                    <div class="o_attachment_preview"/>
+
+                    <div class="oe_chatter" chatter_position="bottom">
+                        <field name="message_follower_ids" />
+                        <field name="message_ids" />
+                    </div>
+                </xpath>
+                <!--
+            <xpath expr="//button[@name='action_reject_request']" position="after">
+              <button name="send_notification_email" type="object" string="Send RFA" class="oe_highlight" />
+		    		  <button string="Request Approval" name="button_request_approval" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('archive', '=', True), ('mr_status', '!=', 'draft')]}"/>
+            </xpath>
+          -->
+
+                <xpath expr="//button[@name='action_approve_request']" position="replace">
+<!--                    <button string="Approve" name="access_approval" type="object" class="oe_highlight"-->
+<!--                            attrs="{'invisible': ['|', '|', ('archive', '=', True), ('approval_state', '!=', 'rf'), ('access_approval','=',False)]}"/>-->
+<!--                    <button string="Reject" name="action_reject" type="object"-->
+<!--                            attrs="{'invisible': ['|', '|', ('archive', '=', True), ('approval_state', '!=', 'rf'), ('access_approval','=',False)]}"/>-->
+                    <button string="Approve" name="action_approve" type="object" class="oe_highlight" attrs="{'invisible': ['|', '|', '|', ('is_can_update', '=', True),('archive', '=', True), ('approval_state', '!=', 'rf'), ('access_approval','=',False)]}" confirm="Are you sure you want to approve?"/>
+                    <button string="Approve" name="action_approve" type="object" class="oe_highlight" attrs="{'invisible': ['|', '|', '|', ('is_can_update', '=', False),('archive', '=', True), ('approval_state', '!=', 'rf'), ('access_approval','=',False)]}" confirm="Are you sure about the priority, quantity and product type?"/>
+                </xpath>
+                <xpath expr="//field[@name='mr_status']" position="attributes">
+                    <attribute name="statusbar_visible">draft,waiting,approved,in_progress,done</attribute>
+                </xpath>
+
+                <xpath expr="//notebook" position="inside">
+                    <page string="Approval" attrs="{'invisible':[('odoo_id', '>', 0)]}">
+                        <div class="alert alert-info" role="alert" attrs="{'invisible': [('info_priority', '=', False)]}">
+                            <table width="100%">
+                                <tr>
+                                    <td width="100%">
+                                        <field name="info_priority" readonly="1" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <field name="approval_ids" readonly="1">
+                            <tree string="Approval">
+                                <field name="currency_id" invisible="1" />
+                                <field name="group_id" />
+                                <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                <field name="sts" />
+                                <field name="reason" invisible="1"/>
+                                <field name="pelaksana_id" />
+                                <field name="tanggal" />
+                            </tree>
+                            <form string="Approval">
+                                <group>
+                                    <group>
+                                        <field name="currency_id" invisible="1" />
+                                        <field name="group_id" />
+                                        <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                        <field name="sts" />
+                                    </group>
+                                    <group>
+                                        <field name="reason" />
+                                        <field name="pelaksana_id" />
+                                        <field name="tanggal" />
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+
+                <xpath expr="//header" position="after">
+                    <div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('mr_status', 'not in', ['cost_control', 'waiting']), ('flag_reject', '=', True)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="alert_waiting_approval" readonly="1" />
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="alert alert-danger" role="alert" attrs="{'invisible': ['|', ('mr_status', 'not in', ['draft', 'cost_control', 'waiting']), ('flag_reject', '=', False)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="98%">
+                                    <field name="note_reject" readonly="1" />
+                                </td>
+                                <td>
+                                    <a class="close" data-bs-dismiss="alert" href="#">x</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <field name="flag_reject" invisible="1" />
+                </xpath>
+
+                <xpath expr="//button[@name='action_update_cost_element']" position="attributes">
+                    <attribute name="attrs">
+                        {'invisible': [('is_cost_control', '=', False)]}
+                    </attribute>
+                    <attribute name="groups">
+                        metalindo_approval.group_finance_cost_control
+                    </attribute>
+                </xpath>
+                <xpath expr="//button[@name='update_product_type']" position="attributes">
+                    <attribute name="attrs">
+                        {'invisible': [('is_can_update', '=', False)]}
+                    </attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

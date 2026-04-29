@@ -1,0 +1,35 @@
+<odoo>
+    <data>
+        <record id="recommend_qty_setting_form" model="ir.ui.view">
+            <field name="name">recommend.qty.setting.form</field>
+            <field name="model">recommend.qty.setting</field>
+            <field name="arch" type="xml">
+                <form create="0">
+                    <style>
+                        .o_dropdown_toggler_btn{
+                            visibility: hidden
+                        }
+                        .o_cp_right{
+                            visibility: hidden
+                        }
+                    </style>
+                    <group>
+                        <field name="code" string="Recommended Qty Function" />
+                        <field name="name" readonly="1"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!--Configuration Recommended Qty Setting-->
+        <record id="recommend_qty_setting_action" model="ir.actions.act_window">
+            <field name="name">Recommended Quantity Setting</field>
+            <field name="res_model">recommend.qty.setting</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="recommend_qty_setting_form" />
+            <field name="res_id" ref="recommend_qty_setting_id" />
+        </record>
+
+        
+    </data>
+</odoo>

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <template id="metalindo_purchase_vendor_acknowledge_eng_doc">
+    <t t-call="web.html_container">
+      <t t-call="web.external_layout">
+        <style>
+          .table-copy {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+            vertical-align: top;
+            border-style: none;
+          }
+          .table_black td{
+            border:1px solid black;
+          }
+          .table_black th{
+            border:1px solid black;
+            text-align:center;
+          }
+          .color-box {
+            padding: 6px;
+            padding-right: 100px;
+          }
+          .color-box span {
+            border: 1px solid black;
+            padding: 2px;
+            padding-left: 25px;
+            margin: 0px;
+            margin-right: 10px;
+            border-radius: 3px;
+          }
+        </style>
+        <div class="page">
+          <div align="center">
+            <t style="font-size: 14pt;">
+              <strong>
+                <u>ACKNOWLEDGE</u>
+              </strong>
+            </t>
+          </div>
+          <br/>
+          <table class="table table-borderless" style="font-size= 12pt;">
+            <tbody>
+              <tr>
+                <td>To</td>
+                <td>:                  <span t-field="o.partner_id.name"/>
+                </td>
+              </tr>
+              <div t-if="o.partner_id.child_ids">
+                <tr>
+                  <td>Attn</td>
+                  <td>: <span t-field="o.partner_id.child_ids[0].name"/></td>
+                </tr>
+              </div>
+              <div t-else="">
+                <tr>
+                  <td>Attn</td>
+                  <td>: </td>
+                </tr>
+              </div>
+              <tr>
+                <td>Email</td>
+                <td>:                  <span t-field="o.partner_id.email"/>
+                </td>
+              </tr>
+              <tr>
+                <td>Date</td>
+                <td>:                  <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                </td>
+              </tr>
+              <tr>
+                <td>PO Ref</td>
+                <td>:                  <span t-field="o.name"/>
+                </td>
+              </tr>
+              <tr>
+                <td>Buyer</td>
+                <td>:                  <span t-field="user_id.name"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="font-size: 12pt;">Attached is Purchase Order No: <span t-field="o.name"/>
+          </p>
+
+          <p style="font-size: 12pt;">You have the right to process this messages via email/fax. We only send the purchase 
+          letter via email/fax to you. Please include this Purchase Order number for all correspondence. 
+          We are waiting for this Acknowledge Letter with a maximum limit of 3 working days after you receive it. 
+          Purchase Order from PT. Ceria Metalindo Prima and this letter must be sent back to Pt. Ceria Metalindo Prima.
+          </p>
+
+          <t>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+          _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</t>
+
+          <p style="font-size: 12pt;">
+            <strong>To: PT. Ceria Metalindo Prima</strong>
+          </p>
+
+          <p style="font-size: 12pt;">We have received the Purchase Order above and can fulfill the order details according
+          to the 'X' mark that we have given in the box provided below or we suggest some changes to the purchase details.
+          </p>
+
+          <p style="font-size: 12pt;">Terms and Conditions of Purchase Order Letter PT. Ceria Metalindo Prima will apply.
+            Copies are available upon request or will be attached
+          </p>
+
+          <table class="table table-borderless" style="font-size: 12pt;">
+            <tbody>
+              <tr>
+                <td class="color-box">
+                  <span></span> Due Delivery Date</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Unit Price</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Currency</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Description and Pert No</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Quantity (Qty) and Unit Of Measure (UOM)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Please confirm your confirmation by returning this letter immediately via fax or email</p>
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td style="width: 12%;">Company Name</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Signed Name</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Date</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Email</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Signed</td>
+                <td>: </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </t>
+    </t>
+  </template>
+
+  <template id="metalindo_purchase_vendor_acknowledge_ind_doc">
+    <t t-call="web.html_container">
+      <t t-call="web.external_layout">
+        <style>
+          .table-copy {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+            vertical-align: top;
+            border-style: none;
+          }
+          .table_black td{
+            border:1px solid black;
+          }
+          .table_black th{
+            border:1px solid black;
+            text-align:center;
+          }
+          .color-box {
+            padding: 6px;
+            padding-right: 100px;
+          }
+          .color-box span {
+            border: 1px solid black;
+            padding: 2px;
+            padding-left: 25px;
+            margin: 0px;
+            margin-right: 10px;
+            border-radius: 3px;
+          }
+        </style>
+        <div class="page">
+          <div align="center">
+            <t style="font-size: 14pt;">
+              <strong>
+                <u>SURAT PEMBERITAHUAN</u>
+              </strong>
+            </t>
+          </div>
+          <br/>
+          <table class="table table-borderless" style="font-size= 12pt;">
+            <tbody>
+              <tr>
+                <td>To</td>
+                <td>:                  <span t-field="o.partner_id.name"/>
+                </td>
+              </tr>
+              <tr>
+                <td>Attn</td>
+                <td>: <span t-esc="o.partner_id.child_ids[:1].name"/></td>
+              </tr>
+              <tr>
+                <td>Email</td>
+                <td>:                  <span t-esc="o.partner_id.email"/>
+                </td>
+              </tr>
+              <tr>
+                <td>Date</td>
+                <td>:                  <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                </td>
+              </tr>
+              <tr>
+                <td>PO Ref</td>
+                <td>:                  <span t-field="o.name"/>
+                </td>
+              </tr>
+              <tr>
+                <td>Buyer</td>
+                <td>:                  <span t-field="user_id.name"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="font-size: 12pt;">Terlampir Surat Perintah Pembelian No : <span t-field="o.name"/>
+          </p>
+
+          <p style="font-size: 12pt;">Pesan melalui email/fax ini berhak untuk anda proses. Kami hanya mengirimkan surat 
+          pembelian melalui email/fax ini kepada anda. Mohon cantumkan nomor Surat Perintah Pembelian ini untuk semua koresponden. 
+          Kami menuggu Surat Pemberitahuan ini dengan batas maksium 3 hari kerja setelah anda terima. Purchase Order dari PT. Ceria Metalindo Prima
+          dan surat ini wajib untuk dikirimkan kembali kepada  PT. Ceria Metalindo Prima
+          </p>
+
+          <t>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+          _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</t>
+
+          <p style="font-size: 12pt;">
+            <strong>Kepada: PT. Ceria Metalindo Prima</strong>
+          </p>
+
+          <p style="font-size: 12pt;">Kami telah menerima Surat Perintah Pembelian tersebut diatas dan dapat memenuhi rincian pemesanan sesuai dengan
+          tanda 'X' yang telah kami berikan pada kotak yang tersedia berikut atau kami menyarankan adanya beberapa perubahan rincian pembelian
+          </p>
+
+          <p style="font-size: 12pt;">Syarat dan Ketentuan Surat Perintah Pembelian PT. Ceria Metalindo Prima akan berlaku.
+          Salinan tersedia berdasarkan permintaan atau akan dilampirkan :
+          </p>
+
+          <table class="table table-borderless" style="font-size: 12pt;">
+            <tbody>
+              <tr>
+                <td class="color-box">
+                  <span></span> Tanggal Jatuh Tempo Pengiriman Pengiriman</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Harga yang Tertera</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Mata Uang yang Tertera</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Deskripsi dan Nomor Part (Part No)</td>
+              </tr>
+              <tr>
+                <td class="color-box">
+                  <span></span> Jumlah (Qty)/Satuan (UOM)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Pernyataan konfirmasi harap dilakukan dengan mengembalikan surat ini segera melalui fax atau email</p>
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td style="width: 12%;">Nama Perusahaan</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Nama bertanda tangan</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Tanggal</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Email</td>
+                <td>: </td>
+              </tr>
+              <tr>
+                <td style="width: 12%;">Tanda tangan</td>
+                <td>: </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </t>
+    </t>
+  </template>
+
+
+
+  <template id="metalindo_purchase_vendor_acknowledge">
+    <t t-foreach="docs" t-as="o">
+      <t t-if="o.partner_id.code_id.impor_domestik == 'domestik'">
+        <t t-call="metalindo_purchase.metalindo_purchase_vendor_acknowledge_ind_doc"/>
+      </t>
+      <t t-else="">
+        <t t-call="metalindo_purchase.metalindo_purchase_vendor_acknowledge_eng_doc"/>
+      </t>
+    </t>
+  </template>
+
+  <!-- Vendor Acknowledge -->
+  <record id="metalindo_action_report_vendor_acknowledge" model="ir.actions.report">
+      <field name="name">Vendor Acknowledge</field>
+      <field name="model">purchase.order</field>
+      <field name="report_type">qweb-pdf</field>
+      <field name="report_name">metalindo_purchase.metalindo_purchase_vendor_acknowledge</field>
+      <field name="report_file">metalindo_purchase.vendor_acknowledge</field>
+      <field name="print_report_name">'Vendor Acknowledge - %s - %s' % (object.partner_id.name or '', object.name)</field>
+      <!-- No need to show this report in the "Print" menu, since we already have a dedicated smart button for it -->
+      <!-- <field name="binding_model_id" ref="model_purchase_order"/> -->
+  </record>
+
+</odoo>

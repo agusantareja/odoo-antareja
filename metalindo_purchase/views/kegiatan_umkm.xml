@@ -1,0 +1,73 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="metalindo_kegiatan_umkm_tree">
+      <field name="name">metalindo.kegiatan.umkm.tree</field>
+      <field name="model">kegiatan.umkm</field>
+      <field name="arch" type="xml">
+        <tree string="UMKM Category" editable="bottom">
+          <field name="name"/>
+          <field name="purchase_count"/>
+          <field name="currency_id" invisible="1"/>
+          <field name="purchase_value"/>
+          <button name="action_show_purchase" type="object" string="Show Purchase" class="oe_small_button_tree"/>
+          <field name="vendor"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="metalindo_kegiatan_umkm_form">
+      <field name="name">metalindo.kegiatan.umkm.form</field>
+      <field name="model">kegiatan.umkm</field>
+      <field name="arch" type="xml">
+        <form string="UMKM Category">
+          <sheet>
+            <group>
+                <field name="name"/>
+                <field name="purchase_count"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="purchase_value"/>
+                <field name="vendor"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record id="kegiatan_umkm_purchase_order_line_tree" model="ir.ui.view">
+      <field name="name">kegiatan.umkm.purchase.order.line.tree</field>
+      <field name="model">purchase.order.line</field>
+      <field name="arch" type="xml">
+        <tree string="Purchase Order Lines" decoration-muted="state not in ('purchase', 'done')">
+            <field name="order_id"/>
+            <field name="date_order"/>
+            <field name="name"/>
+            <field name="partner_id" string="Vendor" />
+            <field name="price_unit"/>
+            <field name="product_qty"/>
+            <field name="product_uom" groups="uom.group_uom"/>
+            <field name="discount"/>
+            <field name="price_subtotal" widget="monetary"/>
+            <field name="state"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="metalindo_kegiatan_umkm_search" model="ir.ui.view">
+        <field name="name">metalindo.kegiatan.umkm.search</field>
+        <field name="model">kegiatan.umkm</field>
+        <field name="arch" type="xml">
+            <search string="Search">
+              <field name="name"/>
+              <field name="vendor"/>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="metalindo_kegiatan_umkm_action">
+      <field name="name">UMKM Category</field>
+      <field name="res_model">kegiatan.umkm</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="metalindo_kegiatan_umkm_tree" />
+    </record>
+  </data>
+</odoo>

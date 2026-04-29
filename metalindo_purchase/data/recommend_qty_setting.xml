@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="recommend_qty_setting_id" model="recommend.qty.setting">
+            <field name="code">ROP-SOH+ROQ-BRO-PO_ONGOING</field>
+            <field name="name">
+#available variable
+#ROQ = Reordering Quantity
+#ROP = Reorderdeing Point
+#SOH = Quantity Available
+#BRO = Buy Recomended Order Ready to Puchase
+#PO_ONGOING = Purchase Orders That Have Not Yet Been Received
+            </field>
+        </record>
+    </data>
+</odoo>

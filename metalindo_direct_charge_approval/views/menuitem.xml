@@ -1,0 +1,6 @@
+<odoo>
+    <data>
+        <menuitem id="material_buyer_assignment" name="Buyer Assignment" action="metalindo_direct_charge.metalindo_buyer_assignment" parent="metalindo_direct_charge.material_requisition_root_menu" sequence="4"
+            groups="metalindo_approval.group_metalindo_scm_superintendent"/>
+    </data>
+</odoo>

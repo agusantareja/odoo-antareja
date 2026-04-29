@@ -1,0 +1,24 @@
+id,name,urutan
+purchase_category_1,"A. HEAVY EQUIPMENT",0
+purchase_category_2,"B. LAND TRANSPORT EQUIPMENT",0
+purchase_category_3,"C. WATER TRANSPORT EQUIPMENT",0
+purchase_category_4,"D. AIR TRANSPORT EQUIPMENT",0
+purchase_category_5,"E. COMMUNICATION",0
+purchase_category_6,"F. LAND SURVEY & RECOINASSANCE",0
+purchase_category_7,"G. DRILLING EQUIPMENT",0
+purchase_category_8,"H. SAMPLING & LAB",0
+purchase_category_9,"I. REPAIR & MAINTENANCE",0
+purchase_category_10,"J. BUILDING MATERIALS",0
+purchase_category_11,"K. UTILITIES, FURNITURE & APPLIANCES",0
+purchase_category_12,"L. CONSUMABLES: FUEL",0
+purchase_category_13,"M. CONSUMABLES: FOOD",0
+purchase_category_14,"N. MISCELLANEOUS",0
+purchase_category_15,"O. MEDICAL: HEALTHY & SAFETY",0
+purchase_category_16,"P. RECREATION FACILITY",0
+purchase_category_17,"Q. POWER STATION",0
+purchase_category_18,"R. PROCESSING PLANT",0
+purchase_category_19,"S. SCHOOL & TRAINING",0
+purchase_category_20,"T. ENVIRONMENTAL",0
+purchase_category_total,"TOTAL",1
+purchase_category_persen,"PERSENTASE (%)",2
+purchase_category_capai,"CAPAIAN REALISASI (%)",3

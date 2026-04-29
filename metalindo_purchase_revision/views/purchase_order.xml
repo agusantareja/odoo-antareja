@@ -1,0 +1,275 @@
+<odoo>
+
+    <record id="purchase_order_revision_inherit_form" model="ir.ui.view">
+        <field name="name">purchase.order.revision.inherit.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="header" position="inside">
+                <button name="button_request_revision" type="object" string="Request For Revision"
+                    attrs="{'invisible': ['|', ('current_user_is_buyer', '=', False), '|', ('state', 'not in', ['purchase', 'done']), ('no_revision', '=', True)]}"
+                    groups="metalindo_purchase_revision.group_purchase_revision_requester"/>
+                <button name="button_approve_revision" type="object" string="Approve Revision" class="oe_highlight"
+                    states="waiting_revision"
+                    groups="metalindo_purchase_revision.group_purchase_revision_approver"/>
+                <button name="button_reject_revision" type="object" string="Reject Revision"
+                    states="waiting_revision"
+                    groups="metalindo_purchase_revision.group_purchase_revision_approver"/>
+                <button name="button_confirm_revision" type="object" string="Confirm Revision"
+                    class="oe_highlight" attrs="{'invisible': ['|', ('state', '!=', 'revision'), ('current_user_is_buyer', '=', False)]}"/>
+            </xpath>
+
+            <div name="button_box" position="after">
+                <div class="o_widget o_widget_web_ribbon" attrs="{'invisible': [('revision_count', '&lt;=', 0)]}">
+                    <div class="ribbon ribbon-top-right">
+                        <field name="revision_ribbon_html" />
+                    </div>
+                </div>
+            </div>
+            <!-- <field name="date_end" position="before">
+                <field name="revision_count" readonly="1" force_save="1"  attrs="{'invisible':[('revision_count','=',0)]}"/>
+            </field> -->
+
+            <field name="currency_id" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','not in',['draft','sent','revision'])]}</attribute>
+            </field>
+            <field name="date_order" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','not in',['draft','sent','revision'])], 'invisible': [('state','in',('purchase','done'))]}</attribute>
+            </field>
+            <field name="date_approve" position="attributes">
+                <attribute name="attrs">{'readonly':[('state','not in',['draft','sent','revision'])]}</attribute>
+            </field>
+            <field name="date_planned" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+            <field name="receipt_reminder_email" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+            <field name="reminder_date_before_receipt" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+
+            <!-- Page: Other Info -->
+            <field name="user_id" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+            <xpath expr="//page[@name='purchase_delivery_invoice']//field[@name='company_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </xpath>
+            <field name="origin" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+            <group name="other_info" position="inside">
+                <field name="revision_count" readonly="1" force_save="1" invisible="1" />
+                <field name="revision_reason" readonly="1" force_save="1" attrs="{'invisible': [('revision_reason', '=', False)]}" />
+                <field name="current_user_is_buyer" invisible="1"/>
+                <field name="no_revision" invisible="1"/>
+            </group>
+            <page name="purchase_delivery_invoice" position="inside">
+                <separator string="Revision History" attrs="{'invisible': [('revision_count', '&lt;=', 0)]}" />
+                <field readonly="1" name="rev_history_ids" attrs="{'invisible': [('revision_count', '&lt;=', 0)]}">
+                    <tree>
+                        <field name="name"/>
+                        <field name="po_pdf" filename="po_pdf_filename" widget="binary"/>
+                        <field name="po_pdf_filename" invisible="1"/>
+                        <field name='amount'/>
+                        <field name='currency_id' invisible="1"/>
+                        <field name='reason'/>
+                        <field name='approved_by' />
+                    </tree>
+                    <form>
+                        <sheet>
+                            <group>
+                                <field name="name"/>
+                                <field name="po_pdf" filename="po_pdf_filename" widget="binary"/>
+                                <field name="po_pdf_filename" invisible="1"/>
+                                <field name='amount'/>
+                                <field name='currency_id' invisible="1"/>
+                                <field name='reason'/>
+                            </group>
+                            <separator string="Approval" />
+                            <field name="approval_ids">
+                                <tree string="Approval">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="group_id"/>
+                                    <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="sts"/>
+                                    <field name="reason"/>
+                                    <field name="pelaksana_id"/>
+                                    <field name="tanggal"/>
+                                </tree>
+                                <form string="Approval">
+                                    <group>
+                                        <group>
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="group_id"/>
+                                            <field name="limit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                            <field name="sts"/>
+                                        </group>
+                                        <group>
+                                            <field name="reason"/>
+                                            <field name="pelaksana_id"/>
+                                            <field name="tanggal"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </sheet>
+                    </form>
+                </field>
+            </page>
+            <field name="invoice_status" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', 'in', ('draft', 'sent', 'to approve', 'cancel'))], 'readonly': [('state', 'not in', ('draft', 'sent', 'revision'))]}</attribute>
+            </field>
+            <field name="payment_term_id" position="attributes">
+                <attribute name="attrs">{'readonly': ['|', ('invoice_status','=', 'invoiced'), ('state', 'not in', ['draft', 'sent', 'revision'])]}</attribute>
+            </field>
+            <field name="fiscal_position_id" position="attributes">
+                <attribute name="attrs">{'readonly': ['|', ('invoice_status','=', 'invoiced'), ('state', 'not in', ['draft', 'sent', 'revision'])]}</attribute>
+            </field>
+             <field name="partner_id" position="attributes">
+                <attribute name="attrs">{'readonly': ['|', ('is_quantity_copy', '=', 'none'), ('state', 'not in', ['draft', 'sent', 'revision'])]}</attribute>
+            </field>
+
+            <!-- ORDER LINE -->
+            <page name="products" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', '=', 'revision')]}</attribute>
+            </page>
+            <page name="products" position="after">
+                <page string="Products" name="products_revision" attrs="{'invisible': [('state', '!=', 'revision')]}">
+                    <field name="revision_line_ids" widget="section_and_note_one2many">
+                        <tree string="Purchase Order Lines" editable="bottom" edit="1" create="0">
+                            <field name="discount" widget="monetary" invisible="1" force_save="1"/>
+                            <field name="state" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="item_no" readonly="1" attrs="{'column_invisible':[('item_no', '=', 0)]}"/>
+                            <field name="source"/>
+                            <field name="product_id" string="Name" readonly="1"/>
+                            <field name="description"/>
+                            <field name="manufacturer_id" optional="show"/>
+                            <field name="part_number" optional="show"/>
+                            <field name="remarks" optional="show" force_save="1"/>
+                            <field name="delivery_time" force_save="1"/>
+                            <field name="date_planned" optional="hide" />
+                            <field name="analytic_distribution" widget="analytic_distribution" optional="hide" groups="analytic.group_analytic_accounting" options="{'product_field': 'product_id', 'business_domain': 'purchase_order'}"/>
+                            <field name="product_qty"/>
+                            <field name="qty_received" string="Received" optional="hide" readonly="1"/>
+                            <field name="qty_invoiced" string="Billed" optional="hide"/>
+                            <field name="product_uom" string="UoM" groups="uom.group_uom" readonly="1" optional="show"/>
+                            <field name="product_packaging_qty" groups="product.group_stock_packaging" optional="hide"/>
+                            <field name="product_packaging_id" context="{'default_product_id': product_id, 'tree_view_ref':'product.product_packaging_tree_view', 'form_view_ref':'product.product_packaging_form_view'}" groups="product.group_stock_packaging" optional="hide"/>
+                            <field name="price_unit" invisible="1" force_save="1" groups="base.group_no_one"/>
+                            <field name="price_view" widget="monetary" force_save="1"/>
+                            <field name="taxes_id" widget="many2many_tags" domain="[('type_tax_use','=','purchase'), ('company_id', '=', parent.company_id), ('country_id', '=', parent.tax_country_id)]" context="{'default_type_tax_use': 'purchase', 'search_view_ref': 'account.account_tax_view_search'}" options="{'no_create': True}" optional="show"/>
+                            <field name="discount_persen" force_save="1" widget="percentage"/>
+                            <field name="price_subtotal" widget="monetary" force_save="1"/>
+                        </tree>
+                    </field>
+                    <group>
+                        <group>
+                            <field colspan="2" name="notes" nolabel="1" placeholder="Define your terms and conditions ..."/>
+                        </group>
+                        <group class="oe_subtotal_footer oe_right">
+                            <field name="discount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" force_save="1"/>
+                            <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="clearfix"/>
+                </page>
+            </page>
+
+            <!-- Karena ini, priorivy view harus > 16 -->
+            <field name="partner_ref" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','not in',['draft','sent','revision'])]}</attribute>
+            </field>
+            <field name="origin" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','not in',['draft','sent','revision'])]}</attribute>
+            </field>
+        </field>
+    </record>
+
+<!--    <record id="cni_approval_request_purchase_order_form" model="ir.ui.view">-->
+<!--        <field name="name">purchase.order.revision.inherit.cni.approval.request.po.form</field>-->
+<!--        <field name="model">purchase.order</field>-->
+<!--        <field name="inherit_id" ref="metalindo_purchase_approval.cni_approval_request_purchase_order_form" />-->
+<!--        <field name="arch" type="xml">-->
+            <!-- Overriding the reject button to not return to `draft` after fully-rejecting a PO -->
+<!--            <xpath expr="//button[@id='button_reject_approval']" position="attributes">-->
+<!--                <attribute name="type">object</attribute>-->
+<!--                <attribute name="name">button_reject_approval</attribute>-->
+<!--            </xpath>-->
+
+            <!-- Also show rejection alert when the PO state is `revision` -->
+<!--            <xpath expr="//div[hasclass('alert-danger')][@role='alert']" position="attributes">-->
+<!--                <attribute name="attrs">-->
+<!--                    {-->
+<!--                        'invisible': [-->
+<!--                            '|',-->
+<!--                            ('state', 'not in', ['draft', 'waiting_for_approval', 'revision']),-->
+<!--                            ('flag_reject', '=', False)-->
+<!--                        ]-->
+<!--                    }-->
+<!--                </attribute>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record id="purchase_order_revision_stock_form" model="ir.ui.view">
+        <field name="name">purchase.order.revision.stock.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase_stock.purchase_order_view_form_inherit"/>
+        <field name="arch" type="xml">
+            <field name="picking_type_id" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','not in',['draft','sent','revision'])]}</attribute>
+            </field>
+        </field>
+    </record>
+
+
+    <record id="purchase_order_read_only_tree" model="ir.ui.view">
+        <field name="name">purchase.order.read.only.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree" />
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="create">0</attribute>
+                <attribute name="edit">0</attribute>
+                <attribute name="delete">0</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_revision_action" model="ir.actions.act_window">
+        <field name="name">Revision Approval</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('purchase_order_read_only_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('purchase.purchase_order_form')}),
+        ]"/>
+        <field name="domain">[('state','=','waiting_revision')]</field>
+        <field name="search_view_id" ref="purchase.purchase_order_view_search"/>
+    </record>
+
+    <!-- <record id="purchase_revision_config_action" model="ir.actions.act_window">
+        <field name="name">Purchase Revision Waiting Approval Method</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ir.config_parameter</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="purchase_revision_waiting_approval_method"/>
+    </record> -->
+
+    <menuitem action="purchase_revision_action" id="purchase_revision_menu"
+            name="PO Revision Approval" parent="purchase.menu_procurement_management"
+            sequence="50"/>
+
+    <!-- <menuitem action="purchase_revision_config_action" id="purchase_revision_config_menu"
+            name="PO Revision Config" parent="purchase.menu_purchase_config"
+            groups="base.group_system"
+            sequence="150"/> -->
+
+
+</odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="metalindo_maintenance_request_sequence" model="ir.sequence">
+           <field name="name">Maintenance Request</field>
+           <field name="code">maintenance.request</field>
+           <field name="active">True</field>
+           <field name="prefix">MANT-</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+
+        <record id="metalindo_account_asset_sequence" model="ir.sequence">
+           <field name="name">Account Asset</field>
+           <field name="code">account.asset</field>
+           <field name="active">True</field>
+           <field name="prefix">AST-</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+
+        <record id="metalindo_material_inventory_request" model="ir.sequence">
+           <field name="name">Material Inventory Request</field>
+           <field name="code">material.inventory.request</field>
+           <field name="active">True</field>
+           <field name="prefix">MIR-</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+
+        <record id="metalindo_addition_deletion_revision" model="ir.sequence">
+           <field name="name">Addition Deletion Revision</field>
+           <field name="code">addition.deletion.revision</field>
+           <field name="active">True</field>
+           <field name="prefix">ADR-</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+
+        <record id="metalindo_stock_code" model="ir.sequence">
+           <field name="name">Stock Code</field>
+           <field name="code">stock.code</field>
+           <field name="active">True</field>
+           <field name="padding">5</field>
+           <field name="number_next">1</field>
+           <field name="number_increment">1</field>
+        </record>
+
+        <record id="metalindo_maintenance_request_on_write_stage" model="base.automation">
+            <field name="name">Maintenance request on write stage</field>
+            <field name="model_id" ref="maintenance.model_maintenance_request"/>
+            <field name="state">code</field>
+            <field name="code" eval="'records.on_write_stage_id()'"/>
+            <field name="trigger">on_write</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,90 @@
+<odoo>
+    <record model="ir.actions.act_window" id="purchase_requisition.action_purchase_requisition">
+        <field name="name">Purchase Agreements</field>
+        <field name="context">{'default_type_id':1}</field>
+        <field name="domain">[('type_id','=',1)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="tender_preparation_action">
+        <field name="name">Tender Preparations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.requisition</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="context">{'default_type_id':2, 'create': 0}</field>
+        <field name="domain">[('type_id','=',2)]</field>
+        <field name="search_view_id" ref="purchase_requisition.view_purchase_requisition_filter" />
+    </record>
+
+    <record id="metalindo_purchase_requisition_form" model="ir.ui.view">
+        <field name="name">metalindo.purchase.requisition.form</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form" />
+        <field name="arch" type="xml">
+
+            <field name="type_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="name" position="after">
+                <field name="is_tender" invisible="1"/>
+            </field>
+			<xpath expr="//field[@name='vendor_id']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
+                <attribute name="domain">['|', ('company_id','=',False), ('company_id','=',company_id), ('vendor_code','!=',False), ('vendor_code','!=','New'), ('supplier_rank','>',0), ('active','=',True)]
+                </attribute>
+                <attribute name="attrs">{'required': [('is_quantity_copy', '=', 'none')], 'readonly': [('state', 'in', ['ongoing','done'])], 'invisible': [('is_tender', '=', True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/tree//field[@name='product_qty']" position="before">
+                <field name="analytic_id" optional="show" />
+                <field name="purchase_category_id" optional="show" domain="[('urutan', '=', 0)]"/>
+                <field name="hs_code_id" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/form//field[@name='product_qty']" position="before">
+                <field name="analytic_id" />
+                <field name="purchase_category_id" domain="[('urutan', '=', 0)]"/>
+                <field name="hs_code_id"/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <field name="is_tender" invisible="1"/>
+                <button name="show_bid_tabulation" string="Bid Tabulation" type="object" class="oe_stat_button" icon="fa-list-alt" attrs="{'invisible': ['|', ('state', '=', 'draft'), ('is_tender', '=', False)]}" />
+            </xpath>
+
+            <xpath expr="//field[@name='schedule_date']" position="replace">
+                <field name="schedule_date" invisible="1" />
+                <field name="incoterm_id" attrs="{'readonly': [('state','not in',['draft','sent','revision'])], 'required':[('state','in',('sent', 'waiting_for_approval'))]}"/>
+                <field name="delivery_point_id" context="{'form_view_ref':'metalindo_purchase.delivery_point_form'}" attrs="{'readonly': [('state', 'not in', ['draft', 'sent', 'revision'])]}"/>
+                <field name="recommended" invisible="1"/>
+            </xpath>
+            <!-- <field name="account_analytic_id" position="attributes">
+                <attribute name="string">Cost Center</attribute>
+                <attribute name="optional">show</attribute>
+            </field> -->
+            <!-- <xpath expr="//field[@name='line_ids']/tree//field[@name='product_qty']" position="before">
+                <field name="analytic_id" optional="show" />
+                <field name="purchase_category_id" optional="show" domain="[('urutan', '=', 0)]"/>
+                <field name="hs_code" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/form//field[@name='product_qty']" position="before">
+                <field name="analytic_id" />
+                <field name="purchase_category_id" domain="[('urutan', '=', 0)]"/>
+                <field name="hs_code"/>
+            </xpath> -->
+            <field name="date_end" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+
+        </field>
+    </record>
+
+    <!-- <record id="metalindo_purchase_requisition_form" model="ir.ui.view">
+        <field name="name">purchase.requisition.form.inherit</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition_stock.view_purchase_requisition_form_inherit"/>
+        <field name="arch" type="xml">
+            <field name="picking_type_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+        </field>
+    </record> -->
+</odoo>

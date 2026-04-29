@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="purchase_approver_mail_template" model="mail.template">
+            <field name="name">Purchase Order Approver</field>
+            <field name="model_id" ref="purchase.model_purchase_order" />
+            <field name="subject">Purchase Order: {{object.name}}</field>
+            <field name="partner_to">{{ object.notification_to_user_id.partner_id.id}}</field>
+            <field name="body_html" type="html">
+                <table style="
+    padding-top:16px;background-color: #f1f1f1;
+    font-family: Verdana, Arial, sans-serif;
+    color: #454748;
+    width: 100%;
+    border-collapse: separate;
+  " cellspacing="0" cellpadding="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td align="center">
+                                <table style="
+            background-color:white;color: #454748;
+            border-collapse: separate;
+          " width="590" cellspacing="0" cellpadding="0" border="0">
+                                    <tbody>
+                                        <!-- HEADER -->
+                                        <tr>
+                                            <td style="min-width:590px" align="center">
+                                                <table style="
+                    min-width:590px;background-color: white;
+                    padding: 0px 8px 0px 8px;
+                    border-collapse: separate;
+                  " width="590" cellspacing="0" cellpadding="0" border="0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td valign="middle">
+                                                                <!-- <span style="font-size:10px;">Dear</span>
+                                                                <span style="font-size:10px;font-weight: bold;">
+                                                                    ${object.name}
+                                                                </span> -->
+                                                            </td>
+                                                            <td style="text-align:right" valign="middle">
+                                                                <table class="table" style="margin-top:16px;margin-bottom: 0;" width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td style="width:50%;text-align: left">
+                                                                                <img class="img-fluid o_we_custom_image" t-attf-src="/web/image/res.company/{{object.company_id.id}}/logo" style="
+                                                                                    color:rgb(69, 71, 72);font-family: Lucida Grande, Helvetica,
+                                                                                    Verdana, Arial, sans-serif;
+                                                                                    text-align: left;
+                                                                                    width: 143.5px;
+                                                                                    "/>
+                                                                                <br/>
+                                                                            </td>
+                                                                            <td style="text-align:right;width: 50%">
+                                                                                <b>
+                                                                                    <font style="font-size:10px">ERP</font>
+                                                                                    <br/>
+                                                                                    <font style="font-size:10px"><t t-out="object.company_id.name"/></font>
+                                                                                </b>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" style="text-align:center">
+                                                                <hr style="
+                            background-color:rgb(204, 204, 204);border: medium none;
+                            clear: both;
+                            display: block;
+                            font-size: 0px;
+                            min-height: 1px;
+                            line-height: 0;
+                            margin: 16px 0px 16px 0px;
+                          " width="100%"/>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <!-- CONTENT -->
+                                        <tr>
+                                            <td style="min-width:590px" align="center">
+                                                <div style="text-align:left">
+                                                    <div style="text-align:center">
+                                                        <span style="
+                        font-style:inherit;font-variant-ligatures: inherit;
+                        font-variant-caps: inherit;
+                        font-weight: inherit;
+                      ">Purchase Order dengan kode:</span>
+                                                    </div>
+                                                    <div style="text-align:center">
+                                                        <span style="
+                        font-style:inherit;font-variant-ligatures: inherit;
+                        font-variant-caps: inherit;
+                      ">
+                                                            <b>
+                                                                <font style="font-size:24px"> <t t-out="object.name"/>
+                                                                </font>
+                                                            </b>
+                                                        </span>
+                                                        <br/>
+                                                        <span style="
+                        font-style:inherit;font-variant-ligatures: inherit;
+                        font-variant-caps: inherit;
+                        font-weight: inherit;
+                      ">butuh approval anda sebagai </span>
+                                                        <span style="
+                        font-style:inherit;font-variant-ligatures: inherit;
+                        font-variant-caps: inherit;
+                      ">
+                                                            <b>Approver</b>
+                                                        </span>
+                                                        <br/>
+                                                        <br/>
+                                                        <a t-att-href="object.get_internal_url()"
+                                                            style="background-color:#875A7B;padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                            View Purchase Order
+                                                        </a>
+                                                        
+                                                    </div>
+                                                </div>
+                                                <table style="
+                    min-width:590px;background-color: white;
+                    padding: 0px 8px 0px 8px;
+                    border-collapse: separate;
+                  " width="590" cellspacing="0" cellpadding="0" border="0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <!-- <td valign="top" style="font-size:13px;"> -->
+
+                                                            <!-- </td> -->
+                                                        </tr>
+                                                        <!-- <tr t-foreach="object.order_line" t-as="line">
+                                                            <td>
+                                                                <span t-esc="line.product_id.name"></span>
+                                                            </td>
+                                                        </tr> -->
+                                                        <tr>
+                                                            <td style="text-align:center">
+                                                                <hr style="
+                            background-color:rgb(204, 204, 204);border: medium none;
+                            clear: both;
+                            display: block;
+                            font-size: 0px;
+                            min-height: 1px;
+                            line-height: 0;
+                            margin: 16px 0px 16px 0px;
+                          " width="100%"/>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <!-- FOOTER -->
+                                        <tr>
+                                            <td style="min-width:590px;" align="center">
+                                                <table style="min-width:590px;background-color: white; font-size: 11px; padding: 0px 8px 0px 8px; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td style="text-align:left;" valign="middle">
+                                                                <t t-out="object.company_id.name"/>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </field>
+        </record>
+    </data>
+</odoo>

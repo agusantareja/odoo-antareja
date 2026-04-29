@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="warehouse_analytic_account" model="metalindo.analytic">
+            <field name="description">Warehouse Cost Center</field>
+            <field name="name">warehouse</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

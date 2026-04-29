@@ -1,0 +1,532 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="purchase_category_tree">
+      <field name="name">purchase.category.tree</field>
+      <field name="model">purchase.category</field>
+      <field name="arch" type="xml">
+        <tree editable="bottom" default_order="name">
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="purchase_category_form">
+      <field name="name">purchase.category.form</field>
+      <field name="model">purchase.category</field>
+      <field name="arch" type="xml">
+        <form>
+          <sheet>
+            <group>
+              <field name="name"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="purchase_plan_year_tree">
+      <field name="name">purchase.plan.year.tree</field>
+      <field name="model">purchase.plan.year</field>
+      <field name="arch" type="xml">
+        <tree default_order="name">
+          <field name="name" string="Tahun"/>
+          <field name="company_id" groups="base.group_multi_company"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="purchase_plan_year_form">
+      <field name="name">purchase.plan.year.form</field>
+      <field name="model">purchase.plan.year</field>
+      <field name="arch" type="xml">
+        <form>
+          <sheet>
+            <h2><center>Rencana Belanja Tahun <field name="name" required="1" style="margin-right:10px;"/>
+                <field name="company_id" required="1"/></center></h2>
+            <field name="plan_ids" widget="one2many" mode="tree,form"
+              context="{'default_year_id': id}" attrs="{'invisible': [('id', '=', False)]}">
+              <tree default_order="urutan, category_id" editable="top">
+                <field name="urutan" invisible="1"/>
+                <field name="category_id" options="{'no_create': True, 'no_edit': True}" required="1"
+                  domain="[('urutan', '=', 0)]" attrs="{'readonly': [('urutan', '!=', 0)]}"/>
+                <field name="year_id" required="1" string="Tahun"
+                  attrs="{'readonly': [('urutan', '!=', 0)]}"/>
+                <field name="usd_id" invisible="1"/>
+                <field name="idr_id" invisible="1"/>
+                <field name="impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"
+                  attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+                <field name="domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"
+                  attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+                <field name="belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"
+                  attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+              </tree>
+              <form>
+                <group>
+                  <group>
+                    <field name="urutan" invisible="1"/>
+                    <field name="category_id" options="{'no_create': True, 'no_edit': True}" required="1"
+                      domain="[('urutan', '=', 0)]"/>
+                    <field name="year_id" required="1" string="Tahun"/>
+                  </group>
+                  <group>
+                    <field name="usd_id" invisible="1"/>
+                    <field name="idr_id" invisible="1"/>
+                    <field name="impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"
+                      attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+                    <field name="domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"
+                      attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+                    <field name="belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"
+                      attrs="{'invisible': [('urutan', '!=', 0)]}"/>
+                    <field name="sum_impor_usd" attrs="{'invisible': [('urutan', 'in', (0,3))]}"/>
+                    <field name="sum_domestik_idr" attrs="{'invisible': [('urutan', 'in', (0,3))]}"/>
+                    <field name="sum_belanja_tkdn" attrs="{'invisible': [('urutan', 'in', (0,3))]}"/>
+                  </group>
+                </group>
+              </form>
+            </field>
+            <field name="usd_id" invisible="1"/>
+            <field name="idr_id" invisible="1"/>
+
+            <h3>Total</h3>
+            <div class="row">
+              <div class="col-4">
+                <label for="sum_impor_usd" string="Impor (USD)"/>
+                <field name="sum_impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="sum_impor_usd" string="Domestik (IDR)"/>
+                <field name="sum_domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="sum_belanja_tkdn" string="Belanja TKDN (IDR)"/>
+                <field name="sum_belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <label for="persen_sum_impor_usd" string="Persentase Impor (%)"/>
+                <field name="persen_sum_impor_usd" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_sum_domestik_idr" string="Persentase Domestik (%)"/>
+                <field name="persen_sum_domestik_idr" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_sum_belanja_tkdn" string="Persentase Belanja TKDN (%)"/>
+                <field name="persen_sum_belanja_tkdn" widget="percentage"/>
+              </div>
+            </div>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="realisasi_belanja_year_form">
+      <field name="name">realisasi.belanja.year.form</field>
+      <field name="model">purchase.plan.year</field>
+      <field name="arch" type="xml">
+        <form>
+          <sheet>
+            <h2><center>Realisasi Belanja Tahun <field name="name" style="margin-right:10px;"/>
+                <field name="company_id"/></center></h2>
+            <field name="plan_ids" widget="one2many" mode="tree,form" string="Realisasi Belanja"/>
+            <field name="usd_id" invisible="1"/>
+            <field name="idr_id" invisible="1"/>
+
+            <h3>Total</h3>
+            <div class="row">
+              <div class="col-4">
+                <label for="sum_impor_usd" string="Impor (USD)"/>
+                <field name="sum_impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="sum_impor_usd" string="Domestik (IDR)"/>
+                <field name="sum_domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="sum_belanja_tkdn" string="Belanja TKDN (IDR)"/>
+                <field name="sum_belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <label for="persen_sum_impor_usd" string="Persentase Impor (%)"/>
+                <field name="persen_sum_impor_usd" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_sum_domestik_idr" string="Persentase Domestik (%)"/>
+                <field name="persen_sum_domestik_idr" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_sum_belanja_tkdn" string="Persentase Belanja TKDN (%)"/>
+                <field name="persen_sum_belanja_tkdn" widget="percentage"/>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <label for="real_impor_usd" string="Realisasi Impor (USD)"/>
+                <field name="real_impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="real_domestik_idr" string="Realisasi Domestik (IDR)"/>
+                <field name="real_domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+              <div class="col-4">
+                <label for="real_belanja_tkdn" string="Realisasi Belanja TKDN (IDR)"/>
+                <field name="real_belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <label for="persen_real_impor_usd" string="Persentase Realisasi Impor (%)"/>
+                <field name="persen_real_impor_usd" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_real_domestik_idr" string="Persentase Realisasi Domestik (%)"/>
+                <field name="persen_real_domestik_idr" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="persen_real_belanja_tkdn" string="Persentase Realisasi Belanja TKDN (%)"/>
+                <field name="persen_real_belanja_tkdn" widget="percentage"/>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <label for="capaian_real_impor_usd" string="Capaian Realisasi Impor (%)"/>
+                <field name="capaian_real_impor_usd" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="capaian_real_domestik_idr" string="Capaian Realisasi Domestik (%)"/>
+                <field name="capaian_real_domestik_idr" widget="percentage"/>
+              </div>
+              <div class="col-4">
+                <label for="capaian_real_belanja_tkdn" string="Capaian Realisasi Belanja TKDN (%)"/>
+                <field name="capaian_real_belanja_tkdn" widget="percentage"/>
+              </div>
+            </div>
+          </sheet>
+        </form>
+      </field>
+    </record>
+<!--
+    <record model="ir.ui.view" id="purchase_plan_tree">
+      <field name="name">purchase.plan.tree</field>
+      <field name="model">purchase.plan</field>
+      <field name="arch" type="xml">
+      -->
+      <!-- Diberi button "Create All Categories" di header menggunakan asset_backend: tree_button.js dan tree_button.xml -->
+      <!--
+        <tree default_order="tahun, urutan, category_id" editable="top" js_class="button_in_tree">
+          <field name="urutan" invisible="1"/>
+          <field name="category_id" options="{'no_create': True, 'no_edit': True}" required="1"/>
+          <field name="tahun" required="1"/>
+          <field name="usd_id" invisible="1"/>
+          <field name="idr_id" invisible="1"/>
+          <field name="impor_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+          <field name="domestik_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+          <field name="belanja_tkdn" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+          <field name="real_impor_usd" readonly="1" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+          <field name="real_domestik_idr" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+          <field name="real_belanja_tkdn" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="purchase_plan_form">
+      <field name="name">purchase.plan.form</field>
+      <field name="model">purchase.plan</field>
+      <field name="arch" type="xml">                  
+        <form>
+          <sheet>
+            <group>
+              <group>
+                <field name="category_id" options="{'no_create': True, 'no_edit': True}"/>
+                <field name="tahun"/>
+                <field name="usd_id" invisible="1"/>
+                <field name="idr_id" invisible="1"/>
+                <field name="impor_usd" string="Impor (USD)" 
+                  widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                <field name="domestik_idr" string="Domestik (IDR)" 
+                  widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                <field name="belanja_tkdn" string="Belanja TKDN (IDR)"
+                  widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </group>
+              <group>
+                <field name="real_impor_usd" readonly="1" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                <field name="real_domestik_idr" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                <field name="real_belanja_tkdn" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </group>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+-->
+    <record model="ir.ui.view" id="realisasi_belanja_tree">
+      <field name="name">realisasi.belanja.tree</field>
+      <field name="model">purchase.plan</field>
+      <field name="arch" type="xml">
+        <tree default_order="urutan, category_id">
+          <field name="urutan" invisible="1"/>
+          <field name="category_id" options="{'no_create': True, 'no_edit': True}"/>
+          <field name="year_id" invisible="1"/>
+          <field name="tahun" />
+          <field name="usd_id" invisible="1"/>
+          <field name="idr_id" invisible="1"/>
+          <field name="sum_impor_usd" attrs="{'invisible': [('urutan', '=', 3)]}"/>
+          <field name="sum_domestik_idr" attrs="{'invisible': [('urutan', '=', 3)]}"/>
+          <field name="sum_belanja_tkdn" attrs="{'invisible': [('urutan', '=', 3)]}"/>
+          <field name="real_impor_usd"/>
+          <field name="real_domestik_idr"/>
+          <field name="real_belanja_tkdn"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="realisasi_belanja_form">
+      <field name="name">realisasi.belanja.form</field>
+      <field name="model">purchase.plan</field>
+      <field name="arch" type="xml">                  
+        <form>
+          <sheet>
+            <field name="usd_id" invisible="1"/>
+            <field name="idr_id" invisible="1"/>
+            <field name="year_id" invisible="1"/>
+            <h2><center>Realisasi Belanja <field name="name"/></center></h2>
+            <!-- Jika diletakkan di dalam group, maka tree akan melebar melebihi lebar sheet dan form
+              <group string="Domestik"> -->
+              <h3>Domestik</h3>
+              <field name="realisasi_domestik" widget="one2many" mode="tree,form" readonly="1" nolabel="1">
+                <tree>
+                  <field name="jenis_barang"/>
+                  <field name="kode_hs"/>
+                  <field name="provinsi"/>
+                  <field name="kab_kota"/>
+                  <field name="partner_id" string="Produsen/Supplier"/>
+                  <field name="spec"/>
+                  <field name="quantity"/>
+                  <field name="idr_id" invisible="1"/>
+                  <field name="price_unit_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                  <field name="price_subtotal_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                  <field name="area_project"/>
+                  <field name="tkdn_sa" widget="percentage"/>
+                  <field name="tkdn_s" widget="percentage"/>
+                  <field name="belanja_tkdn_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                </tree>
+                <form>
+                  <group>
+                    <group>
+                      <field name="jenis_barang" widget="text"/>
+                      <field name="kode_hs"/>
+                      <field name="provinsi"/>
+                      <field name="kab_kota"/>
+                      <field name="partner_id" string="Produsen/Supplier"/>
+                      <field name="spec" widget="text"/>
+                    </group>
+                    <group>
+                      <field name="quantity"/>
+                      <field name="idr_id" invisible="1"/>
+                      <field name="price_unit_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                      <field name="price_subtotal_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                      <field name="area_project" widget="text"/>
+                      <field name="tkdn_sa" widget="percentage"/>
+                      <field name="tkdn_s" widget="percentage"/>
+                      <field name="belanja_tkdn_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                    </group>
+                  </group>
+                </form>
+              </field>
+            <!-- </group> -->
+            <group>
+              <group>
+                <field name="real_domestik_idr" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </group>
+              <group>
+                <field name="real_belanja_tkdn" readonly="1" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+              </group>
+            </group>
+            <h3>Impor</h3>
+              <field name="realisasi_impor" widget="one2many" mode="tree,form" readonly="1" nolabel="1">
+                <tree>
+                  <field name="jenis_barang"/>
+                  <field name="kode_hs"/>
+                  <field name="negara"/>
+                  <field name="spec"/>
+                  <field name="quantity"/>
+                  <field name="usd_id" invisible="1"/>
+                  <field name="price_unit_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                  <field name="price_subtotal_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                  <field name="price_subtotal_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                  <field name="area_project"/>
+                </tree>
+                <form>
+                  <group>
+                    <group>
+                      <field name="jenis_barang" widget="text"/>
+                      <field name="kode_hs"/>
+                      <field name="negara"/>
+                      <field name="spec" widget="text"/>
+                    </group>
+                    <group>
+                      <field name="quantity"/>
+                      <field name="price_unit_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                      <field name="price_subtotal_usd" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+                      <field name="price_subtotal_idr" widget="monetary" options="{'currency_field': 'idr_id'}"/>
+                      <field name="area_project" widget="text"/>
+                    </group>
+                  </group>
+                </form>
+              </field>
+            <group>
+                <field name="real_impor_usd" readonly="1" widget="monetary" options="{'currency_field': 'usd_id'}"/>
+            </group>
+          </sheet>
+          <footer>
+            <button name="%(metalindo_purchase_category_report_action)d" string="Print" type="action"/>
+            <button data-dismiss="modal" string="Close"/>
+          </footer>
+        </form>
+      </field>
+    </record>
+
+    <record id="purchase_plan_search" model="ir.ui.view">
+      <field name="name">purchase.plan.search</field>
+      <field name="model">purchase.plan</field>
+      <field name="arch" type="xml">
+        <search string="Search">
+          <field name="tahun"/>
+          <field name="category_id"/>
+          <filter string="2022" name="purchase_2022" domain="[('tahun', '=', '2022')]"/>
+          <filter string="2023" name="purchase_2023" domain="[('tahun', '=', '2023')]"/>
+        </search>
+      </field>
+    </record>
+
+
+    <record model="ir.actions.act_window" id="purchase_category_action">
+      <field name="name">Purchase Category</field>
+      <field name="res_model">purchase.category</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[("urutan", "=", 0)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="purchase_plan_year_action">
+      <field name="name">Rencana Belanja</field>
+      <field name="res_model">purchase.plan.year</field>
+      <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('purchase_plan_year_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('purchase_plan_year_form')})]"/>
+      <field name="view_mode">tree,form</field>
+    </record>
+<!--
+    <record model="ir.actions.act_window" id="purchase_plan_action">
+      <field name="name">Purchase Plan</field>
+      <field name="res_model">purchase.plan</field>
+      <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('purchase_plan_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('purchase_plan_form')})]"/>
+      <field name="view_mode">tree,form</field>
+      <field name="context">{"search_default_purchase_2022": 1,}</field>
+      <field name="domain">[("urutan", "=", 0)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="realisasi_belanja_action">
+      <field name="name">Realisasi Belanja</field>
+      <field name="res_model">purchase.plan</field>
+      <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('realisasi_belanja_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('realisasi_belanja_form')})]"/>
+      <field name="view_mode">tree,form</field>
+      <field name="target">current</field>
+      <field name="context">{'search_default_purchase_2022': 1, 'create': 0, 'edit': 0, 'delete': 0}</field>
+    </record>
+-->
+    <record model="ir.actions.act_window" id="realisasi_belanja_action">
+      <field name="name">Realisasi Belanja</field>
+      <field name="res_model">purchase.plan.year</field>
+      <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('purchase_plan_year_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('realisasi_belanja_year_form')})]"/>
+      <field name="view_mode">tree,form</field>
+      <field name="context">{'create': 0, 'edit': 0, 'delete': 0}</field>
+    </record>
+
+
+    <menuitem action="purchase_category_action" id="purchase_category_menu" 
+      string="Purchase Category" groups="purchase.group_purchase_manager"
+      parent="purchase.menu_purchase_config" sequence="90" />
+
+    <menuitem action="purchase_plan_year_action" id="purchase_plan_year_menu" 
+      string="Rencana Belanja" groups="purchase.group_purchase_manager"
+      parent="purchase.menu_purchase_config" sequence="95" />
+
+    <!-- <menuitem action="purchase_plan_action" id="purchase_plan_menu" 
+      string="Purchase Plan" groups="purchase.group_purchase_manager"
+      parent="purchase.menu_purchase_config" sequence="95" /> -->
+
+    <menuitem action="realisasi_belanja_action" id="realisasi_belanja_menu" 
+      string="Realisasi Belanja" groups="purchase.group_purchase_user,purchase.group_purchase_manager"
+      parent="purchase.purchase_report" sequence="100" />
+
+    <report
+            string="Realisasi Belanja"
+            id="metalindo_purchase_category_report_action"
+            model="purchase.plan"
+            report_type="qweb-pdf"
+            name="metalindo_purchase.metalindo_purchase_category_detail_report"
+            file="metalindo_purchase.purchase_category_detail_report"
+            print_report_name="'Realisasi Belanja %s' % (object.name)"
+        />
+
+    <record id="paper_a4_landscape" model="report.paperformat">
+        <field name="name">A4 Landscape</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">20</field>
+        <field name="dpi">120</field>
+    </record>
+
+    <record id="metalindo_purchase_category_report_action" model="ir.actions.report">
+        <field name="paperformat_id" ref="paper_a4_landscape" />
+    </record>
+
+    <!-- <record id="metalindo_purchase_plan_create_wizard" model="ir.ui.view">
+      <field name="name">metalindo.purchase.plan.create.wizard</field>
+      <field name="model">purchase.plan.create.wizard</field>
+      <field name="arch" type="xml">
+        <form string="Create All Categories">
+          <group><group>
+            <field name="tahun"/>
+          </group></group>
+          <footer>
+            <button name="button_create" string="Create" type="object" class="btn-primary"/>
+          </footer>
+        </form>
+      </field>
+    </record> -->
+  
+    <!-- Tidak ada lagi di Odoo 16
+    <act_window name="Create All Categories"
+      res_model="purchase.plan.create.wizard"
+      binding_model="purchase.plan"
+      view_mode="form"
+      target="new"
+      id="metalindo_purchase_plan_create_wizard_action"
+      groups="purchase.group_purchase_manager"
+      /> -->
+
+  </data>
+</odoo>

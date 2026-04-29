@@ -1,0 +1,71 @@
+<odoo>
+    <record id="purchase.menu_procurement_management_supplier_name" model="ir.ui.menu">
+        <field name="sequence">4</field>
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+
+    <record id="purchase.menu_purchase_rfq" model="ir.ui.menu">
+        <field name="sequence">6</field>
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+
+    <record id="purchase_requisition.menu_purchase_requisition_pro_mgt" model="ir.ui.menu">
+        <field name="sequence">8</field>
+        <field name="name">Purchase Agreements</field>
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+    
+    <record id="purchase.menu_purchase_form_action" model="ir.ui.menu">
+        <field name="sequence">12</field>
+    </record>
+
+     <record id="purchase.purchase_report" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+
+    <record id="purchase.menu_purchase_config" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+
+    <record id="purchase.menu_purchase_products" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user')),]"/>
+    </record>
+
+    <record model="ir.actions.act_window" id="purchase_freight_method_action">
+        <field name="name">Incoterms</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.incoterms</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!--Purchase -> BRO-->
+    <menuitem id="bro_root_menu" name="BRO" parent="purchase.menu_purchase_root" sequence="0" />
+        <menuitem id="bro_buyer_assignment_menu" name="Assignment Buyer" action="bro_buyer_assignment_action" sequence="1" parent="bro_root_menu" groups="metalindo_approval.group_metalindo_scm_superintendent"/>
+        <menuitem sequence="2" name="Ready to Purchase" action="buyer_report_recommended_quantity_purchase_action" id="report_recommended_quantity_purchase_menu" parent="bro_root_menu" groups="purchase.group_purchase_manager" />
+
+     <!--Purchase -> Tender Preparation-->
+    <menuitem id="tender_root_menu" name="Tender" parent="purchase.menu_purchase_root" sequence="0" />
+        <menuitem id="tender_preparation_menu" action="tender_preparation_action" sequence="2" parent="tender_root_menu" groups="purchase.group_purchase_user"/>
+
+    <!--Purchase -> Configuration -->
+    <menuitem action="purchase_category_action" id="purchase_category_menu" name="Purchase Category" groups="purchase.group_purchase_manager" parent="purchase.menu_purchase_config" sequence="90" />
+    <menuitem action="purchase_plan_year_action" id="purchase_plan_year_menu" name="Rencana Belanja" groups="purchase.group_purchase_manager" parent="purchase.menu_purchase_config" sequence="95" />
+    <menuitem id="delivery_point_menu" parent="purchase.menu_purchase_config" action="delivery_point_action" sequence="99" />
+    <menuitem id="purchase_freight_method_menu" parent="purchase.menu_purchase_config" action="purchase_freight_method_action" sequence="99" />
+    <menuitem id="recommend_qty_setting_menu" name="Recommended Qty Setting" action="recommend_qty_setting_action" parent="purchase.menu_purchase_config" sequence="101"/>
+    <menuitem name="UMKM Category" id="metalindo_kegiatan_umkm_menu" action="metalindo_kegiatan_umkm_action" parent="purchase.menu_purchase_config" sequence="110" />
+    
+    <!--Purchase -> Report -->
+    <menuitem id="expedite_report_menu" parent="purchase.purchase_report_main" name="Expedite Report" action="action_expedite" sequence="11"/>
+    <!-- <menuitem name="Material Discrepancy Report" id="material_discrepancy_menu" action="material_discrepancy_action" groups="purchase.group_purchase_user,purchase.group_purchase_manager" parent="purchase.purchase_report_main" sequence="50" /> -->
+    <menuitem action="realisasi_belanja_action" id="realisasi_belanja_menu" name="Realisasi Belanja" groups="purchase.group_purchase_user,purchase.group_purchase_manager" parent="purchase.purchase_report_main" sequence="100" />
+
+    <!--Inventory -> Report-->
+    <menuitem id="sro_report_menu" parent="stock.menu_warehouse_report" name="SRO Report" action="action_sro_report" sequence="10"/>
+
+    <!--Inventory -> Control-->
+    <menuitem sequence="4" name="Store Recommended Order" action="report_recommended_quantity_inventory_action" id="report_recommended_quantity_inventory_menu" parent="metalindo_inventory.inventory_control_menu"  />
+    <menuitem id="report_recommended_quantity_inventory_control_menu" name="Buy Recommended Order" action="report_buy_recommended_quantity_inventory_action" groups="control_order" parent="metalindo_inventory.inventory_control_menu" sequence="6"/>
+
+    <!-- <menuitem name="PO by Vendor Code" id="pie_chart_percent_menu" parent="purchase.purchase_report" action="pie_chart_percent_action"/> -->
+</odoo>

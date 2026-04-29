@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <data noupdate="1">
+  
+    <record id="reminder_date_before_receipt" model="ir.config_parameter">
+        <field name="key">metalindo_purchase.reminder_date_before_receipt</field>
+        <field name="value">14</field>
+    </record>
+
+    <record id="param_message_bro_buyer_assignment" model="ir.config_parameter">
+            <field name="key">metalindo_purchase.params_wa_bro_buyer</field>
+            <field name="value">Hai {buyer}, Anda telah diassign untuk BRO.
+
+Nomor : {bro_number}
+
+Silakan klik link berikut untuk melihat BRO
+{link}
+
+Terima kasih
+Pesan ini adalah pesan otomatis dari sistem ERP CMP
+            </field>
+        </record>
+  
+  </data>
+  
+
+</odoo>

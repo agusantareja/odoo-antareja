@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_expedite_tree" model="ir.ui.view">
+            <field name="name">expedite.tree</field>
+            <field name="model">expedite</field>
+            <field name="arch" type="xml">
+                <tree string="Expedite Report" create="false" delete="false">
+                    <field name="pr_id"/>
+                    <field name="po_id"/>
+                    <field name="po_type"/>
+                    <field name="po_partner_id"/>
+                    <field name="po_person_partner_id"/>
+                    <field name="po_person_email"/>
+                    <field name="po_person_number"/>
+                    <field name="po_line_item_number"/>
+                    <field name="po_line_product_id"/>
+                    <field name="po_line_name"/>
+                    <field name="po_create_date"/>
+                    <field name="po_line_date_planned"/>
+                    <field name="pr_requestor"/>
+                    <field name="pr_delivery_location_id"/>
+                    <field name="po_picking_type_id"/>
+                    <button name="view_po" type="object" string="View PO" class="btn btn-primary"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_expedite_search">
+            <field name="name">view.expedite.search</field>
+            <field name="model">expedite</field>
+            <field name="arch" type="xml">
+                <search string="Expedite">
+                    <field name="pr_id"/>
+                    <field name="po_id"/>
+                    <field name="po_line_product_id"/>
+                    <field name="po_line_name"/>
+                    <field name="po_partner_id"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="PR No." name="groupby_pr_no" domain="[]" context="{'group_by': 'pr_id'}"/>
+                        <filter string="PO No." name="groupby_po_no" domain="[]" context="{'group_by': 'po_id'}"/>
+                        <filter string="PO Type" name="groupby_po_type" domain="[]" context="{'group_by': 'po_type'}"/>
+                        <filter string="Vendor Name" name="groupby_vendor" domain="[]" context="{'group_by': 'po_person_partner_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_expedite" model="ir.actions.act_window">
+            <field name="name">Expedite Report</field>
+            <field name="res_model">expedite</field>
+            <field name="view_mode">tree</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No data available.</p>
+            </field>
+        </record>
+    </data>
+</odoo>

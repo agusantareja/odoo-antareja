@@ -1,0 +1,25 @@
+<odoo>
+
+    	<record id="metalindo_vendor_code_purchase_form" model="ir.ui.view">
+            <field name="name">metalindo.vendor.code.purchase.form</field>
+            <field name="model">vendor.code</field>
+            <field name="inherit_id" ref="metalindo_vendor.metalindo_vendor_code_form"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="impor_domestik"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="metalindo_vendor_code_purchase_tree" model="ir.ui.view">
+            <field name="name">metalindo.vendor.code.purchase.tree</field>
+            <field name="model">vendor.code</field>
+            <field name="inherit_id" ref="metalindo_vendor.metalindo_vendor_code_tree"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="impor_domestik"/>
+                </field>
+            </field>
+        </record>
+
+</odoo>

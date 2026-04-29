@@ -1,0 +1,23 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="purchase_request_wizard_form">
+            <field name="name">purchase.request.wizard.form</field>
+            <field name="model">purchase.request.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <field name="line_ids" readonly="1">
+                        <tree>
+                            <field name="product_id" />
+                            <field name="request_quantity" />
+                        </tree>
+                    </field>
+                    <field name="origin" invisible="1" />
+                    <field name="picking_id" invisible="1" />
+                    <footer>
+                        <button name="action_request_purchase" string="Request" type="object" class="btn-primary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

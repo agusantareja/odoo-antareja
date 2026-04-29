@@ -1,0 +1,355 @@
+<odoo>
+
+    <record id="purchase_stock_inherit_form" model="ir.ui.view">
+        <field name="name">purchase.stock.inherit.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase_stock.purchase_order_view_form_inherit" />
+        <field name="arch" type="xml">
+            <field name="incoterm_id" position="replace"/>
+            <xpath expr="//field[@name='picking_type_id']" position="replace">
+                <field name="picking_type_id" domain="[('receive_type', 'in', ('onsite','offsite'))]"/>
+            </xpath>
+            <xpath expr="//label[@for='receipt_reminder_email']" position="attributes">
+                 <attribute name="attrs">{'invisible': [('effective_date', '!=', False)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='picking_type_id']" position="after">
+                <field name="is_scm_buyer" invisible="1"/>
+                <field name="is_rush_order" attrs="{'readonly': ['|', ('is_scm_buyer', '=', False),('state', 'not in', ['draft', 'sent', 'revision'])]}"/>
+                <field name="is_from_bro" invisible="1"/>
+            </xpath>
+            
+        </field>
+    </record>
+
+    <record id="purchase.purchase_rfq" model="ir.actions.act_window">
+        <field name="context">{'quotation_only': True, 'default_is_scm_buyer': True, 'create_po_manual': 1}</field>
+    </record>
+
+    <record id="purchase.purchase_form_action" model="ir.actions.act_window">
+        <field name="context">{'default_is_scm_buyer': True, 'create_po_manual': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="purchase_requisition.action_purchase_requisition_to_so">
+        <field name="context">{"default_requisition_id":active_id,}</field>
+    </record>
+
+    <record id="inherit_metalindo_direct_charge_request_form" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="metalindo_direct_charge.metalindo_direct_charge_request_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='page_attachment']" position="inside">
+                <field name="po_report" filename="po_report_filename" widget="pdf_viewer" groups="base.group_no_one"/>
+                <field name="po_report_filename" invisible="1" />
+                <field name="vendor_acknowledge_report" filename="vendor_acknowledge_report_filename" widget="pdf_viewer" groups="base.group_no_one"/>
+                <field name="vendor_acknowledge_report_filename" invisible="1" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_inherit_tree" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="print_po_date" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_inherit_form" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="po_type" required="1" attrs="{'readonly': ['|', '|', ('is_from_bro', '=', True),('is_from_pr', '=', True),('state', '!=', 'draft')]}"/>
+            </xpath>
+
+            <xpath expr="//button[@name='button_unlock']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_done']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//label[@for='date_planned']" position="before">
+                <field name="print_po_date" readonly="1" force_save="1" attrs="{'invisible': [('print_po_date', '=', False)]}"/>
+            </xpath>
+
+            <xpath expr="//field[@name='tax_totals']" position="before">
+                <field name="taxes_html_backend" nolabel="1" colspan="2" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm']" position="after">
+                <field name="exclusive" invisible="1" />
+                <field name="requisition_state" invisible="1" />
+                <!-- <button name="button_winner" type="object" string="Confirm Winner" class="oe_highlight" attrs="{'invisible': ['|', '|', '|', ('requisition_id','=',False), ('exclusive','!=','exclusive'), 
+                    ('state','not in',('draft','sent')), ('requisition_state','!=','open')]}"/> -->
+            </xpath>
+            <xpath expr="//button[@id='bid_confirm']" position="replace">
+                <button name="button_confirm" type="object" context="{'validate_analytic': True}" string="Confirm Order" class="oe_highlight" id="bid_confirm" data-hotkey="v" attrs="{'invisible': ['|', '&amp;', ('requisition_id','!=',False), ('exclusive','=','exclusive'), ('state','!=','sent')]}" />
+            </xpath>
+            <xpath expr="//button[@id='draft_confirm']" position="replace">
+                <button name="button_confirm" type="object" context="{'validate_analytic': True}" string="Confirm Order" id="draft_confirm" attrs="{'invisible': ['|', '&amp;', ('requisition_id','!=',False), ('exclusive','=','exclusive'), ('state','!=','draft')]}" />
+            </xpath>
+
+            <xpath expr="//button[@name='action_view_invoice']" position="attributes">
+                <attribute name="groups">account.group_account_invoice</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_create_invoice']" position="attributes">
+                <attribute name="groups">account.group_account_invoice</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_create_invoice'][2]" position="attributes">
+                <attribute name="groups">account.group_account_invoice</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_ref']" position="attributes">
+                <attribute name="attrs">{'readonly':[('state','=','done')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="attributes">
+                <attribute name="attrs">{'readonly':[('state','=','done')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <!-- <field name="discount" attrs="{'readonly': [('state','not in',('draft','sent','revision'))]}"/> -->
+                <field name="discount_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly': [('state','not in',('draft','sent','revision'))]}"/>
+                <field name="discount_persen" widget="percentage" attrs="{'invisible':[('discount_type', '!=', 'global')]}"/>
+                <!-- <field name="discount_persen" attrs="{'invisible':[('discount_type', '!=', 'global')]}"/> -->
+                <field name="payment_term_id" position="move"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="before">
+                <field name="discount" widget="monetary" invisible="1" force_save="1"/>
+                <field name="discount_type" invisible="1"/>
+                <!-- <field name="discount_persen" widget="percentage" attrs="{'invisible':[('discount_type', '!=', 'item')], 'readonly':[('discount_type', '!=', 'item')]}"/> -->
+                <field name="discount_persen" attrs="{'invisible':[('discount_type', '!=', 'item')], 'readonly':[('discount_type', '!=', 'item')]}" widget="percentage" force_save="1"/>
+                <field name="recommend_qty_id" invisible="1"/>
+                <field name="recommend_qty_ids" widget="many2many_tags" force_save="1" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='date_order']" position="before">
+                <field name="incoterm_id" attrs="{'readonly':[('state','not in',['draft','sent','waiting_for_approval','revision'])], 'required':[('state','in',('sent', 'waiting_for_approval'))]}"/>
+            </xpath>
+
+            <!-- <field name="incoterm_id" position="after">
+                <field name="incoterm_location_id" attrs="{'readonly':[('state','not in',['draft','sent','waiting_for_approval','revision'])], 'required':[('state','in',('sent', 'waiting_for_approval'))]}"/>
+            </field> -->
+
+            <field name="incoterm_location" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
+            <xpath expr="//field[@name='date_order']" position="after">
+                <field name="delivery_point_id" context="{'default_is_delivery_point':True,'form_view_ref':'metalindo_purchase.delivery_point_form'}" attrs="{'readonly': [('state','not in',('draft','sent','revision'))]}"/>
+                <!-- <label for="delivery_days" string="Delivery"/>
+                <div>
+                    <field name="delivery_days" attrs="{'readonly': [('state','not in',('draft','sent','revision'))]}" class="oe_inline"/> days
+                </div> -->
+                <field name="recommended" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='date_order']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='date_planned']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@name='date_planned_div']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="replace">
+                <field name="price_unit" widget="monetary" invisible="1" force_save="1"/>
+                <field name="price_view" widget="monetary"/>
+            </xpath>
+            <!-- <xpath expr="//field[@name='order_line']/form/field[@name='price_unit']" position="replace">
+                <field name="price_view" widget="monetary"/>
+            </xpath> -->
+            <!-- <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="attributes">
+                <attribute name="widget">monetary</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='price_unit']" position="attributes">
+                <attribute name="widget">monetary</attribute>
+            </xpath> -->
+            <xpath expr="//field[@name='notes']" position="attributes">
+                <attribute name="placeholder">Notes and Special Instructions</attribute>
+            </xpath>
+            <!-- Tambahan dari Vendor Approval -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">[('is_company', '=', True),('active','=',True),('supplier_rank', '&gt;', 0),('is_manufacturer','=', False)]</attribute>
+                <!-- <attribute name="domain">['|', ('company_id','=',False), ('company_id','=',company_id), ('vendor_code','!=',False), ('vendor_code','!=','New'), ('supplier_rank','>',0), ('active','=',True)]</attribute> -->
+            </xpath>
+            <!-- <field name="analytic_id" position="attributes">
+                <attribute name="optional">show</attribute>
+                <attribute name="string">Cost Center</attribute>
+            </field> -->
+            <xpath expr="//field[@name='order_line']/tree//field[@name='price_subtotal']" position="after">
+                <field name='is_umkm' invisible="1"/>
+                <field name="umkm_id" optional="hide" attrs="{'required': [('is_umkm', '=', True)]}"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='date_planned']" position="before">
+                <field name="umkm_id"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='date_planned']" position="replace">
+                <field name="date_planned" string="Delivery Date" attrs="{'required': [('display_type', '=', False)], 'column_invisible': [('parent.print_po_date', '=', False)]}" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_qty']" position="before">
+                <!-- <field name="purchase_category_id" optional="show" domain="[('urutan', '=', 0)]"/> -->
+                <field name="hs_code_id" optional="hide"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_qty']" position="before">
+                <!-- <field name="purchase_category_id" domain="[('urutan', '=', 0)]"/> -->
+                <field name="hs_code_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('purchase_ok', '=', True), ('is_hidden', '=', parent.is_directcharge), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('purchase_ok', '=', True), ('is_hidden', '=', parent.is_directcharge), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']" position="before">
+                <field name="item_no" readonly="1" attrs="{'column_invisible':[('item_no', '=', 0)]}"/>
+                <field name="source"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <field name="is_scm_manager_approve" invisible="1"/>
+                <button type="object" name="button_print_po" string="Print PO" class="oe_stat_button" icon="fa-print" attrs="{'invisible':[('is_scm_manager_approve', '=', False)]}">
+                </button>
+                <button type="object" name="button_print_vendor_acknowledge" string="Print Vendor Acknowledge" class="oe_stat_button" icon="fa-print" attrs="{'invisible':[('is_scm_manager_approve', '=', False)]}">
+                </button>
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send'][@states='draft']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send'][@states='sent']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='reminder_date_before_receipt']" position="attributes">
+                <attribute name="attrs">{'required': [('receipt_reminder_email', '=', True)]}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        As per SCM CMP agreement, the UoM of items for Stock/SRO/BRO and PO must be the same.
+        Make the UoM column readonly on PO's form view when `recommend_qty`s are defined to
+        prevent buyers from changing them.
+    -->
+    <record id="metalindo_direct_charge_request_form" model="ir.ui.view">
+        <field name="name">metalindo.direct.charge.request.form.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="metalindo_direct_charge.metalindo_direct_charge_request_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom'][2]" position="attributes">
+                <attribute name="attrs">
+                    {
+                        'readonly': [
+                            '|',
+                            ('state', 'in', ('purchase', 'done', 'cancel')),
+                            '|', '|',
+                            ('mr_line_id', '!=', False),
+                            ('recommend_qty_id', '!=', False),
+                            ('recommend_qty_ids', '!=', False),
+                        ],
+                        'required': [('display_type', '=', False)],
+                        'column_invisible': [('parent.is_directcharge', '=', True)]
+                    }
+                </attribute>
+            </xpath>
+
+            <!-- This used to be in purchase_order_inherit_form record above, but moved here for maintainability sake. -->
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']" position="attributes">
+                <attribute name="attrs">
+                    {
+                        'readonly': [
+                            ('state', 'in', ('purchase', 'done', 'cancel'))
+                        ]
+                    }
+                </attribute>
+                <attribute name="options">{'no_open': True, 'no_create': True}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_requisition_inherit_form" model="ir.ui.view">
+        <field name="name">purchase.order.requisition.inherit.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase_requisition.purchase_order_form_inherit" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tax_totals']" position="before">
+                <field name="discount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" force_save="1"/>
+            </xpath>
+            <field name="requisition_id" position="replace">
+                <label for="requisition_id" attrs="{'invisible': [('requisition_id', '=', False)]}"/>
+                <div class="o_row" attrs="{'invisible': [('requisition_id', '=', False)]}">
+                    <field name="requisition_id" attrs="{'readonly': [('state', '!=', 'draft')], 'invisible': [('requisition_id', '=', False)]}"/>
+                    <span>closed at</span>
+                    <div class="o_row oe_inline" attrs="{'invisible': [('requisition_id', '=', False)]}">
+                        <field name="date_end" attrs="{'readonly': [('state','not in',('draft','sent','revision'))], 'invisible': [('requisition_id', '=', False)]}"/>
+                    </div>
+                </div>
+            </field>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="replace">
+                <field name="name" invisible="1"/>
+                <field name="description" force_save="1"/>
+                <field name="manufacturer_id" optional="show" force_save="1"/>
+                <field name="part_number" optional="show" force_save="1"/>
+                <field name="remarks" attrs="{'readonly': [('parent.requisition_id', '!=', False)]}" force_save="1"/>
+                <field name="delivery_time" force_save="1"/>
+            </xpath>
+            <xpath expr="//page[@name='alternative_pos']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- New Purchase Order Slip (not used anymore) -->
+    <!-- <record id="metalindo_action_report_purchase_order_slip" model="ir.actions.report">
+        <field name="name">New Purchase Order</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">metalindo_purchase.metalindo_purchase_order_slip</field>
+        <field name="report_file">metalindo_purchase.purchase_order_slip</field>
+        <field name="print_report_name">'Purchase Order - %s - %s' % (object.partner_id.name or '', object.name)</field>
+        <field name="binding_model_id" ref="model_purchase_order"/>
+    </record> -->
+    <!-- The <report> tag is deprecated, use a <record> tag
+    <report string="New Purchase Order" id="metalindo_action_report_purchase_order_slip" model="purchase.order" report_type="qweb-pdf" name="metalindo_purchase.metalindo_purchase_order_slip" file="metalindo_purchase.purchase_order_slip" print_report_name="'Purchase Order - %s - %s' % (object.partner_id.name or '', object.name)" />
+    -->
+
+    <record id="purchase_incoming_tree" model="ir.ui.view">
+        <field name="name">purchase.incoming.tree</field>
+        <field name="model">purchase.order.line</field>
+        <field name="priority">99999</field>
+        <field name="arch" type="xml">
+            <tree create="false" default_order="order_id asc">
+                <field name="order_id" widget="many2one"/>
+                <field name="date_approve" widget="date"/>
+                <field name="partner_id"/>
+                <field name="product_qty"/>
+                <field name="qty_received"/>
+                <field name="po_incoming_qty"/>
+                <field name="price_unit"/>
+            </tree>
+        </field>
+    </record>
+
+     <record id="action_purchase_incoming" model="ir.actions.act_window">
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="metalindo_purchase.purchase_incoming_tree"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No purchase order incoming were made for this product yet!
+            </p>
+        </field>
+    </record>
+    <!-- The <report> tag is deprecated, use a <record> tag
+    <report string="Vendor Acknowledge" id="metalindo_action_report_vendor_acknowledge" model="purchase.order" report_type="qweb-pdf" name="metalindo_purchase.metalindo_purchase_vendor_acknowledge" file="metalindo_purchase.vendor_acknowledge" print_report_name="'Vendor Acknowledge - %s - %s' % (object.partner_id.name or '', object.name)" />
+    -->
+
+</odoo>

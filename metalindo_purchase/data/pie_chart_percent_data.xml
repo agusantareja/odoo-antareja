@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="pie_chart_percent_1" model="pie.chart.percent">
+            <field name="name">PO by Vendor Code</field>
+        </record>
+
+    </data>
+</odoo>

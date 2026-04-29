@@ -1,0 +1,77 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="purchase_request_tree">
+      <field name="name">purchase.request.tree</field>
+      <field name="model">purchase.request</field>
+      <field name="arch" type="xml">
+        <tree editable="bottom" create="0" js_class="recommended_qty_list">
+          <field name="product_id" readonly="1"/>
+          <field name="request_quantity" readonly="1"/>
+          <field name="purchase_qty" />
+          <field name="qty_available" string="On Hand" readonly="1" />
+          <field name="procurement_user_id" attrs="{'readonly':[('procurement_ref','!=',False)]}" />
+          <field name="procurement_ref" readonly="1" />
+          <field name="state" readonly="1" />
+          <field name="qty_done" readonly="1" />
+          <button string="Show" name="show_procurement" type="object" attrs="{'invisible':[('procurement_ref','=',False)]}" groups="purchase.group_purchase_manager" />
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="purchase_request_form">
+      <field name="name">purchase.request.form</field>
+      <field name="model">purchase.request</field>
+      <field name="arch" type="xml">
+        <form>
+          <sheet>
+            <group>
+              <field name="product_id" readonly="1" />
+              <field name="request_quantity" readonly="1" />
+              <field name="purchase_qty" />
+            </group>
+            <notebook>
+              <page string="Requester">
+                <field name="line_ids" readonly="1">
+                  <tree>
+                    <field name="origin" />
+                    <field name="analytic_id"/>
+                    <field name="request_quantity" />
+                  </tree>
+                </field>
+              </page>
+            </notebook>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="purchase_request_action">
+      <field name="name">Material Request</field>
+      <field name="res_model">purchase.request</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.ui.view" id="request_info_form">
+      <field name="name">request.info.form</field>
+      <field name="model">request.info</field>
+      <field name="arch" type="xml">
+        <form>
+          <center>
+            <h2>
+              <field name="text" readonly="1" />
+            </h2>
+          </center>
+          <style>
+            .modal-footer {
+              display:none
+            }
+          </style>
+        </form>
+      </field>
+    </record>
+
+    <!-- Ini diganti menu Recomended Quantity
+    <menuitem action="purchase_request_action" id="purchase_request_menu" parent="purchase.menu_procurement_management" sequence="1" />
+    -->
+  </data>
+</odoo>

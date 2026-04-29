@@ -1,0 +1,21 @@
+<odoo>
+  <data>
+
+    <record model="ir.ui.view" id="request_revision_form">
+      <field name="name">request.revision.form</field>
+      <field name="model">request.revision</field>
+      <field name="arch" type="xml">
+        <form string="Revision">
+          <group>
+            <field name="reason" required="1"/>
+          </group>
+          <footer>
+            <button name="button_save" string="Submit" type="object" class="btn-primary" />
+            <button string="Cancel" class="btn-secondary" special="cancel"/>
+          </footer>
+        </form>
+      </field>
+    </record>
+
+  </data>
+</odoo>

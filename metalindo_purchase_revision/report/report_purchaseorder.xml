@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="inherit_report_purchase" name="Revision Count PO" inherit_id="purchase.report_purchaseorder_document">
+    <xpath expr="//table[hasclass('supplier_info')]/tr" position="inside">
+      <td>REV</td>
+    </xpath>
+    <xpath expr="//table[hasclass('supplier_info')]/tr[2]" position="inside">
+      <td>
+        <span t-field="o.revision_count"/>
+      </td>
+    </xpath>
+  </template>
+</odoo>

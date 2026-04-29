@@ -1,0 +1,47 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="pie_chart_percent_tree">
+      <field name="name">pie.chart.percent.tree</field>
+      <field name="model">pie.chart.percent</field>
+      <field name="arch" type="xml">
+        <tree create="0">
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="pie_chart_percent_form">
+      <field name="name">pie.chart.percent.form</field>
+      <field name="model">pie.chart.percent</field>
+      <field name="arch" type="xml">
+        <form create="0">
+          <sheet>
+            <h1><field name="name" readonly="1" force_save="1"/></h1>
+
+            <group>
+              <group>
+                <field name="awal"/>
+              </group>
+              <group>
+                <field name="akhir"/>
+              </group>
+            </group>
+
+            <div>
+              <field name="pie_chart" widget="mpld3_chart" nolabel="1"/>
+            </div>
+
+            <field name="detil" nolabel="1"/>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="pie_chart_percent_action">
+      <field name="name">PO by Vendor Code</field>
+      <field name="res_model">pie.chart.percent</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+  </data>
+</odoo>

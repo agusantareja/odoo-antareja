@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_recommend_qty,access_recommend_qty,model_recommend_qty,,1,1,1,0
+access_admin_recommend_qty,access_admin_recommend_qty,model_recommend_qty,base.group_erp_manager,1,1,1,1
+access_recommend_qty_setting,access_recommend_qty_setting,model_recommend_qty_setting,,1,1,1,1
+access_purchase_request,access_purchase_request,model_purchase_request,,1,1,1,1
+access_purchase_request_line,access_purchase_request_line,model_purchase_request_line,,1,1,1,1
+access_kegiatan_umkm,access.kegiatan.umkm,model_kegiatan_umkm,,1,1,1,1
+access_purchase_category,access.purchase.category,model_purchase_category,purchase.group_purchase_manager,1,1,1,1
+access_purchase_plan_admin,access.purchase.plan.admin,model_purchase_plan,purchase.group_purchase_manager,1,1,1,1
+access_purchase_plan_user,access.purchase.plan.user,model_purchase_plan,purchase.group_purchase_user,1,0,0,0
+access_realisasi_belanja_user,access.realisasi.belanja.user,model_view_realisasi_belanja,purchase.group_purchase_user,1,0,0,0
+access_purchase_plan_year_admin,access.purchase.plan.year.admin,model_purchase_plan_year,purchase.group_purchase_manager,1,1,1,1
+access_purchase_plan_year_user,access.purchase.plan.year.user,model_purchase_plan_year,purchase.group_purchase_user,1,0,0,0
+access_create_purchase_wizard_user,access.create.purchase.wizard.user,model_create_purchase_wizard,purchase.group_purchase_user,1,1,1,1
+access_read_stock_picking_type_purchase_user,access.read.stock.picking.type.purchase.user,stock.model_stock_picking_type,purchase.group_purchase_user,1,0,0,0
+access_expedite,access_expedite,model_expedite,,1,1,1,1

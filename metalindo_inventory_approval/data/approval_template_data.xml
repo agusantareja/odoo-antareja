@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="approval_template" model="approval.template">
+            <field name="model_id" ref="model_material_inventory_request"/>
+            <field name="approval_task_line_model_id" ref="metalindo_approval.model_cni_approval_transaction"/>
+<!--            <field name="state_field">approval_state</field>-->
+<!--            <field name="state_waiting_approvals">rf</field>-->
+<!--            <field name="state_approved">a</field>-->
+<!--            <field name="state_reject">b</field>-->
+<!--            <field name="state_reject">r</field>-->
+            <field name="state_field">request_status</field>
+            <field name="state_waiting_approvals">intercompany_approval,waiting</field>
+            <field name="state_approved">approved</field>
+            <field name="state_reject">draft</field>
+            <field name="view_name">material inventory request</field>
+            <field name="notification_approval_id" ref="notification_template_approval_task"/>
+<!--            <field name="notification_approved_id" ref="notification_template_approved_task"/>-->
+            <field name="code">
+# response['method_create_approval_task_line']='create_approval_task_line'
+# response['transaction_approval_filter_matrix']='get_priority_filter_matrix'
+# response['approval_line'] bila ingin custom approval line
+# transaction_value nilai dari value
+response['transaction_value']=transaction_object.get_transaction_value()
+response['transaction_currency']=transaction_object.currency_id
+response['transaction_requester']=transaction_object.get_internal_requester_id()
+            </field>
+            <field name="invoke_validate_request_approval">validate_request_approval</field>
+            <field name="invoke_approval_start">event_approval_start</field>
+            <field name="invoke_approval_done">event_approval_done</field>
+            <field name="invoke_before_approve">event_before_approve</field>
+        </record>
+    </data>
+</odoo>

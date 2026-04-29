@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mail_template_chat_notification_approval_task" model="mail.template">
+            <field name="name">Odoo Bot Chat Notification Approval Task</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="subject">Odoo Bot Chat Notification Approval Task</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hi <t t-out="object.notification_to_user_id.partner_id.name or ''"/> ,
+                        <t t-out="object.name or ''"/>  Document butuh approval anda. Terima kasih
+                        <br/>
+                        <a t-att-href="object.get_internal_url()">Klik disini untuk melihat detail</a>
+                    </p>
+                </div>
+            </field>
+        </record>
+
+        <record id="whatsapp_template_notification_approval_task" model="whatsapp.template">
+            <field name="name">cmp_purchase_approval.whatsapp_template_notification_approval_task</field>
+            <field name="recipient">object.notification_to_user_id.partner_id</field>
+            <field name="model_id" ref="model_purchase_order"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_phone" model="whatsapp.template.param">
+            <field name="key">phone</field>
+            <field name="type">record</field>
+            <field name="value">phone</field>
+            <field name="template_id" ref="whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_ref" model="whatsapp.template.param">
+            <field name="key">ref</field>
+            <field name="type">record</field>
+            <field name="value">object.name</field>
+            <field name="template_id" ref="whatsapp_template_notification_approval_task"/>
+        </record>
+        <record id="whatsapp_template_notification_approval_task_param_scope" model="whatsapp.template.param">
+            <field name="key">scope</field>
+            <field name="type">fix</field>
+            <field name="value">APPROVAL</field>
+            <field name="template_id" ref="whatsapp_template_notification_approval_task"/>
+        </record>
+
+        <record id="whatsapp_template_notification_approval_task_param_message" model="whatsapp.template.param">
+            <field name="key">message</field>
+            <field name="type">record</field>
+            <field name="value">Hi ${partner.name}, ${object.name} PO butuh approval anda. Terima kasih
+Klik disini untuk melihat detail
+${object.get_internal_url}</field>
+            <field name="template_id" ref="whatsapp_template_notification_approval_task"/>
+        </record>
+
+
+        <record id="notification_mobile_template_notification_approval_task" model="notification.mobile.template">
+            <field name="name">Approval Mobile Notification</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="title">Approval {{object.name}}</field>
+            <field name="body"><![CDATA[Hai {{ctx.get('notification_to_user').name}} Dokument Dengan Kode {{object.name}} butuh approval anda sebagai Approver.]]></field>
+<!--            <field name="image">Todo send url image</field>-->
+            <field name="code">
+data['url'] = record.get_internal_url()
+            </field>
+        </record>
+
+        <record id="notification_template_approval_task" model="notification.template">
+            <field name="name">Purchase Order Notification Approval Task</field>
+            <field name="model_id" ref="model_purchase_order"/>
+<!--            <field name="template_email" ref="purchase_approver_mail_template"/>-->
+<!--            <field name="template_whatsapp" ref="whatsapp_template_notification_approval_task"/>-->
+            <field name="template_chatter" ref="mail_template_chat_notification_approval_task" />
+<!--            <field name="template_mobile" ref="notification_mobile_template_notification_approval_task" />-->
+        </record>
+
+    </data>
+</odoo>

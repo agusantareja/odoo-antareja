@@ -1,0 +1,660 @@
+<odoo>
+    <record id="purchase_stock.report_purchaseorder_document" model="ir.ui.view">
+        <field name="active" eval="False" />
+    </record>
+    <record id="purchase_stock.report_purchasequotation_document" model="ir.ui.view">
+        <field name="active" eval="False" />
+    </record>
+
+    <record id="paperformat_euro_custommargin" model="report.paperformat">
+        <field name="name">European A4 custom margin</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">28</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">20</field>
+        <field name="dpi">120</field>
+    </record>
+
+    <record id="purchase.action_report_purchase_order" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_euro_custommargin" />
+    </record>
+
+    <!-- Buat footer sesuai dengan format CMP yang sudah ada, kecuali jika user meng-set custom footer. -->
+    <template id="external_layout_striped" name="custom_external_layout_striped"
+        inherit_id="web.external_layout_striped">
+        <xpath expr="//div[@t-field='company.report_footer']" position="attributes">
+            <attribute name="t-if">company.report_footer</attribute>
+        </xpath>
+        <xpath expr="//div[@t-field='company.report_footer']" position="after">
+            <!-- Menggunakan style="-webkit-box-pack: justify;" sebagai ekuivalensi class="justify-content-between" agar kompatibel dengan wkhtmltopdf -->
+            <div t-else="" class="d-flex px-3 text-start justify-content-between" style="-webkit-box-pack: justify;">
+                <div>
+                    <p class="mb-1">
+                        <t t-out="company.street" />
+                    </p>
+                    <p class="mb-1">
+                        <t t-out="company.street2" />
+                    </p>
+                    <p class="mb-1">
+                        <t t-out="company.city" />
+                        ,
+                        <t t-out="company.state_id.name" />
+                        ,
+                        <t t-out="company.zip" />
+                    </p>
+                </div>
+                <div>
+                    <p class="mb-1">
+                        <t t-out="company.website" />
+                    </p>
+                    <p class="mb-1">
+                        <t t-out="company.email" />
+                    </p>
+                    <p class="mb-1">
+                        <t t-out="company.phone" />
+                    </p>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="purchase.report_purchaseorder_document">
+        <t t-name="purchase.report_purchaseorder_document">
+            <t t-name="purchase.report_purchaseorder_document">
+                <t t-call="web.external_layout">
+                    <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+                    <style>
+                        .table_black td {
+                            border: 1px solid black;
+                        }
+
+                        .table_black th {
+                            border: 1px solid black;
+                            border-collapse: collapse;
+                            text-align: center;
+                        }
+
+                        .table-custom td {
+                            margin-top: 20px;
+                        }
+
+                        .table-custom td {
+                            border-top: 1px solid rgb(206, 212, 218);
+                            border-bottom: 1px solid rgb(206, 212, 218);
+                        }
+
+                        .table-custom {
+                            border-collapse: collapse;
+                        }
+
+                        .table_container {
+                            width: 100%;
+                            overflow: auto;
+                        }
+
+                        .side_left_table {
+                            width: 50%;
+                            float: left;
+                            vertical-align: top;
+                        }
+
+                        .side_right_table {
+                            width: 50%;
+                            float: right;
+                            vertical-align: top;
+                        }
+
+                        .side_left_table td {
+                            vertical-align: top;
+                            padding-left: 10px;
+                            padding-right: 10px;
+                        }
+
+                        .side_right_table td {
+                            vertical-align: top;
+                            padding-left: 10px;
+                            padding-right: 10px;
+                        }
+
+                        .text_box {
+                            padding-right: 20px;
+                        }
+
+                        .supplier_info td {
+                            text-align: center;
+                        }
+
+                        .colon {
+                            padding: 0px;
+                        }
+
+                        .signing-table {
+                            width: 40%;
+                            page-break-inside: avoid;
+                        }
+
+                        .signing-header {
+                            padding: 0 0 1rem;
+                            font-size: 1.25rem;
+                            font-weight: 600;
+                            color: black;
+                            background-color: white;
+                            vertical-align: top;
+                            line-height: 1;
+                            text-align: center;
+                        }
+
+                        .signing-box {
+                            border: 1px solid black;
+                            line-height: 12rem;
+                            text-align: center;
+                            font-style: italic;
+                            font-weight: 100;
+                            font-size: 1.5rem;
+                            color: gray;
+                        }
+                    </style>
+                    <div class="page">
+                        <center>
+                            <b>
+                                <h2>PURCHASE ORDER</h2>
+                            </b>
+                        </center>
+                        <br />
+                        <div class="table_container">
+                            <table class="table_black table-bordered side_right_table supplier_info">
+                                <tr>
+                                    <td>SUPPLIER CODE</td>
+                                    <td>PO DATE</td>
+                                    <td>PO NUMBER</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span t-field="o.partner_id.vendor_code" />
+                                    </td>
+                                    <td>
+                                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.name" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br />
+                        <div class="table_container">
+                            <table class="table-borderless side_left_table">
+                                <tr>
+                                    <td style="width:10%">SUPPLIER</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.partner_id" />
+                                        <br />
+                                        <span t-esc="o.partner_id.get_address_str()" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>ATTENTION</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-esc="o.partner_id.child_ids[:1].name" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PHONE</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.partner_id.child_ids[:1].phone" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>EMAIL</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.partner_id.child_ids[:1].email" />
+                                    </td>
+                                </tr>
+                            </table>
+                            <table class="table-borderless side_right_table">
+                                <tr>
+                                    <td style="width:35%">FREIGHT METHOD</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.incoterm_id.name" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DELIVERY POINT</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.incoterm_id.code" />
+                                        <span t-field="o.delivery_point_id.name" />
+                                        <span>,</span>
+                                        <span t-field="o.incoterm_id.reference" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PHONE</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-esc="o.get_delivery_partner_id().phone" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PAYMENT TERM</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.payment_term_id" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SUPPLIER REF</td>
+                                    <td style="padding:0px">:</td>
+                                    <td>
+                                        <span t-field="o.partner_ref" />
+                                    </td>
+                                </tr>
+
+                            </table>
+                        </div>
+                        <br />
+                        <p>
+                            <i>
+                                In accepting this order seller agrees to furnish the
+                                <t t-if="o.po_type == 'consu'">
+                                    material
+                                </t>
+                                <t t-if="o.po_type == 'service'">
+                                    services
+                                </t>
+                                specified in full, accordance with all conditions agreed to on our contract terms and
+                                all conditions attached to this document.
+                                <br />
+                                <b>
+                                    Please indicate your acknowledgement/acceptance immediately by signing and
+                                    completing the attached acknowledge form and send back to buyer.
+                                </b>
+                            </i>
+                        </p>
+                        <table class="table table-sm table_black">
+                            <thead>
+                                <tr style="border-top: 1px solid black">
+                                    <th>ITEM</th>
+                                    <th>MC / PR</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>QTY</th>
+                                    <th>UOM</th>
+                                    <th>UNIT PRICE</th>
+                                    <th>DISCOUNT</th>
+                                    <th>TOTAL PRICE</th>
+                                    <th>DUE DATE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="current_subtotal" t-value="0" />
+                                <t t-foreach="o.order_line" t-as="line">
+                                    <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                                        groups="account.group_show_line_subtotals_tax_excluded" />
+                                    <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
+                                        groups="account.group_show_line_subtotals_tax_included" />
+
+                                    <tr
+                                        t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                        <t t-if="not line.display_type">
+                                            <td id="product" class="text-center">
+                                                <span t-field="line.item_no" />
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-if="line.product_id.product_tmpl_id.default_code">
+                                                    <span t-field="line.product_id.product_tmpl_id.default_code" />
+                                                </t>
+                                                <t t-else="">
+                                                    <span>-</span>
+                                                </t>
+                                                <span>/</span>
+                                                <t t-if="line.mr_line_id">
+                                                    <span t-field="line.mr_line_id.mr_id.name" />
+                                                </t>
+                                                <t t-elif="line.mr_id">
+                                                    <span t-field="line.mr_id.name" />
+                                                </t>
+                                                <t t-else="">
+                                                    <span>-</span>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.description" />
+                                                <t t-if="line.manufacturer_id">
+                                                    <br />
+                                                    MANUFACTURER: <span t-field="line.manufacturer_id.name" />
+                                                </t>
+                                                <t t-if="line.part_number">
+                                                    <br />
+                                                    PART NUMBER: <span t-field="line.part_number" />
+                                                </t>
+                                                <t t-if="line.remarks">
+                                                    <br />
+                                                    <br />
+                                                    <b>REMARKS:</b>
+                                                    <br />
+                                                    <span t-field="line.remarks" />
+                                                </t>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.product_qty" />
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.product_uom.name" groups="uom.group_uom" />
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="line.price_view"
+                                                    t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="line.discount"
+                                                    t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="line.price_subtotal"
+                                                    t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="line.date_planned.strftime('%d/%m/%Y')" />
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div id="total" class="row justify-content-end">
+                            <div class="col-4">
+                                <table class="table table-borderless table-sm table-custom">
+                                    <tr>
+                                        <td name="td_subtotal_label">
+                                            <strong>Total Discount</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="o.discount_total"
+                                                t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td name="td_subtotal_label">
+                                            <strong>Subtotal</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="o.amount_untaxed"
+                                                t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                        </td>
+                                    </tr>
+                                    <t t-value="o.get_list_taxes()" t-set="list_taxes" />
+                                    <t t-if="list_taxes" t-foreach="list_taxes" t-as="tax">
+                                        <tr>
+                                            <td name="td_taxes_label">
+                                                <span t-esc="tax['label']" />
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="o.currency_id.symbol" />
+                                                <span t-esc="'{:,.2f}'.format(tax['amount'])" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr class="o_total">
+                                        <td name="td_amount_total_label">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="o.amount_total"
+                                                t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <br />
+                        <br />
+                        <table class="table table-borderless table-custom">
+                            <tr>
+                                <td style="width: 12%;">BUYER</td>
+                                <td>:</td>
+                                <td>
+                                    <t t-value="o.requisition_id.user_id or o.create_uid" t-set="user" />
+                                    <span t-field="user.partner_id.name" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PHONE</td>
+                                <td>:</td>
+                                <td>
+                                    <span t-field="o.create_uid.partner_id.phone" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>EMAIL</td>
+                                <td>:</td>
+                                <td>
+                                    <span t-field="o.create_uid.partner_id.email" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>BUYER REMARK</td>
+                                <td>:</td>
+                                <td>
+                                    <span t-field="o.notes" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+
+
+    </template>
+
+    <template id="purchase.report_purchasequotation_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+            <style>
+                .table_black td {
+                    border: 1px solid black;
+                }
+
+                .table_black th {
+                    border: 1px solid black;
+                    text-align: center;
+                }
+
+                .table td {
+                    margin-top: 20px;
+                }
+
+                .table_container {
+                    width: 100%;
+                    overflow: auto;
+                }
+
+                .side_left_table {
+                    width: 50%;
+                    float: left;
+                    vertical-align: top;
+                }
+
+                .side_right_table {
+                    width: 50%;
+                    float: right;
+                    vertical-align: top;
+                }
+
+                .side_left_table td {
+                    vertical-align: top;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+
+                .side_right_table td {
+                    vertical-align: top;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+
+                .text_box {
+                    padding-right: 20px;
+                }
+
+                .supplier_info td {
+                    text-align: center;
+                }
+
+                .table-custom td {
+                    margin-top: 20px;
+                }
+
+                .table-custom td {
+                    border-top: 1px solid rgb(206, 212, 218);
+                    border-bottom: 1px solid rgb(206, 212, 218);
+                }
+
+                .table-custom {
+                    border-collapse: collapse;
+                }
+            </style>
+            <div class="page">
+                <br />
+                <h4>
+                    Request for Quotation Number
+                    <span t-field="o.name" />
+                    <br />
+                    to,
+                    <br />
+                    <span t-esc="o.partner_id.name" />
+                </h4>
+                <br />
+
+                <p>
+                    Dear Sir/Madam,
+                    <br />
+                    Please send us your quotation (best price and delivery) as per item below
+                    <span t-esc="o.incoterm_id.code" />
+                    <span t-esc="o.get_delivery_partner_id().city" />
+                    <br />
+                    <span style="color:red">
+                        CLOSSING DATE NO LATER THAN
+                        <span t-if="o.date_end" t-esc="o.date_end.strftime('%d/%m/%Y')" />
+                    </span>
+                </p>
+                <table class="table table_black">
+                    <thead>
+                        <tr style="border-top: 1px solid black">
+                            <th>ITEM</th>
+                            <th>QTY</th>
+                            <th>UoM</th>
+                            <th>DESCRIPTION</th>
+                            <th>UNIT PRICE</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="current_subtotal" t-value="0" />
+                        <t t-set="no" t-value="1" />
+                        <t t-foreach="o.order_line" t-as="line">
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                                groups="account.group_show_line_subtotals_tax_excluded" />
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
+                                groups="account.group_show_line_subtotals_tax_included" />
+
+                            <tr
+                                t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                <t t-if="not line.display_type">
+                                    <td id="product" class="text-center">
+                                        <span t-esc="no" />
+                                        <t t-value="no + 1" t-set="no" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.product_qty" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.product_uom.name" groups="uom.group_uom" />
+                                    </td>
+                                    <td>
+                                        <span t-field="line.name" />
+                                    </td>
+                                    <td />
+                                    <td />
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <br />
+                <p>
+                    Kindly clearly indicate your promissed delivery and payment terms on the place provided below table
+                </p>
+                <table class="table_black table" width="100%">
+                    <thead>
+                        <tr style="border-top: 1px solid black">
+                            <td align="center">PROMISSED DELIVERY</td>
+                            <td align="center" colspan="3">PAYMENT TERMS</td>
+                        </tr>
+                        <tr>
+                            <td align="center">DAYS</td>
+                            <td align="center">30D</td>
+                            <td align="center">45D</td>
+                            <td align="center">90D</td>
+                        </tr>
+                    </thead>
+                    <tr>
+                        <td>
+                            <br />
+                            <br />
+                        </td>
+                        <td />
+                        <td />
+                        <td />
+
+                    </tr>
+                </table>
+                <table class="side_left_table table table-borderless table-custom">
+                    <tr>
+                        <td style="width: 12%;">BUYER</td>
+                        <td>:</td>
+                        <td>
+                            <t t-value="o.requisition_id.user_id or o.create_uid" t-set="user" />
+                            <span t-field="user.partner_id.name" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>PHONE</td>
+                        <td>:</td>
+                        <td>
+                            <span t-field="o.create_uid.partner_id.phone" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>EMAIL</td>
+                        <td>:</td>
+                        <td>
+                            <span t-field="o.create_uid.partner_id.email" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BUYER REMARK</td>
+                        <td>:</td>
+                        <td>
+                            <span t-field="o.notes" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+</odoo>

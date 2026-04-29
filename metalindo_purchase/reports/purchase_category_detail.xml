@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <template id="metalindo_purchase_category_detail_report_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+            <div class="page">
+                <h3 align="center">Realisasi Belanja <span t-field="o.name"/></h3>
+
+                <h4>Domestik</h4>
+                <table name="product_table" class="table table-condensed table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th rowspan="2">No.</th>
+                            <th rowspan="2">Jenis Barang</th>
+                            <th rowspan="2">Kode HS</th>
+                            <th rowspan="2">ID Minepedia</th>
+                            <th colspan="2"><center>Asal Belanja</center></th>
+                            <th rowspan="2">Produsen/ Suplier</th>
+                            <th rowspan="2">Spesifikasi</th>
+                            <th rowspan="2">Kuantitas</th>
+                            <th rowspan="2">Unit Price (IDR)</th>
+                            <th rowspan="2">Total Price (IDR)</th>
+                            <th rowspan="2">Area Project</th>
+                            <th colspan="2">Persentase TKDN (%)</th>
+                            <th rowspan="2">Belanja TKDN (IDR)</th>
+                        </tr>
+                        <tr>
+                            <th>Provinsi</th>
+                            <th>Kabupaten/ Kota</th>
+                            <th>SA</th>
+                            <th>S</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.realisasi_domestik"/>
+                        <t t-value="1" t-set="seq"/>
+                        <tr t-foreach="lines" t-as="line">
+                            <td><span t-esc="seq"/></td>
+                            <t t-value="seq + 1" t-set="seq"/>
+                            <td><span t-field="line.jenis_barang"/></td>
+                            <td><span t-field="line.kode_hs"/></td>
+                            <td></td>
+                            <td><span t-field="line.provinsi"/></td>
+                            <td><span t-field="line.kab_kota"/></td>
+                            <td><span t-field="line.partner_id.name"/></td>
+                            <td><span t-field="line.spec"/></td>
+                            <td><span t-field="line.quantity"/></td>
+                            <td><span t-field="line.price_unit_idr"/></td>
+                            <td><span t-field="line.price_subtotal_idr"/></td>
+                            <td>Lapaopao RKEF Smelter FeNi Project</td>
+                            <td>
+                                <t t-value="line.tkdn_sa * 100.0" t-set="tkdn"/>
+                                <span t-esc="tkdn"/>
+                            </td>
+                            <td>
+                                <t t-value="line.tkdn_s * 100.0" t-set="tkdn"/>
+                                <span t-esc="tkdn"/>
+                            </td>
+                            <td><span t-field="line.belanja_tkdn_idr"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3> </h3>
+                <h4>Impor</h4>
+                <table name="product_table" class="table table-condensed table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>No.</th>
+                            <th>Jenis Barang</th>
+                            <th>Kode HS</th>
+                            <th>ID Minepedia</th>
+                            <th>Asal Belanja (Negara)</th>
+                            <th>Spesifikasi</th>
+                            <th>Kuantitas</th>
+                            <th>Unit Price (USD)</th>
+                            <th>Total Price (USD)</th>
+                            <th>Total Price (IDR)</th>
+                            <th>Area Project</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.realisasi_impor"/>
+                        <t t-value="1" t-set="seq"/>
+                        <tr t-foreach="lines" t-as="line">
+                            <td><span t-esc="seq"/></td>
+                            <t t-value="seq + 1" t-set="seq"/>
+                            <td><span t-field="line.jenis_barang"/></td>
+                            <td><span t-field="line.kode_hs"/></td>
+                            <td></td>
+                            <td><span t-field="line.negara"/></td>
+                            <td><span t-field="line.spec"/></td>
+                            <td><span t-field="line.quantity"/></td>
+                            <td><span t-field="line.price_unit_usd"/></td>
+                            <td><span t-field="line.price_subtotal_usd"/></td>
+                            <td><span t-field="line.price_subtotal_idr"/></td>
+                            <td>Lapaopao RKEF Smelter FeNi Project</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="metalindo_purchase_category_detail_report">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="metalindo_purchase.metalindo_purchase_category_detail_report_doc"/>
+        </t>
+    </template>
+
+    <!-- The <report> tag is deprecated, use a <record> tag
+    <report
+            string="Realisasi Belanja"
+            id="metalindo_purchase_category_report_action"
+            model="purchase.plan"
+            report_type="qweb-pdf"
+            name="metalindo_purchase.metalindo_purchase_category_detail_report"
+            file="metalindo_purchase.purchase_category_detail_report"
+            print_report_name="'Realisasi Belanja %s' % (object.name)"
+        />
+    -->
+    <record id="metalindo_purchase_category_report_action" model="ir.actions.report">
+        <field name="name">Realisasi Belanja</field>
+        <field name="model">purchase.plan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">metalindo_purchase.metalindo_purchase_category_detail_report</field>
+        <field name="report_file">metalindo_purchase.purchase_category_detail_report</field>
+        <field name="print_report_name">'Realisasi Belanja %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_purchase_plan"/>
+        <field name="paperformat_id" ref="paper_a4_landscape" />
+    </record>
+
+    <record id="paper_a4_landscape" model="report.paperformat">
+        <field name="name">A4 Landscape</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">20</field>
+        <field name="dpi">120</field>
+    </record>
+
+    <!-- <record id="metalindo_purchase_category_report_action" model="ir.actions.report">
+        <field name="paperformat_id" ref="paper_a4_landscape" />
+    </record> -->
+
+</odoo>

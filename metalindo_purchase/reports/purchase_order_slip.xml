@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <template id="metalindo_purchase_order_slip_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+            <div class="page">
+                <h3 align="center"><strong>Purchase Order Number</strong></h3>
+                <h3 align="center"><strong><span t-field="o.name"/></strong></h3>
+                <table name="title_table" class="table table-condensed table-bordered">
+                    <tbody>
+                        <tr>
+                            <td colspan="2" class="table-active"><strong>Supplier Details</strong></td>
+                            <td class="table-active"><strong>Order No.</strong></td><td><span t-field="o.partner_ref"/></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>Code</strong></td><td> <span t-field="o.partner_id.vendor_code"/></td>
+                            <td class="table-active"><strong>Order Date</strong></td><td><span t-field="o.date_order"/></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>Name</strong></td><td><span t-field="o.partner_id.name"/></td>
+                            <td class="table-active"><strong>Cost Code</strong></td><td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>Address</strong></td>
+                            <td><span t-field="o.partner_id.street"/><br/>
+                                <t t-if="o.partner_id.street2">
+                                    <span t-field="o.partner_id.street2"/><br/>
+                                </t>
+                                <span t-field="o.partner_id.city"/>
+                                <span t-field="o.partner_id.zip"/><br/>
+                                <span t-field="o.partner_id.state_id.name"/>
+                                <span t-field="o.partner_id.country_id"/></td>
+                            <td class="table-active"><strong>Term of payment</strong></td><td> <span t-field="o.payment_term_id"/></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>Attention</strong></td>
+                            <td>
+                                <t t-if="o.partner_id.child_ids">
+                                    <span t-field="o.partner_id.child_ids[0].name"/>
+                                </t>
+                            </td>
+                            <td class="table-active"><strong>Project Title</strong></td><td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>Phone</strong></td>
+                            <td>
+                                <t t-if="o.partner_id.child_ids">
+                                    <t t-if="o.partner_id.child_ids[0].phone != o.partner_id.phone">
+                                        <span t-field="o.partner_id.child_ids[0].phone"/>
+                                    </t>
+                                </t>
+                                <span t-field="o.partner_id.phone"/>
+                            </td>
+                            <td class="table-active"><strong>Term &amp; Conditions</strong></td>
+                            <td><span t-field="o.incoterm_id.code"/> <span t-field="o.delivery_point_id.city"/></td>
+                        </tr>
+                        <tr>
+                            <td class="table-active"><strong>E-mail</strong></td>
+                            <td>
+                                <t t-if="o.partner_id.child_ids">
+                                    <span t-field="o.partner_id.child_ids[0].email"/>
+                                </t>
+                            </td>
+                            <td class="table-active"><strong>Queries</strong></td><td></td>
+                        </tr>
+                    </tbody>
+                </table>
+PLEASE SUPPLY THE UNDERMENTIONED GOODS IN ACCORDANCE WITH THE TERMS AND CONDITIONS STATED IN THIS PURCHASE ORDER. PURCHASER DOES NOT ACCEPT NOR ACKNOWLEDGE ANY OTHER TERMS, CONDITIONS, QUALIFICATIONS AND/OR AGREEMENTS.
+                <table name="product_table" class="table table-condensed table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>UOM</th>
+                            <th>Part Number</th>
+                            <th>Description</th>
+                            <th>Delivery Date</th>
+                            <th>Unit Price</th>
+                            <th>Amount (IDR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.order_line"/>
+                        <t t-value="1" t-set="seq"/>
+                        <tr t-foreach="lines" t-as="line">
+                            <td><span t-esc="seq"/></td>
+                            <t t-value="seq + 1" t-set="seq"/>
+                            <td><span t-field="line.product_qty"/></td>
+                            <td><span t-field="line.product_uom"/></td>
+                            <td><span t-field="line.product_id.part_number"/></td>
+                            <td><span t-field="line.name"/></td>
+                            <td><span t-field="line.date_planned"/></td>
+                            <!--
+                            <td>
+                                <t t-if="line.date_planned">
+                                    <span t-field="line.date_planned"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="o.date_planned"/>
+                                </t>
+                            </td>
+                            -->
+                            <td><span t-field="line.price_unit"/></td>
+                            <td><span t-field="line.price_subtotal"/></td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3" colspan="5"><strong>SPECIAL INSTRUCTIONS</strong><br/><span t-field="o.notes"/></td>
+                            <td colspan="2" class="table-active"><strong>TOTAL ORDER VALUE (Excl. VAT)</strong></td>
+                            <td><strong><span t-field="o.amount_untaxed"/></strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="table-active"><strong>TOTAL VAT</strong></td>
+                            <td><strong><span t-field="o.amount_tax"/></strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="table-active"><strong>TOTAL ORDER VALUE (Incl. VAT)</strong></td>
+                            <td><strong><span t-field="o.amount_total"/></strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+Kindly acknowledge receipt and acceptance of this Purchase Order and the General Conditions of Purchase (reference number above) by completing, signing and returning Annexure “A” within twenty four hours (24:00) to <span t-field="o.user_id"/> at : <span t-field="o.user_id.email"/>
+                <table name="sign" class="table table-bordered">
+                    <tr>
+                        <td>Invoices stating our Purchase Order number and description of the Goods are to be submitted to:<br/>
+                            <strong><span t-esc="o.company_id.name.upper()"/></strong><br/>
+                            <span t-field="o.company_id.street"/><br/>
+                            <t t-if="o.company_id.street2">
+                                <span t-field="o.company_id.street2"/><br/>
+                            </t>
+                            <span t-field="o.company_id.city"/>
+                            <span t-field="o.company_id.zip"/><br/>
+                            <span t-field="o.company_id.state_id.name"/>
+                            <span t-field="o.company_id.country_id"/>
+                            <br/>Attn. :  Finance Manager</td>
+                        <td>A copy of the Purchase Order shall accompany all Goods delivered to <span t-esc="o.company_id.name.upper()"/>
+                            <table class="table-sm table-borderless"><tbody>
+                                <tr>
+                                    <td><strong><span style="background-color: #f2f2f2;">Delivery date :</span></strong></td>
+                                    <td><span t-field="o.date_planned"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><span style="background-color: #f2f2f2;">Delivery point :</span></strong></td>
+                                    <td><span t-field="o.delivery_point_id.street"/><br/>
+                                        <t t-if="o.delivery_point_id.street2">
+                                            <span t-field="o.delivery_point_id.street2"/><br/>
+                                        </t>
+                                        <span t-field="o.delivery_point_id.city"/>
+                                        <span t-field="o.delivery_point_id.zip"/><br/>
+                                        <span t-field="o.delivery_point_id.state_id.name"/>
+                                        <span t-field="o.delivery_point_id.country_id"/>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                        <td>Prepared by,<br/>Procurement<br/><br/><br/><br/>
+                            <br/><u><span t-esc="o.user_id.name.replace(' ','_')"/></u></td>
+                        <td>Approved by,<br/>Finance Manager<br/><br/><br/><br/>
+                            <br/>____________________</td>
+                    </tr>
+                </table>
+            </div>
+            </t>
+        </t>
+    </template>
+
+
+    <template id="metalindo_purchase_order_slip">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="metalindo_purchase.metalindo_purchase_order_slip_doc"/>
+        </t>
+    </template>
+
+</odoo>

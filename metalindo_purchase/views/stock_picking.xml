@@ -1,0 +1,38 @@
+<odoo>
+    <record model="ir.ui.view" id="metalindo_stock_picking_purchase_form">
+        <field name="name">metalindo.stock.picking.purchase.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_done']" position="after">
+                <field name="purchase_id" attrs="{'invisible': [('purchase_id', '=', False)]}"/>
+            </xpath>
+
+            <xpath expr="//field[@name='origin']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|', ('purchase_id', '!=', False), ('mir_id', '!=', False)]}</attribute>
+            </xpath>
+
+
+            <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='product_id']" position="before">
+                <!-- <field name="item_no" readonly="1" force_save="1"/> -->
+                <field name="origin" readonly="1" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='product_uom']" position="after">
+                <!-- <field name="bin_location_id" force_save="1" attrs="{'column_invisible': [('parent.receive_type', 'not in', ('onsite','binning'))]}"/> -->
+                <field name="bin_location_id" force_save="1" attrs="{'column_invisible': [('parent.show_bin_location', '=', False)]}" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='name'][2]" position="replace">
+                <field name="name" invisible="1"/>
+                <field name="description" optional="show" />
+                <field name="manufacturer_id" optional="show" />
+                <field name="part_number" optional="show" />
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree//field[@name='description_picking']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="groups">base.group_system</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

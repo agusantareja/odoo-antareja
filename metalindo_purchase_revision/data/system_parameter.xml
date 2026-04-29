@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="1">
+
+    <!-- <record model="ir.config_parameter" id="purchase_revision_waiting_approval_method">
+      <field name="key">metalindo_purchase_revision.waiting_approval_method</field>
+      <field name="value">model.button_submit()</field>
+    </record> -->
+
+    <record model="ir.config_parameter" id="param_message_wa_revision_request_notification">
+      <field name="key">metalindo_purchase_revision.param_message_wa_revision_request_notification</field>
+      <field name="value">Isi text disini dengan paramater yang diganti {requester}, {approver}, {no_po}, {link}</field>
+    </record>
+
+    <record model="ir.config_parameter" id="param_message_wa_revision_notification">
+      <field name="key">metalindo_purchase_revision.param_message_wa_revision_notification</field>
+      <field name="value">Isi text disini dengan paramater yang diganti {approver}, {no_po}, {no_revisi_po}, {link}</field>
+    </record>
+
+  </data>
+</odoo>

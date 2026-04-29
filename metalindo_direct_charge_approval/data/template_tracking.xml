@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <template id="track_purchase_request_line">
+            <p class="mb-1"><strong>No. <t t-esc="no"/> <t t-esc="product_display_name"/></strong> has been updated:</p>
+            <ul class="o_Message_trackingValues mb-0 ps-4">
+                <li t-if="priority_new != priority">
+                    <div class="o_TrackingValue d-flex align-items-center flex-wrap mb-1" role="group">
+                        <span class="o_TrackingValue_oldValue me-1 px-1 text-muted fw-bold" t-out="priority" />
+                        <i class="o_TrackingValue_separator fa fa-long-arrow-right mx-1 text-600" title="Changed" role="img" aria-label="Changed" />
+                        <span class="o_TrackingValue_newValue me-1 fw-bold text-info" t-out="priority_new" />
+                        <span class="o_TrackingValue_fieldName ms-1 fst-italic text-muted">(Priority)</span>
+                    </div>
+                </li>
+                <li t-if="reason_new != reason">
+                    <div class="o_TrackingValue d-flex align-items-center flex-wrap mb-1" role="group">
+                        <span class="o_TrackingValue_oldValue me-1 px-1 text-muted fw-bold" t-out="reason" />
+                        <i class="o_TrackingValue_separator fa fa-long-arrow-right mx-1 text-600" title="Changed" role="img" aria-label="Changed" />
+                        <span class="o_TrackingValue_newValue me-1 fw-bold text-info" t-out="reason_new" />
+                        <span class="o_TrackingValue_fieldName ms-1 fst-italic text-muted">(Reason)</span>
+                    </div>
+                </li>
+                <li t-if="qty_new != qty">
+                    <div class="o_TrackingValue d-flex align-items-center flex-wrap mb-1" role="group">
+                        <span class="o_TrackingValue_oldValue me-1 px-1 text-muted fw-bold" t-out="qty" />
+                        <i class="o_TrackingValue_separator fa fa-long-arrow-right mx-1 text-600" title="Changed" role="img" aria-label="Changed" />
+                        <span class="o_TrackingValue_newValue me-1 fw-bold text-info" t-out="qty_new" />
+                        <span class="o_TrackingValue_fieldName ms-1 fst-italic text-muted">(Quantity)</span>
+                    </div>
+                </li>
+                <li t-if="uom_display_name_new != uom_display_name">
+                    <div class="o_TrackingValue d-flex align-items-center flex-wrap mb-1" role="group">
+                        <span class="o_TrackingValue_oldValue me-1 px-1 text-muted fw-bold" t-out="uom_display_name" />
+                        <i class="o_TrackingValue_separator fa fa-long-arrow-right mx-1 text-600" title="Changed" role="img" aria-label="Changed" />
+                        <span class="o_TrackingValue_newValue me-1 fw-bold text-info" t-out="uom_display_name_new" />
+                        <span class="o_TrackingValue_fieldName ms-1 fst-italic text-muted">(Unit of Measure)</span>
+                    </div>
+                </li>
+                <li t-if="product_type_display_name_new != product_type_display_name">
+                    <div class="o_TrackingValue d-flex align-items-center flex-wrap mb-1" role="group">
+                        <span class="o_TrackingValue_oldValue me-1 px-1 text-muted fw-bold" t-out="product_type_display_name" />
+                        <i class="o_TrackingValue_separator fa fa-long-arrow-right mx-1 text-600" title="Changed" role="img" aria-label="Changed" />
+                        <span class="o_TrackingValue_newValue me-1 fw-bold text-info" t-out="product_type_display_name_new" />
+                        <span class="o_TrackingValue_fieldName ms-1 fst-italic text-muted">(Product Type)</span>
+                    </div>
+                </li>
+            </ul>
+            <t t-if="notes">
+                <p>Notes:</p>
+                <p t-esc="notes" style="white-space: pre-line;" />
+            </t>
+        </template>
+    </data>
+</odoo>
