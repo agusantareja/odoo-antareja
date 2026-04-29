@@ -5,7 +5,7 @@ import json
 import logging
 import traceback
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.tools import date_utils
 
@@ -69,14 +69,14 @@ class ExternalDataSyncRelated(models.Model):
         for related in self.with_context(__process_relation=True, __try_process_relation=True):
             related.process_data()
 
-    @savepoint
+    # @savepoint(rethrow=True)
     def process_field_after_create(self):
         if self.env.context.get("__process_relation") or self.env.context.get("__process_field_after_create"):
             _logger.info(f"rekursif terdekteksi {self.name} , {self.internal_model}")
             return
         self.with_context(__process_relation=True, __process_field_after_create=True).process_data()
 
-    @savepoint
+    # @savepoint(rethrow=True)
     def process_data(self):
         try:
             if not self.data_json:
@@ -147,15 +147,16 @@ class ExternalDataSyncRelated(models.Model):
                             'internal_data_eval': None,
                         })
 
-        except Exception:
+        except Exception :
             stack_trace = traceback.format_exc()
-            self.write({
+            self.write_error_safe({
                 'state': 'error',
                 'internal_data_eval': None,
             })
             _logger.error("Error process related data %s : %s", self.name, stack_trace)
+            raise
 
-    @savepoint
+    # @savepoint(rethrow=True)
     def get_data_relation(self):
 
         if self.state != 'done':
@@ -246,3 +247,9 @@ class ExternalDataSyncRelated(models.Model):
             method = getattr(Model, "lookup_internal_from_external_data")
             return method(item, sync_strategy=self.related_external_data_sync_id.sync_strategy_id)
         return None
+
+    def write_error_safe(self,error_data):
+        with self.pool.cursor() as cr:
+            env = api.Environment(cr, self.env.uid, self.env.context)
+            self.with_env(env).write(error_data)
+            cr.commit()

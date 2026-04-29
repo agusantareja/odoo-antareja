@@ -686,7 +686,7 @@ class ExternalDataSyncStrategy(models.Model):
         if not self.internal_process_method or not isinstance(existing, models.BaseModel):
             return input_dict
 
-        return utils.call_with_savepoint(existing, self.internal_process_method, rethrow=True, kwargs={
+        return utils.call_safe(existing, self.internal_process_method, kwargs={
             'data_external': item,
             'data_update': input_dict,
             'sync_strategy': self,
