@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import traceback
+import json
 
 from odoo import api, fields, models
-import json
-import requests
-
 from odoo.models import BaseModel
 
 
@@ -98,7 +96,6 @@ class MobileApprovalClient(models.Model):
     #         "Accept": "application/json"
     #     }
     #     return url,headers
-
 
     def send(self):
         self.ensure_one()
