@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 class UserDelegation(models.Model):
     _inherit = 'user.delegation'
 
+
     def internal_process_for_doa(self, data_external=None, sync_strategy=None,
                                       data_update=None, data_sync=None, **kwargs):
         delegator = self.lookup_user_external_data(data_external.get('delegator_id'))
