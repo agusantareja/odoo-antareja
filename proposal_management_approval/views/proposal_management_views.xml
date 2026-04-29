@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record model="ir.ui.view" id="proposal_management_form">
+            <field name="name">proposal.management.form</field>
+            <field name="model">proposal.management</field>
+            <field name="inherit_id" ref="proposal_management.proposal_management_form"/>
+            <field name="arch" type="xml">
+                <header position="inside">
+                    <button name="register_approval_task"
+                            string="Register Approval Task"
+                            type="object"
+                            class="btn-secondary"
+                            groups="base.group_no_one"
+
+                    />
+                    <button name="unregister_approval_task"
+                            string="Un Register Approval Task"
+                            type="object"
+                            class="btn-secondary"
+                            groups="base.group_no_one"
+
+                    />
+                </header>
+            </field>
+        </record>
+    </data>
+</odoo>
