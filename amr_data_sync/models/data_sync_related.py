@@ -5,7 +5,7 @@ import json
 import logging
 import traceback
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.tools import date_utils
 
@@ -156,7 +156,7 @@ class ExternalDataSyncRelated(models.Model):
             _logger.error("Error process related data %s : %s", self.name, stack_trace)
             raise
 
-    @savepoint(rethrow=True)
+    # @savepoint(rethrow=True)
     def get_data_relation(self):
 
         if self.state != 'done':

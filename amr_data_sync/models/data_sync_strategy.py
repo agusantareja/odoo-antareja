@@ -692,13 +692,6 @@ class ExternalDataSyncStrategy(models.Model):
             'sync_strategy': self,
             'data_sync': data_sync
         })
-        #
-        # return utils.call_with_savepoint(existing, self.internal_process_method, rethrow=True, kwargs={
-        #     'data_external': item,
-        #     'data_update': input_dict,
-        #     'sync_strategy': self,
-        #     'data_sync': data_sync
-        # })
 
     def event_external_data_sync_done(self, existing, item, input_dict):
         if not isinstance(existing, models.BaseModel) or not self.internal_event_sync_done:

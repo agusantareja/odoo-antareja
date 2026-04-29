@@ -515,29 +515,6 @@ class ExternalDataSync(models.Model):
             if fields.Datetime.now() > limit_time:
                 break
 
-        # to_process = self.search(
-        #     [('state', '!=', 'done'),
-        #      '|',
-        #      ('next_processing_datetime', '<=', fields.Datetime.now()),
-        #      ('next_processing_datetime', '=', False)],
-        #     limit=limit, order='next_processing_datetime asc,last_processing_datetime asc, id '
-        # )
-        # for t in to_process:
-        #     try:
-        #         with self.env.cr.savepoint():
-        #             t.process_data()
-        #     except Exception:
-        #         _logger.exception("error")
-        #         t.write_error_safe({
-        #             'error_info': traceback.format_exc(),
-        #             'state': 'error',
-        #             'last_error': fields.Datetime.now(),
-        #             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-        #         })
-        #
-        #     if fields.Datetime.now() > limit_time:
-        #         break
-
         sync_related = self.env['external.data.sync.related'].search(
             [('state', '!=', 'done'),
              '|',
