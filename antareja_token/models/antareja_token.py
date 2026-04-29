@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from datetime import datetime, timedelta
-from jwt import InvalidTokenError
-
 import logging
 import jwt
 import time
+
+from datetime import datetime, timedelta
+
+from jwt import InvalidTokenError
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -126,6 +127,7 @@ class AccessToken(models.Model):
             pass
         return None
 
+    @api.model
     def client_token_validation(self, token):
         return False
 
