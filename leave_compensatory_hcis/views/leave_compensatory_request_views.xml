@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="leave_compensatory_request_view_form" model="ir.ui.view">
+            <field name="name">leave_compensatory_request.view.form</field>
+            <field name="model">leave.compensatory_request</field>
+            <field name="inherit_id" ref="leave.leave_compensatory_request_view_form"/>
+            <field name="arch" type="xml">
+                <header position="inside">
+                    <field name="api_call_need_retry" invisible="1"/>
+                </header>
+                <header position="after">
+                    <div class="alert alert-danger" role="alert"
+                         attrs="{'invisible':[('api_call_need_retry','=',False)]}">
+                        <table width="100%">
+                            <tr>
+                                <td width="80%">
+                                    Integration to ERP Error Please contact administrator
+                                </td>
+                                <td>
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </header>
+                <xpath expr="//notebook[2]" position="inside">
+                    <page string="HCIS Integration Error" attrs="{'invisible':[('api_call_need_retry','=',False)]}" groups="base.group_no_one">
+                        <field name="api_call_retry_ids" />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
