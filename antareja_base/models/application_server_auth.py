@@ -11,30 +11,30 @@ class ApplicationServerAuthRestToken(models.AbstractModel):
     _name = 'application.server.auth.rest.token.mixin'
 
     # rest-token
-    rest_token_in = fields.Selection([
-        ('basic', 'Basic'),
-        ('bearer', 'Bearer'),
-        ('header', 'Header'),
-        ('param', 'Parameter'),
-        ('body', 'Body')
-    ], default='header')
-    rest_token_key = fields.Char(
-        default='access_token'
-    )
-    rest_token = fields.Char(related="access_token", store=True)
-    rest_refresh = fields.Char(related="refresh_token", store=True)
-    access_token = fields.Char()
-    refresh_token = fields.Char()
+    # rest_token_in = fields.Selection([
+    #     ('basic', 'Basic'),
+    #     ('bearer', 'Bearer'),
+    #     ('header', 'Header'),
+    #     ('param', 'Parameter'),
+    #     ('body', 'Body')
+    # ], default='header')
+    # rest_token_key = fields.Char(
+    #     default='access_token'
+    # )
+    # rest_token = fields.Char(related="access_token", store=True)
+    # rest_refresh = fields.Char(related="refresh_token", store=True)
+    # access_token = fields.Char()
+    # refresh_token = fields.Char()
 
 
 class ApplicationServerAuthOdooRCP(models.AbstractModel):
     _name = 'application.server.auth.odoo.rcp.mixin'
     # _inherit = 'application.server.auth.rest.token.mixin'
     # odoo rcp
-    odoo_server_db = fields.Char()
-    odoo_server_uid = fields.Integer()
-    odoo_username = fields.Char()
-    odoo_password = fields.Char()
+    # odoo_server_db = fields.Char()
+    # odoo_server_uid = fields.Integer()
+    # odoo_username = fields.Char()
+    # odoo_password = fields.Char()
 
 
 class ApplicationServerAuth(models.Model):
