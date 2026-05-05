@@ -185,7 +185,6 @@ class ApprovalTemplate(models.Model):
             records = env['approval.task'].search([('transaction_model_name', '=', template.model)])
             for rec in records:
                 try:
-                    _logger.info("info %s ", rec)
                     approval_instance = env['approval.instance'].create_or_get(
                         transaction_model_name=rec.transaction_model_name,
                         transaction_id=rec.transaction_id
@@ -211,6 +210,6 @@ class ApprovalTemplate(models.Model):
                     approval_instance.register_approval_transaction_task()
                     transaction_ids.append(rec.id)
                 except:
-                    _logger.exception("register_approval_transaction_task 1")
+                    _logger.exception("register_approval_transaction_task 2")
                     if raise_exception:
                         raise

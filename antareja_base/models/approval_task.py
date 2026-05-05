@@ -21,10 +21,12 @@ class ApprovalTask(models.Model):
     document = fields.Char()
     description = fields.Char()
     url = fields.Char(string="URL")
-    date = fields.Datetime(string='Requester Date', readonly=True, default=fields.Datetime.now)
-    request_approval_task = fields.Datetime(
-        string='Request Approval Task Date', readonly=True, default=fields.Datetime.now,
-        help="Waktu yang di catat Approval Task diberikan pada user atau group tertentu"
+    date = fields.Datetime(string='Request Date', readonly=True, default=fields.Datetime.now)
+    request_approval_task_date = fields.Datetime(
+        string="Request Approval Task Date",
+        readonly=True,
+        default=fields.Datetime.now,
+        help="Waktu yang dicatat ketika Approval Task diberikan pada user atau group tertentu.",
     )
     transaction_id = fields.Integer(
         'Transaction ID'
@@ -65,17 +67,18 @@ class ApprovalTask(models.Model):
         'Approval Model',
     )
     approval_instance_id = fields.Many2one(
-        'approval.instance', ondelete='set null',
+        'approval.instance',
+        ondelete='set null',
     )
     approval_user_ids = fields.Many2many(
-        'res.users', compute='_compute_approval_users', compute_sudo=True
+        'res.users', compute='_compute_approval_user_ids', compute_sudo=True
     )
 
     assignment_able = fields.Boolean(
         compute='_compute_assignment_able'
     )
 
-    def _compute_approval_users(self):
+    def _compute_approval_user_ids(self):
         for rec in self:
             rec.approval_user_ids = rec.get_users_for_approval()
 
