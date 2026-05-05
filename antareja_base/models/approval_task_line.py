@@ -143,6 +143,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def _create_approval_audit_log(self, **kwargs):
         if self.env.context.get('__skip_create_approval_audit_log'):
+            _logger.info("__skip_create_approval_audit_log %s ",kwargs)
             return None
 
         self.ensure_one()
@@ -150,6 +151,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         if transaction_object:
             if have_method(transaction_object, "create_approval_log"):
+                _logger.info("call object create approval %s ", kwargs)
                 return transaction_object.create_approval_log(**kw)
             kw.update(
                 transaction_id=transaction_object.id,
@@ -207,14 +209,36 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         rec = self.ensure_one()
         rec.do_approve(**kwargs)
 
-    @api.model
     def action_reject(self, **kwargs):
+        context = dict(self.env.context)
+        model_name = context.get('model_name')
+        model_res_id = context.get('model_res_id')
+        approval_instance = kwargs.get('approval_instance')
+        transaction_object = kwargs.get('transaction_object')
+        if approval_instance and isinstance(approval_instance, models.Model):
+            model_name = approval_instance._name
+            model_res_id = approval_instance.id
+        elif transaction_object and isinstance(transaction_object, models.Model):
+            model_name = transaction_object._name
+            model_res_id = transaction_object.id
+        if not model_name or not model_res_id and self:
+            model_name = self._name
+            model_res_id = self.ids[0]
+        if model_name and model_res_id:
+            context.update({
+                'active_model': model_name,
+                'active_id': model_res_id,
+                'model_name': model_name,
+                'model_res_id': model_res_id,
+            })
+        _logger.info(" model_name %s , model_res_id %s ",model_name,model_res_id)
         return {
             'name': 'Reject Message',
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
             'res_model': 'popup.reject.message.wizard',
             'target': 'new',
+            'context': context,
         }
 
     def do_approve(self, **kwargs):

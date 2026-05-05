@@ -32,13 +32,13 @@
                 <field name="requester_id"/>
                 <field name="company_id" optional="hide"/>
                 <field name="url" widget="url" optional="hide"/>
-                <field name="request_approval_task" optional="hide"/>
+                <field name="request_approval_task_date" optional="hide"/>
                 <field name="user_ids" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
                 <field name="group_ids" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
                 <field name="approval_res_id" optional="hide" groups="base.group_no_one"/>
                 <field name="approval_model" optional="hide" groups="base.group_no_one"/>
                 <field name="approval_instance_id" optional="hide" groups="base.group_no_one"/>
-                <field name="approval_user_ids" string="Approval User" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
+                <field name="approval_user_ids" string="Approvers" widget="many2many_tags" optional="hide" groups="base.group_no_one"/>
                 <button name="action_assign" string="Assignment User" type="object" class="oe_highlight"
                         icon="fa-solid fa-user-plus text-success" groups="base.group_no_one" help="Assign Responsible User"/>
                 <button name="action_approval_transaction" string="Show Detail" type="object" class="oe_highlight"/>
