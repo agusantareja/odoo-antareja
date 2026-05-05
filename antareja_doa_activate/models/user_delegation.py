@@ -13,18 +13,25 @@ class UserDelegation(models.Model):
     _inherit = 'user.delegation'
 
     def unlink(self):
+        active_records = self.filtered(lambda r: r.state == 'active')
+        proxies = active_records.mapped('delegatee_id')
         res = super().unlink()
-        self.get_delegations_user_group_for_delegatee.clear_cache(self)
-        self.check_model_access_with_delegation.clear_cache(self)
-        self.get_allowed_models_with_delegation.clear_cache(self)
-        self.env['ir.model.access'].call_cache_clearing_methods()
+        if proxies:
+            self.get_delegations_user_group_for_delegatee.clear_cache(self)
+            self.check_model_access_with_delegation.clear_cache(self)
+            self.get_allowed_models_with_delegation.clear_cache(self)
+            self.env['ir.model.access'].call_cache_clearing_methods()
         return res
 
     def write(self, write_vals):
         r = super(UserDelegation, self).write(write_vals)
-        self.get_delegations_user_group_for_delegatee.clear_cache(self)
-        self.check_model_access_with_delegation.clear_cache(self)
-        self.env['ir.model.access'].call_cache_clearing_methods()
+        if not write_vals.get('state') == 'active':
+            # proxies = self.mapped('delegatee_id')
+            #if proxies:
+                # for proxy in proxies:
+            self.get_delegations_user_group_for_delegatee.clear_cache(self)
+            self.check_model_access_with_delegation.clear_cache(self)
+            self.env['ir.model.access'].call_cache_clearing_methods()
         return r
 
     @tools.ormcache('delegatee_id', 'group_id')
