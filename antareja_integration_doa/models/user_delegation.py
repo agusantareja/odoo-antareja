@@ -10,9 +10,9 @@ _logger = logging.getLogger(__name__)
 class UserDelegation(models.Model):
     _inherit = 'user.delegation'
 
-
     def internal_process_for_doa(self, data_external=None, sync_strategy=None,
                                       data_update=None, data_sync=None, **kwargs):
+        delegation = self
         delegator = self.lookup_user_external_data(data_external.get('delegator_id'))
         delegatee = self.lookup_user_external_data(data_external.get('delegatee_id'))
         data_update = data_update or {}
@@ -25,7 +25,18 @@ class UserDelegation(models.Model):
             data_update['delegatee_id'] = delegatee.id
         else:
             raise ValidationError("Delegatee user not found in external data.")
-        return data_update
+
+        if data_update:
+            delegation = delegation.with_context(
+                tracking_disable=True,
+                mail_notrack=True,
+                mail_create_nosubscribe=True,
+            )
+            if delegation:
+                delegation.write(data_update)
+            else:
+                delegation = delegation.create(data_update)
+        return delegation
 
     def lookup_user_external_data(self, item_dict):
         if item_dict.get('id') in [1, 2]:
