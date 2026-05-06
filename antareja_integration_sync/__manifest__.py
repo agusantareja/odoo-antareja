@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+
 {
-    'name': "Antarja || Integartion Sync",
+    'name': "Antareja || Integration Sync",
 
-    'summary': """Integartion Sync""",
+    'summary': "Integration Sync",
 
-    'description': """
-        Integartion Sync
-    """,
+    'description': "Integration Sync",
 
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.agus.ramdan.tech",
@@ -19,11 +18,10 @@
         'base',
         'antareja_base',
         'antareja_integration',
-        'amr_data_sync'
+        'amr_data_sync',
     ],
     # always loaded
     'data': [
         'views/server_sync_views.xml',
     ],
-
 }
