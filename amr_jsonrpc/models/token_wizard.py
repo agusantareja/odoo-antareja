@@ -1,8 +1,10 @@
 # models/token_wizard.py
-from odoo import models, fields, _
-from odoo.exceptions import UserError
+
 import requests
 from datetime import datetime, timedelta
+
+from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 
 class GetTokenWizard(models.TransientModel):

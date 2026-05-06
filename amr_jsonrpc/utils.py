@@ -128,10 +128,11 @@ def call_safe(self, method_name, args=None, kwargs=None):
         return None
 
     if not method_name or not isinstance(method_name, str):
+        _logger.warning("call_safe: method_name is not a valid string: %s", method_name)
         return None
 
     if not hasattr(self, method_name):
-        raise AttributeError(f"Method {method_name} not found")
+        raise AttributeError(f"Method '{method_name}' not found")
 
     method = getattr(self, method_name, None)
     if not callable(method):
@@ -147,8 +148,8 @@ def call_safe(self, method_name, args=None, kwargs=None):
     args = list(args or [])
     for name, p in params.items():
         if p.kind in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD
         ):
             if args:
                 final_args.append(args[0])
@@ -173,4 +174,5 @@ def call_safe(self, method_name, args=None, kwargs=None):
 
         elif p.kind == inspect.Parameter.VAR_KEYWORD:
             final_kwargs.update(kwargs)
+
     return method(*final_args, **final_kwargs)

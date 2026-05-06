@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-from .. import remote
 import logging
 from contextlib import contextmanager
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+
+from .. import remote
 
 _logger = logging.getLogger(__name__)
 
@@ -38,7 +40,6 @@ class AuthRestToken(models.AbstractModel):
     expires_at = fields.Datetime()
     username = fields.Char()
     password = fields.Char()
-
     odoo_server_db = fields.Char()
     odoo_server_uid = fields.Integer()
 
