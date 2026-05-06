@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import requests
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
 import logging
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -19,35 +18,34 @@ class ExternalServerSync(models.Model):
     app_name = fields.Char(
         compute='_compute_external_app_name',
         inverse='_inverse_external_app_name',
-        store=True
+        store=True,
     )
     odoo_server_db = fields.Char(
         compute='_compute_external_app_name',
         inverse='_inverse_odoo_server_db',
-        store=True
+        store=True,
     )
     base_url = fields.Char(
         compute='_compute_external_app_name',
         inverse='_inverse_base_url',
-        store=True
+        store=True,
     )
     application_server_id = fields.Many2one(
         'application.server',
         compute='_compute_external_app_name',
         readonly=True,
-        store=True
+        store=True,
     )
     application_server_auth_id = fields.Many2one(
         'application.server.auth',
         compute='_compute_server_auth',
         inverse='_inverse_server_auth',
         store=True,
-        string="Application Server Auth"
-
+        string="Application Server Auth",
     )
     application_server_path_id = fields.Many2one(
         'application.server.path',
-        string="Application Server Path"
+        string="Application Server Path",
     )
 
     @api.depends('external_mode', 'application_server_auth_id', 'application_server_auth_id.name')
