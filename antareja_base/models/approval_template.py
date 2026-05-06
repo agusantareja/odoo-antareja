@@ -206,6 +206,6 @@ class ApprovalTemplate(models.Model):
                     approval_instance.register_approval_transaction_task()
                     transaction_ids.append(rec.id)
                 except:
-                    _logger.exception("register_approval_transaction_task 1")
+                    _logger.exception("register_approval_transaction_task 2")
                     if raise_exception:
                         raise

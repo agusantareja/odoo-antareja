@@ -143,7 +143,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def _create_approval_audit_log(self, **kwargs):
         if self.env.context.get('__skip_create_approval_audit_log'):
-            _logger.info("__skip_create_approval_audit_log %s ",kwargs)
             return None
 
         self.ensure_one()
@@ -151,7 +150,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         kw = dict(kwargs)
         if transaction_object:
             if have_method(transaction_object, "create_approval_log"):
-                _logger.info("call object create approval %s ", kwargs)
                 return transaction_object.create_approval_log(**kw)
             kw.update(
                 transaction_id=transaction_object.id,
