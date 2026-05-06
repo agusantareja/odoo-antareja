@@ -10,7 +10,7 @@
     'website': "http://www.yourcompany.com",
 
     'category': 'Tools',
-    'version': '16.0.3.0.1',
+    'version': '16.0.3.0.2',
 
     # any module necessary for this one to work correctly
     'depends': [
