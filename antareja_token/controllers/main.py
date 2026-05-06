@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 import werkzeug
+
+from werkzeug.urls import url_encode
+
 from odoo import fields, http
 from odoo.http import request
-from werkzeug.urls import url_encode
-from ..tools.utils import get_bearer_token, set_session
+
 from odoo.addons.antareja_base.tools.rest import valid_response, invalid_response
+
+from ..tools.utils import get_bearer_token, set_session
 
 _logger = logging.getLogger(__name__)
 
