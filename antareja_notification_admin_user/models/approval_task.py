@@ -12,4 +12,6 @@ class ApprovalTask(models.Model):
 
     def get_users_for_notification(self,**kwargs):
         users = super(ApprovalTask, self).get_users_for_notification(**kwargs)
-        return users and users.filtered(lambda u: not u.admin_user)
+        if users and isinstance(users, models.BaseModel):
+            return users.filtered(lambda u: not u.admin_user and u.id not in [1,2])
+        return users
