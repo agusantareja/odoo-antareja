@@ -2,9 +2,11 @@
 
 import logging
 import werkzeug
+
+from urllib.parse import urlparse
+
 from odoo import models
 from odoo.exceptions import AccessDenied
-from urllib.parse import urlparse
 
 _logger = logging.getLogger(__name__)
 
