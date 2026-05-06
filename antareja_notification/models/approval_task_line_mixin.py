@@ -64,9 +64,9 @@ class ApprovalTaskLine(models.AbstractModel):
                 if 'users' in kw:
                     users = kw.pop('users')
                 if not users:
-                    users = self.get_users()
-
-                users.get_users_for_notification(company=company)
+                    users = self.get_users_for_notification(company=company)
+                else:
+                    users = users.get_users_for_notification(company=company)
 
                 kw['approval_task_line']=self
                 if 'res_id' in kw:
