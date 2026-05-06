@@ -374,7 +374,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
         else:
             kw['is_approval_done'] = False
             kw['skip_send_notification'] = False
-            kw['request_approval_task'] = fields.Datetime.now()
+            kw['request_approval_task_date'] = fields.Datetime.now()
             approval_instance.register_approval_task_line(**kw)
 
         approval_task_line = kwargs.get('approval_task_line') or kwargs.get('approval_transaction')
