@@ -19,16 +19,16 @@
             <form string="Application Server Auth">
                 <header>
                     <button string="Get DB Name" type="object" name="action_get_odoo_db_name"
-                        attrs="{'invisible':[('auth_type','not in',['odoo-rcp','jwt-odoo-rcp'])]}"
+                        attrs="{'invisible':[('auth_type','not in',['odoo-rpc','jwt-odoo-rpc','odoo-rcp','jwt-odoo-rcp'])]}"
                     />
                     <button string="Get UID" type="object" name="action_get_odoo_server_uid"
-                            attrs="{'invisible':[('auth_type','not in',['odoo-rcp'])]}"
+                            attrs="{'invisible':[('auth_type','not in',['odoo-rpc','odoo-rcp'])]}"
                     />
                     <button string="Test Connect" type="object" name="action_test_connection"
-                            attrs="{'invisible':[('auth_type','not in',['odoo-rcp'])]}"
+                            attrs="{'invisible':[('auth_type','not in',['odoo-rpc','odoo-rcp'])]}"
                     />
                     <button string="Get JWT Token" type="object" name="action_open_token_wizard"
-                            attrs="{'invisible':[('auth_type','not in',['jwt-odoo-rcp','jwt-rest-token'])]}"
+                            attrs="{'invisible':[('auth_type','not in',['jwt-odoo-rpc','jwt-odoo-rcp','jwt-rest-token'])]}"
                     />
                     <field name="active" invisible="1"/>
                 </header>
