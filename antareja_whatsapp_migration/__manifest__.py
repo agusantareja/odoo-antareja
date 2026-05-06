@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 {
     'name': "Whatapp Migration dari send_message_cron ke new wahhtasap route ",
     'summary': """Notification Whatapp Client and Integration """,
