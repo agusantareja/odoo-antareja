@@ -1,10 +1,6 @@
-from odoo import models, fields, api
-from datetime import datetime
-import json
-import pytz
-import requests
 import logging
-import time
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -12,7 +8,7 @@ _logger = logging.getLogger(__name__)
 class SendEmail(models.Model):
     _inherit = "send_message.email"
 
-    #function ini untuk send wa cron job
+    # function ini untuk send wa cron job
     def create_new_wa_message(self, phone:str,message:str,ref:str,id_record=None,model_record=None,partner=None):
         return self.env["notification.template"].create_new_wa_message(
             phone,message,ref,id_record,model_record,partner=partner
