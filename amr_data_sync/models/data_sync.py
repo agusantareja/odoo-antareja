@@ -440,7 +440,7 @@ class ExternalDataSync(models.Model):
 
     def write_error_safe(self,error_data):
         with self.pool.cursor() as cr:
-            _logger.info("write_error_safe")
+            _logger.info("write_error_safe %s .", self)
             env = api.Environment(cr, self.env.uid, self.env.context)
             self.with_env(env).write(error_data)
             cr.commit()
