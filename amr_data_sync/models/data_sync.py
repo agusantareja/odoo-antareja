@@ -160,7 +160,6 @@ class ExternalDataSync(models.Model):
         return True
 
     def is_all_related_done(self):
-
         for r in self.related_ids:
             if r.state not in ['need_resolve','done']:
                 _logger.info("field %s , state %s ",r.name,r.state)
@@ -306,7 +305,7 @@ class ExternalDataSync(models.Model):
             if payload:
                 done_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
 
-            self.write_error_safe(done_data)
+            self.write(done_data)
 
         return internal_odoo
 
@@ -349,12 +348,10 @@ class ExternalDataSync(models.Model):
 
         return existing
 
-    #@savepoint
     def process_data(self):
-        all_related_done = False
         input_dict = {}
-        existing = None
         try:
+            _logger.info("process_data start")
             item = self.get_json_data_for_create()
             sync_strategy = self.get_sync_strategy()
             if not sync_strategy:
@@ -393,7 +390,6 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
                     })
                 return
-
             input_dict = self.prepare_input_external(item, sync_strategy=sync_strategy)
             result_internal = sync_strategy.call_internal_process_method(existing, item, input_dict, self)
             skip_save = False
@@ -416,22 +412,16 @@ class ExternalDataSync(models.Model):
                     _logger.info("Related Done Process after sync done")
                     sync_strategy.event_external_data_sync_done(existing, item, input_dict)
                 else:
-                    self.write_error_safe({'state': 'need_resolve','error_info': "need_resolve"})
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
                                  self.internal_model, self.external_model, str(self.external_odoo_id)
                                  )
+                    self.write({'state': 'need_resolve','error_info': "need_resolve"})
+
             else:
                 _logger.info(f"No update or Create {item.get('id')}")
-                # self.write_error_safe({
-                #     'error_info': "Cannot update and create",
-                #     'state': 'need_resolve',
-                #     'payload_json': json.dumps(input_dict, default=date_utils.json_default),
-                #     'last_processing_datetime': fields.Datetime.now(),
-                #     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=8),
-                # })
 
         except Exception:
-            # todo clear cache odoo
+            _logger.exception("Error process_data")
             self.write_error(traceback.format_exc(), input_dict)
             raise
 
@@ -450,6 +440,7 @@ class ExternalDataSync(models.Model):
 
     def write_error_safe(self,error_data):
         with self.pool.cursor() as cr:
+            _logger.info("write_error_safe")
             env = api.Environment(cr, self.env.uid, self.env.context)
             self.with_env(env).write(error_data)
             cr.commit()
