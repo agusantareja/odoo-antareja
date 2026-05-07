@@ -105,11 +105,9 @@ class MobileApprovalClient(models.Model):
         try:
             payload_dict = self.prepare_send_data()
             payload = json.dumps(payload_dict)
-            # url, headers = self.get_endpoint_approval()
             server_auth = self.get_server_auth()
             with server_auth.create_session() as s:
                 response = s.rest_post(path=self.get_mobile_approval_path(), data=json.dumps(payload))
-                # response = requests.post(url, data=payload, headers=headers)
                 response.raise_for_status()
                 self.write({
                     'response': response.text,
