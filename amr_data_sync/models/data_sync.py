@@ -6,7 +6,7 @@ import logging
 import traceback
 from collections import defaultdict
 
-from odoo import _, api, fields, models
+from odoo import _, api, fields, models, SUPERUSER_ID
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.exceptions import UserError
 from odoo.tools import date_utils
@@ -425,7 +425,6 @@ class ExternalDataSync(models.Model):
             self.write_error(traceback.format_exc(), input_dict)
             raise
 
-    # @savepoint
     def write_error(self, stack_trace, payload=None):
         error_data = {
             'error_info': stack_trace,
@@ -438,12 +437,19 @@ class ExternalDataSync(models.Model):
             error_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
         self.write_error_safe(error_data)
 
-    def write_error_safe(self,error_data):
-        with self.pool.cursor() as cr:
-            _logger.info("write_error_safe %s .", self)
-            env = api.Environment(cr, self.env.uid, self.env.context)
-            self.with_env(env).write(error_data)
-            cr.commit()
+    def write_error_safe(self,error_data,using_pool=False):
+
+        if using_pool:
+            _logger.info("write_error_safe using_pool %s .", self)
+            with self.pool.cursor() as cr:
+                # write kita ada exception
+                env = api.Environment(cr, SUPERUSER_ID, self.env.context)
+                self.with_env(env).write(error_data)
+                cr.commit()
+        else:
+            _logger.info("write_error_safe not using_pool %s .", self)
+            with self.env.cr.savepoint():
+                self.write(error_data)
 
     def action_process_data(self):
         for rec in self:
@@ -471,9 +477,37 @@ class ExternalDataSync(models.Model):
                 try:
                     rec.process_data()
                     cr.commit()
-                except Exception:
+                except Exception :
                     _logger.exception("Error rec %s", rec_id)
                     cr.rollback()
+                    rec = env[self._name].browse(id_)
+                    rec.write_error_safe({
+                        'error_info': traceback.format_exc(),
+                        'state': 'error',
+                        'last_error': fields.Datetime.now(),
+                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                    })
+        def process_related_id(id_):
+            with self.pool.cursor() as cr:
+                env = api.Environment(cr, self.env.uid, self.env.context)
+                rec = env['external.data.sync.related'].browse(id_)
+                try:
+                    rec.process_data()
+                    if rec.state != 'done' or not rec.external_data_sync_id:
+                        rec.write({
+                            'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                        })
+                    cr.commit()
+                except Exception :
+                    _logger.exception("Error rec %s", rec_id)
+                    cr.rollback()
+                    rec = env[self._name].browse(id_)
+                    rec.write_error_safe({
+                        'error_info': traceback.format_exc(),
+                        'state': 'error',
+                        'last_error': fields.Datetime.now(),
+                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                    })
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
         ids  = self.search(
             [('need_get_data_json', '=', True)],
@@ -516,23 +550,26 @@ class ExternalDataSync(models.Model):
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
 
         for t in sync_related:
-            try:
-                with self.env.cr.savepoint():
-                    t.process_data()
-                if t.state == 'done' and t.external_data_sync_id:
-                    external_data_sync |= t.external_data_sync_id
-                else:
-                    t.write({
-                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                    })
-            except Exception:
-                _logger.exception("error")
-                t.write_error_safe({
-                    'error_info': traceback.format_exc(),
-                    'state': 'error',
-                    'last_error': fields.Datetime.now(),
-                    'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                })
+            process_related_id(t.id)
+            if t.state == 'done' and t.external_data_sync_id:
+                external_data_sync |= t.external_data_sync_id
+            # try:
+            #     with self.env.cr.savepoint():
+            #         t.process_data()
+            #     if t.state == 'done' and t.external_data_sync_id:
+            #         external_data_sync |= t.external_data_sync_id
+            #     else:
+            #         t.write({
+            #             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+            #         })
+            # except Exception:
+            #     _logger.exception("error")
+            #     t.write_error_safe({
+            #         'error_info': traceback.format_exc(),
+            #         'state': 'error',
+            #         'last_error': fields.Datetime.now(),
+            #         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+            #     })
 
             if fields.Datetime.now() > limit_time:
                 break

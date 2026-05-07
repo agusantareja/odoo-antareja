@@ -5,7 +5,7 @@ import json
 import logging
 import traceback
 
-from odoo import api, fields, models
+from odoo import api, fields, models, SUPERUSER_ID
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.tools import date_utils
 
@@ -248,8 +248,15 @@ class ExternalDataSyncRelated(models.Model):
             return method(item, sync_strategy=self.related_external_data_sync_id.sync_strategy_id)
         return None
 
-    def write_error_safe(self,error_data):
-        with self.pool.cursor() as cr:
-            env = api.Environment(cr, self.env.uid, self.env.context)
-            self.with_env(env).write(error_data)
-            cr.commit()
+    def write_error_safe(self, error_data, using_pool=False):
+        if using_pool:
+            _logger.info("write_error_safe using_pool %s .", self)
+            with self.pool.cursor() as cr:
+                # write kita ada exception
+                env = api.Environment(cr, SUPERUSER_ID, self.env.context)
+                self.with_env(env).write(error_data)
+                cr.commit()
+        else:
+            _logger.info("write_error_safe not using_pool %s .", self)
+            with self.env.cr.savepoint():
+                self.write(error_data)
