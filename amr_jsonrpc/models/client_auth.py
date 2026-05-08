@@ -40,7 +40,6 @@ class AuthRestToken(models.AbstractModel):
     expires_at = fields.Datetime()
     username = fields.Char()
     password = fields.Char()
-
     odoo_server_db = fields.Char()
     odoo_server_uid = fields.Integer()
 
