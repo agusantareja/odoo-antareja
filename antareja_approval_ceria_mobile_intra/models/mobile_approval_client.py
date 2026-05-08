@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import traceback
+import json
 
 from odoo import api, fields, models
-import json
-import requests
-
 from odoo.models import BaseModel
 
 
