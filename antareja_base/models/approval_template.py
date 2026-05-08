@@ -180,7 +180,6 @@ class ApprovalTemplate(models.Model):
             records = env['approval.task'].search([('transaction_model_name', '=', template.model)])
             for rec in records:
                 try:
-                    _logger.info("info %s ", rec)
                     approval_instance = env['approval.instance'].create_or_get(
                         transaction_model_name=rec.transaction_model_name,
                         transaction_id=rec.transaction_id
