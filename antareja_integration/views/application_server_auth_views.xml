@@ -70,7 +70,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','!=','odoo-rcp')]}" name="page_odoo_rcp">
+                        <page string="ODOO RCP" attrs="{'invisible':[('auth_type','not in',['odoo-rpc','odoo-rcp'])]}" name="page_odoo_rcp">
                             <group>
                                 <group>
                                     <field name="odoo_server_db"/>
@@ -82,7 +82,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','!=','jwt-odoo-rcp')]}">
+                        <page string="JWT ODOO RCP" attrs="{'invisible':[('auth_type','not in',['jwt-odoo-rpc','jwt-odoo-rcp'])]}">
                             <group>
                                 <group string="JWT Token">
                                     <field name="access_token"/>
