@@ -15,7 +15,7 @@ EXCLUDE_MODELS = {
     'res.groups',
     'res.company',
     'res.config.settings',
-    'user.delegate',
+    'user.delegation',
     'antareja.token',
 
     # Messaging
