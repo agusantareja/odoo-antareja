@@ -3,12 +3,14 @@
 import ast
 import json
 import logging
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools.safe_eval import safe_eval
 import random
 import re
 import requests
+
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools.safe_eval import safe_eval
+
 
 _logger = logging.getLogger(__name__)
 
@@ -166,13 +168,12 @@ class WhatsAppTemplate(models.Model):
                         'response_text': response.text,
                     })
                 except requests.RequestException as e:
-                    raise ValidationError(_('Connection lost, please try again.'))
-                    # _logger.error("Failed to send WhatsApp message to %s via template %s: %s", phone, rec.name, e)
-                    # log_vals.update({
-                    #     'status': 'failed',
-                    #     'failure_reason': str(e),
-                    #     'response_text': getattr(e.response, 'text', ''),
-                    # })
+                    _logger.error("Failed to send WhatsApp message to %s via template %s: %s", phone, rec.name, e)
+                    log_vals.update({
+                        'status': 'failed',
+                        'failure_reason': str(e),
+                        'response_text': getattr(e.response, 'text', ''),
+                    })
                 WhatsAppLog.create(log_vals)
 
     @api.model
