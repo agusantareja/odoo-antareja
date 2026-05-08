@@ -6,7 +6,7 @@ import logging
 import traceback
 from collections import defaultdict
 
-from odoo import _, api, fields, models
+from odoo import _, api, fields, models, SUPERUSER_ID
 from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.exceptions import UserError
 from odoo.tools import date_utils
@@ -160,7 +160,6 @@ class ExternalDataSync(models.Model):
         return True
 
     def is_all_related_done(self):
-
         for r in self.related_ids:
             if r.state not in ['need_resolve','done']:
                 _logger.info("field %s , state %s ",r.name,r.state)
@@ -306,7 +305,7 @@ class ExternalDataSync(models.Model):
             if payload:
                 done_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
 
-            self.write_error_safe(done_data)
+            self.write(done_data)
 
         return internal_odoo
 
@@ -349,12 +348,10 @@ class ExternalDataSync(models.Model):
 
         return existing
 
-    #@savepoint
     def process_data(self):
-        all_related_done = False
         input_dict = {}
-        existing = None
         try:
+            _logger.info("process_data start")
             item = self.get_json_data_for_create()
             sync_strategy = self.get_sync_strategy()
             if not sync_strategy:
@@ -393,7 +390,6 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
                     })
                 return
-
             input_dict = self.prepare_input_external(item, sync_strategy=sync_strategy)
             result_internal = sync_strategy.call_internal_process_method(existing, item, input_dict, self)
             skip_save = False
@@ -416,26 +412,19 @@ class ExternalDataSync(models.Model):
                     _logger.info("Related Done Process after sync done")
                     sync_strategy.event_external_data_sync_done(existing, item, input_dict)
                 else:
-                    self.write_error_safe({'state': 'need_resolve','error_info': "need_resolve"})
                     _logger.info("Delay proses data karena masih ada related data yang belum selesai. (%s) [%s] %s",
                                  self.internal_model, self.external_model, str(self.external_odoo_id)
                                  )
+                    self.write({'state': 'need_resolve','error_info': "need_resolve"})
+
             else:
                 _logger.info(f"No update or Create {item.get('id')}")
-                # self.write_error_safe({
-                #     'error_info': "Cannot update and create",
-                #     'state': 'need_resolve',
-                #     'payload_json': json.dumps(input_dict, default=date_utils.json_default),
-                #     'last_processing_datetime': fields.Datetime.now(),
-                #     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=8),
-                # })
 
         except Exception:
-            # todo clear cache odoo
+            _logger.exception("Error process_data")
             self.write_error(traceback.format_exc(), input_dict)
             raise
 
-    # @savepoint
     def write_error(self, stack_trace, payload=None):
         error_data = {
             'error_info': stack_trace,
@@ -448,11 +437,19 @@ class ExternalDataSync(models.Model):
             error_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
         self.write_error_safe(error_data)
 
-    def write_error_safe(self,error_data):
-        with self.pool.cursor() as cr:
-            env = api.Environment(cr, self.env.uid, self.env.context)
-            self.with_env(env).write(error_data)
-            cr.commit()
+    def write_error_safe(self,error_data,using_pool=False):
+
+        if using_pool:
+            _logger.info("write_error_safe using_pool %s .", self)
+            with self.pool.cursor() as cr:
+                # write kita ada exception
+                env = api.Environment(cr, SUPERUSER_ID, self.env.context)
+                self.with_env(env).write(error_data)
+                cr.commit()
+        else:
+            _logger.info("write_error_safe not using_pool %s .", self)
+            with self.env.cr.savepoint():
+                self.write(error_data)
 
     def action_process_data(self):
         for rec in self:
@@ -480,9 +477,37 @@ class ExternalDataSync(models.Model):
                 try:
                     rec.process_data()
                     cr.commit()
-                except Exception:
+                except Exception :
                     _logger.exception("Error rec %s", rec_id)
                     cr.rollback()
+                    rec = env[self._name].browse(id_)
+                    rec.write_error_safe({
+                        'error_info': traceback.format_exc(),
+                        'state': 'error',
+                        'last_error': fields.Datetime.now(),
+                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                    })
+        def process_related_id(id_):
+            with self.pool.cursor() as cr:
+                env = api.Environment(cr, self.env.uid, self.env.context)
+                rec = env['external.data.sync.related'].browse(id_)
+                try:
+                    rec.process_data()
+                    if rec.state != 'done' or not rec.external_data_sync_id:
+                        rec.write({
+                            'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                        })
+                    cr.commit()
+                except Exception :
+                    _logger.exception("Error rec %s", rec_id)
+                    cr.rollback()
+                    rec = env[self._name].browse(id_)
+                    rec.write_error_safe({
+                        'error_info': traceback.format_exc(),
+                        'state': 'error',
+                        'last_error': fields.Datetime.now(),
+                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+                    })
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
         ids  = self.search(
             [('need_get_data_json', '=', True)],
@@ -525,23 +550,26 @@ class ExternalDataSync(models.Model):
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
 
         for t in sync_related:
-            try:
-                with self.env.cr.savepoint():
-                    t.process_data()
-                if t.state == 'done' and t.external_data_sync_id:
-                    external_data_sync |= t.external_data_sync_id
-                else:
-                    t.write({
-                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                    })
-            except Exception:
-                _logger.exception("error")
-                t.write_error_safe({
-                    'error_info': traceback.format_exc(),
-                    'state': 'error',
-                    'last_error': fields.Datetime.now(),
-                    'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                })
+            process_related_id(t.id)
+            if t.state == 'done' and t.external_data_sync_id:
+                external_data_sync |= t.external_data_sync_id
+            # try:
+            #     with self.env.cr.savepoint():
+            #         t.process_data()
+            #     if t.state == 'done' and t.external_data_sync_id:
+            #         external_data_sync |= t.external_data_sync_id
+            #     else:
+            #         t.write({
+            #             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+            #         })
+            # except Exception:
+            #     _logger.exception("error")
+            #     t.write_error_safe({
+            #         'error_info': traceback.format_exc(),
+            #         'state': 'error',
+            #         'last_error': fields.Datetime.now(),
+            #         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+            #     })
 
             if fields.Datetime.now() > limit_time:
                 break
