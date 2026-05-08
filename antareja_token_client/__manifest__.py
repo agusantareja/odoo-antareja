@@ -9,6 +9,4 @@
     'category': 'API',
     'version': '13.0.0.0.3',
     'depends': ['base', 'antareja_base', 'antareja_token', 'cni_api'],
-    # always loaded
-    'data': [],
 }
