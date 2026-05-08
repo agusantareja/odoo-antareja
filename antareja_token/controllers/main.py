@@ -79,7 +79,7 @@ class ControllerMobileAccess(http.Controller):
         return invalid_response(401, "unsupported_grant_type")
 
     @http.route('/application/profile', type='http', auth='none', methods=['GET'], csrf=False)
-    def api_application_profile(self, access_token):
+    def api_application_profile(self, access_token=None):
         active = False
         token = access_token or get_bearer_token()
         if token:
@@ -103,7 +103,7 @@ class ControllerMobileAccess(http.Controller):
             return invalid_response(401, "invalid_token","Invalid Token")
 
     @http.route('/application/introspect', type='http', auth='none', methods=['GET'], csrf=False)
-    def api_application_introspect(self,access_token):
+    def api_application_introspect(self,access_token=None):
         active = False
         token = access_token or get_bearer_token()
         if token:
