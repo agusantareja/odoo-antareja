@@ -6,7 +6,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import datetime
 
-from ..tools.utils import ensure_list_create, have_method, safe_call_method
+from ..tools.utils import have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -263,7 +263,20 @@ class ApprovalInstanceMixin(models.AbstractModel):
 
         approval_line = config_approval_task_line.get('approval_line')
         if not approval_line:
+            approval_template = config_approval_task_line.get('approval_template') or self.approval_template_id
+            if approval_template and approval_template.type_approval_default != 'exception':
+                if approval_template.type_approval_default == 'multi_user' and approval_template.users_approval_default_ids:
+                    approval_line = [{"user_ids": approval_template.users_approval_default_ids.ida, "type_approval": "multi_user"}]
+                elif approval_template.type_approval_default == 'multi_group' and approval_template.groups_approval_default_ids :
+                    approval_line = [{"group_ids": approval_template.groups_approval_default_ids.ids, "type_approval": "multi_group"}]
+                else:
+                    _logger.warning("No Approval %s.",approval_template.type_approval_default)
+            else:
+                _logger.warning("No Approval %s", approval_template.type_approval_default)
+
+        if not approval_line:
             raise UserError("Approval Line not Available")
+
         if isinstance(approval_line, dict):
             model = approval_line['model']
             approval_task_line = approval_line['approval_task']
@@ -272,7 +285,7 @@ class ApprovalInstanceMixin(models.AbstractModel):
             model = approval_template.approval_task_line_model
             approval_task_line = approval_line
         self.clear_approval()
-        self.env[model].create(ensure_list_create(approval_task_line))
+        self.env[model].create_approval_task_line(approval_task_line,**kwargs)
 
     def get_transaction_currency(self, transaction_object):
         if hasattr(transaction_object, "currency_id"):

@@ -62,6 +62,14 @@ class ApprovalTemplateMixin(models.AbstractModel):
         help="Write Python code that the action will execute. Some variables are "
              "available for use; help about python expression is given in the help tab."
     )
+    type_approval_default = fields.Selection([
+        ('exception', 'Exception'),
+        ('multi_user', 'Users'),
+        ('multi_group', 'Groups'),
+    ], 'Type Approval', default='exception'
+    )
+    users_approval_default_ids = fields.Many2many('res.users')
+    groups_approval_default_ids = fields.Many2many('res.groups')
 
     def invoke_method(self, transaction_object, method_name, kwargs=None):
         atts_method_name = f"invoke_{method_name}"
