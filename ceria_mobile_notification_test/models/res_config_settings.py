@@ -1,4 +1,5 @@
-from odoo import models, fields
+from odoo import fields, models
+
 
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
