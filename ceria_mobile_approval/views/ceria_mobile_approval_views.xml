@@ -10,6 +10,11 @@
                     <field name="source_document"/>
                     <field name="source_application"/>
                     <field name="source_model"/>
+                    <field name="user_id"/>
+                    <group>
+                        <filter name="filter_source_document" string="Document Type" context="{'group_by':'source_document'}"/>
+                        <filter name="filter_user" string="User Approval" context="{'group_by':'user_id'}"/>
+                    </group>
                 </search>
             </field>
         </record>
