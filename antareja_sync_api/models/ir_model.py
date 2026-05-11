@@ -42,7 +42,6 @@ EXCLUDE_PREFIXES = (
     'whatsapp.'
 )
 
-
 class IrModel(models.Model):
     _inherit = 'ir.model'
 
