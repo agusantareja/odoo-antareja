@@ -8,8 +8,8 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
-class HrEmployeeBase(models.AbstractModel):
-    _inherit = "hr.employee.base"
+class HrEmployeeBase(models.Model):
+    _inherit = "hr.employee"
 
     approver_id = fields.Many2one(
         'hr.employee',
