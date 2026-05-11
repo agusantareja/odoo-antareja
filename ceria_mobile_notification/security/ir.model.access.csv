@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ceria_mobile_notification,access_ceria_mobile_notification,model_ceria_mobile_notification,,1,1,1,1
+access_ceria_mobile_notification_group_system,access.ceria.mobile.notification.group.system,model_ceria_mobile_notification,base.group_system,1,1,1,1
