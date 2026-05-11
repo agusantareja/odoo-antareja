@@ -28,23 +28,23 @@ class UserDelegation(models.Model):
     def get_internal_menu_id(self):
         return "antareja_doa_approval.menu_to_approve_user_delegate"
 
-    def create_approval_task_line(self, approval_instance=None, **kwargs):
-        transaction_id = self.id
-        transaction_model_name = self._name
-        users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id, self.company_id)
-        if users:
-            approval_task_line = [{"user_id": user.id, "type_approval": "user"} for user in users]
-        else:
-            # Default to admin user if no approver found
-            approval_task_line = [{"group_id": self.env.ref('base.group_erp_manager').id, "type_approval": "group"}]
-        approval_instance.clear_approval()
-        if not self.env['approval.task.line'].with_context(
-                default_transaction_id=transaction_id,
-                default_transaction_model_name=transaction_model_name,
-                default_status_approval='waiting_approval',
-                default_approval_instance_id=approval_instance.id
-        ).create(approval_task_line):
-            raise UserError("No employee")
+    # def create_approval_task_line(self, approval_instance=None, **kwargs):
+    #     transaction_id = self.id
+    #     transaction_model_name = self._name
+    #     users = self.env['hr.employee'].get_users_approval_employee(self.delegator_id, self.company_id)
+    #     if users:
+    #         approval_task_line = [{"user_id": user.id, "type_approval": "user"} for user in users]
+    #     else:
+    #         # Default to admin user if no approver found
+    #         approval_task_line = [{"group_id": self.env.ref('base.group_erp_manager').id, "type_approval": "group"}]
+    #     approval_instance.clear_approval()
+    #     if not self.env['approval.task.line'].with_context(
+    #             default_transaction_id=transaction_id,
+    #             default_transaction_model_name=transaction_model_name,
+    #             default_status_approval='waiting_approval',
+    #             default_approval_instance_id=approval_instance.id
+    #     ).create(approval_task_line):
+    #         raise UserError("No employee")
 
     def action_button_submit(self):
         return self.action_request_approval()

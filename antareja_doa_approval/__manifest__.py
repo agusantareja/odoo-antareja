@@ -17,11 +17,11 @@
     'category': 'Uncategorized',
     'version': '13.0.1.0.1',
 
-    'depends': ['base', 'mail', 'antareja_base', 'antareja_notification', 'antareja_doa', 'antareja_approval_hr_employee_hierarchy'],
+    'depends': ['base', 'mail', 'antareja_base', 'antareja_notification', 'antareja_notification_whatsapp', 'antareja_doa', 'antareja_approval_hr_employee_hierarchy'],
 
     # always loaded
     'data': [
-        #'data/notification_template_approval.xml',
+        'data/notification_template_approval.xml',
         'data/approval_template_data.xml',
         'views/user_delegation_views.xml',
         'views/menuitem_views.xml',

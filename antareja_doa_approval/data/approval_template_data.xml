@@ -11,15 +11,21 @@
             <field name="state_reject" eval="False"/>
             <field name="state_approved" eval="False"/>
             <field name="notes_chatter_rejected" eval="True"/>
-<!--            <field name="notification_approval_id" ref="antareja_doa_approval.doa_approval_notification_template"/>-->
+            <field name="notification_approval_id" ref="antareja_doa_approval.doa_approval_notification_template"/>
+            <field name="type_approval_default">multi_group</field>
+            <field name="groups_approval_default_ids" eval="[(6,0,[ref('base.group_erp_manager')])]"/>
+<!--            <field name="users_approval_default_ids" />-->
             <field name="code">
 # skip task line
-response['method_create_approval_task_line']='create_approval_task_line'
-#response['skip_create_approval_task_line']=True
-#response['transaction_value']=transaction_object.total_cost
-#response['transaction_currency']=transaction_object.currency_id
-response['transaction_company']=transaction_object.company_id
-response['transaction_requester']=transaction_object.delegator_id or user
+transaction_requester = transaction_object.delegator_id
+transaction_company = transaction_object.company_id
+response['approval_line'] = env['hr.employee.base'].get_approval_task_line_by_employee_hierarchy(transaction_requester, transaction_company, 2)
+#response['method_create_approval_task_line'] = 'create_approval_task_line'
+#response['skip_create_approval_task_line'] = True
+#response['transaction_value'] = transaction_object.total_cost
+#response['transaction_currency'] = transaction_object.currency_id
+response['transaction_company'] = transaction_company
+response['transaction_requester'] = transaction_requester
             </field>
 <!--            <field name="invoke_validate_request_approval">validate_request_approval</field>-->
             <field name="invoke_approval_start">event_approval_start</field>

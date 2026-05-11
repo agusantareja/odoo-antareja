@@ -257,11 +257,11 @@ data.update(
 
         <record id="doa_approval_notification_template" model="notification.template">
             <field name="name">Approver Notification</field>
-            <field name="model">material.inventory.request</field>
+            <field name="model_id" ref="antareja_doa.model_user_delegation"/>
             <field name="template_email" ref="doa_approval_mail_template"/>
             <field name="template_wa" ref="doa_approval_wa_template"/>
             <field name="template_chatter" ref="doa_approval_chatter_template"/>
-            <!-- <field name="template_mobile" ref="doa_approval_mobile_template"/> -->
+            <field name="template_mobile" ref="doa_approval_mobile_template"/>
         </record>
     </data>
 </odoo>
