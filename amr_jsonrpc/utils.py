@@ -125,6 +125,7 @@ def call_safe(self, method_name, args=None, kwargs=None):
     """
 
     if not isinstance(self, models.BaseModel):
+        _logger.warning("call_safe: object %s is not an instance of models.BaseModel", self)
         return None
 
     if not method_name or not isinstance(method_name, str):
