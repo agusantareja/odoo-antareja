@@ -18,3 +18,17 @@ class ResGroups(models.Model):
         if self:
             return self.users.get_users_for_approval(company=company)
         return self.users.browse()
+
+    def prepare_dict_approval_task_line(self):
+        if self:
+            if len(self.ids) > 1:
+                return {
+                    'type_approval': 'multi_group',
+                    'group_ids': self.ids,
+                }
+            else:
+                return {
+                    'type_approval':'group',
+                    'group_ids': self.id,
+                }
+        return {}

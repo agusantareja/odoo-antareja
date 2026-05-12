@@ -5,7 +5,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from ..tools.utils import ensure_list_create, have_method, safe_call_method
+from ..tools.utils import have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 'model_name': model_name,
                 'model_res_id': model_res_id,
             })
-        _logger.info(" model_name %s , model_res_id %s ",model_name,model_res_id)
+        _logger.info(" model_name %s , model_res_id %s ", model_name, model_res_id)
         return {
             'name': 'Reject Message',
             'type': 'ir.actions.act_window',
@@ -343,16 +343,29 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def reject_from_popup_reject(self, **kwargs):
         return self.do_reject(**kwargs)
 
-    def create_approval_task_line(self, approval_task_line,approval_instance = None,transaction_object=None,**kwargs):
+    def create_approval_task_line(self, approval_task_line, approval_instance=None, transaction_object=None, **kwargs):
         transaction_id = transaction_object.id
         transaction_model_name = transaction_object._name
-        _logger.info("create %s ",kwargs)
+        _logger.info("create %s ", kwargs)
+
+        def ensure_dict(input):
+            if isinstance(input, dict):
+                return input
+            else:
+                if have_method(input, 'prepare_dict_approval_task_line'):
+                    return safe_call_method(input, kwargs=kwargs)
+                return input.prepare_line_dict()
+
+        def ensure_list_create(record_list):
+            return [ensure_dict(rec) for rec in record_list]
+
         return self.with_context(
             default_transaction_id=transaction_id,
             default_transaction_model_name=transaction_model_name,
             default_status_approval='waiting_approval',
             default_approval_instance_id=approval_instance.id
         ).create(ensure_list_create(approval_task_line))
+
 
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'
