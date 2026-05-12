@@ -96,3 +96,17 @@ class ResUsers(models.Model):
             'group_ids': [],
             'user_delegate_ids': []
             }
+
+    def prepare_dict_approval_task_line(self):
+        if self:
+            if len(self.ids) > 1:
+                return {
+                    'type_approval': 'multi_user',
+                    'group_ids': self.ids,
+                }
+            else:
+                return {
+                    'type_approval': 'user',
+                    'group_ids': self.id,
+                }
+        return {}
