@@ -10,7 +10,7 @@
 <!--                <field name="name"/>-->
                 <field name="model_id"/>
                 <field name="model" string="Model Name"/>
-<!--                <field name="view_name"/>-->
+                <field name="view_name"/>
             </tree>
         </field>
     </record>

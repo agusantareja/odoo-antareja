@@ -5,7 +5,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from ..tools.utils import have_method, safe_call_method
+from ..tools.utils import ensure_list_create, have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -43,6 +43,13 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     date_execution = fields.Datetime('Date Execution')
     reject_reason = fields.Text('Reject Reason')
     sign_title = fields.Char("Sign Title")
+    approval_user_ids = fields.Many2many(
+        'res.users', compute='_compute_approval_user_ids', compute_sudo=True
+    )
+
+    def _compute_approval_user_ids(self):
+        for rec in self:
+            rec.approval_user_ids = rec.get_users_for_approval()
 
     def get_reject_to_task_line(self):
         raise NotImplemented
@@ -336,6 +343,16 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def reject_from_popup_reject(self, **kwargs):
         return self.do_reject(**kwargs)
 
+    def create_approval_task_line(self, approval_task_line,approval_instance = None,transaction_object=None,**kwargs):
+        transaction_id = transaction_object.id
+        transaction_model_name = transaction_object._name
+        _logger.info("create %s ",kwargs)
+        return self.with_context(
+            default_transaction_id=transaction_id,
+            default_transaction_model_name=transaction_model_name,
+            default_status_approval='waiting_approval',
+            default_approval_instance_id=approval_instance.id
+        ).create(ensure_list_create(approval_task_line))
 
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'
@@ -347,21 +364,8 @@ class ApprovalTaskLine(models.Model):
                 ]
     _description = 'This is Approval Task Line for Approval helper waiting approval'
     _order = 'id'
-    # approval_instance_id = fields.Many2one('approval.instance')
-    # requester_id = fields.Many2one(
-    #     'res.users', 'Requester',
-    #     default=lambda self: self.env.user,
-    #     help="User who requested the approval."
-    # )
-    reject_to_method = fields.Selection(default='to_requestor')
 
-    # user_execution_id = fields.Many2one(
-    #     'res.users',
-    #     'User Execution',
-    #     help="User who executed approval (Approve/Reject)the transaction"
-    # )
-    # date_execution = fields.Datetime('Date Execution')
-    # reject_reason = fields.Text('Reject Reason')
+    reject_to_method = fields.Selection(default='to_requestor')
 
     def name_get(self):
         result = []
