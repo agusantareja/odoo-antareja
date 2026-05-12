@@ -16,11 +16,42 @@ class HrEmployee(models.Model):
         string='Approver'
     )
 
-    def get_users_approval_employee(self,requester,company,max_level_approver=2):
+    def prepare_dict_approval_task_line(self, **kwargs):
+        if self:
+            if len(self.ids) > 1:
+                return {
+                    'type_approval': 'multi_user',
+                    'user_ids': [e.id for e in self if e.user_id],
+                }
+            else:
+                return {
+                    'type_approval': 'user',
+                    'user_ids': self.id,
+                }
+        return {}
+
+    def get_approval_task_line_by_employee_hierarchy(self, transaction_requester=None, transaction_company=None,
+                                                     max_level_approver=2):
+        requester_id = transaction_requester and int(transaction_requester) or self.env.context.get(
+            'default_requester_id')
+        domain = [('user_id', '=', requester_id)]
+        if transaction_company:
+            domain.append(('company_id', '=', int(transaction_company)))
+        employees_approvals = []
+        employees = self.env["hr.employee"].search(domain)
+        if len(employees) == 1:
+            emp = employees[0]
+            while emp.approver_id and len(employees_approvals) < max_level_approver:
+                emp = emp.approver_id
+                if emp.user_id:
+                    employees_approvals.append(emp)
+        return employees_approvals
+
+    def get_users_approval_employee(self, requester, company, max_level_approver=2):
         requester_id = requester and int(requester) or self.env.context.get('default_requester_id')
         domain = [('user_id', '=', requester_id)]
         if company:
-            domain.append(('company_id','=',company.id))
+            domain.append(('company_id', '=', company.id))
         employees = self.env["hr.employee"].search(domain)
         user_ids = self.env['res.users'].browse()
         if len(employees) == 1:
@@ -28,5 +59,5 @@ class HrEmployee(models.Model):
             while emp.approver_id and len(user_ids) < max_level_approver:
                 emp = emp.approver_id
                 if emp.user_id:
-                    user_ids|=emp.user_id
+                    user_ids |= emp.user_id
         return user_ids
