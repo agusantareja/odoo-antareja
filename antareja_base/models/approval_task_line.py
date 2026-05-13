@@ -5,7 +5,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from ..tools.utils import ensure_list_create, have_method, safe_call_method
+from ..tools.utils import have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 'model_name': model_name,
                 'model_res_id': model_res_id,
             })
-        _logger.info(" model_name %s , model_res_id %s ",model_name,model_res_id)
+        _logger.info(" model_name %s , model_res_id %s ", model_name, model_res_id)
         return {
             'name': 'Reject Message',
             'type': 'ir.actions.act_window',

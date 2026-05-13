@@ -251,26 +251,44 @@ class ApprovalInstanceMixin(models.AbstractModel):
         config_approval_task_line = kwargs
         if config_approval_task_line.get('skip_create_approval_task_line') or config_approval_task_line.get('skip_create_approval_line'):
             return
+        approval_line = None
+        approval_clear = False
         # bila skip create maka saat panggil config instance sudah melakukan crate approval
         method_create_approval_task_line = config_approval_task_line.get('method_create_approval_task_line')
-        if method_create_approval_task_line:
-            transaction_object = config_approval_task_line.get('transaction_object')
-            object_method_name = getattr(transaction_object, method_create_approval_task_line)
-            if not object_method_name:
-                raise UserError("Method %s not found" % method_create_approval_task_line)
-            safe_call_method(transaction_object, method_create_approval_task_line, kwargs=kwargs)
-            return
+        # object creator_approval_task_line bisa model atau object string of model
+        creator = config_approval_task_line.get('creator_approval_task_line')
+        if method_create_approval_task_line or creator:
 
-        approval_line = config_approval_task_line.get('approval_line')
+            if isinstance(creator, str) and creator and creator in self.env:
+                creator = self.env[creator]
+            if isinstance(creator, models.BaseModel):
+                if not method_create_approval_task_line:
+                    method_create_approval_task_line="create_approval_task_line"
+            if not isinstance(creator, models.BaseModel) or not have_method(creator, method_create_approval_task_line):
+                creator = config_approval_task_line.get('transaction_object')
+                object_method_name = getattr(creator, method_create_approval_task_line)
+                if not object_method_name:
+                    raise UserError("Method %s not found" % method_create_approval_task_line)
+            if config_approval_task_line.get('clear_approval'):
+                approval_clear = True
+                self.clear_approval()
+
+            approval_line = safe_call_method(creator, method_create_approval_task_line, kwargs=kwargs)
+            if isinstance(creator, models.BaseModel):
+                return approval_line
+
+        if not approval_line:
+            approval_line = config_approval_task_line.get('approval_line')
+
         if not approval_line:
             approval_template = config_approval_task_line.get('approval_template') or self.approval_template_id
             if approval_template and approval_template.type_approval_default != 'exception':
                 if approval_template.type_approval_default == 'multi_user' and approval_template.users_approval_default_ids:
-                    approval_line = [{"user_ids": approval_template.users_approval_default_ids.ida, "type_approval": "multi_user"}]
+                    approval_line = [approval_template.users_approval_default_ids]
                 elif approval_template.type_approval_default == 'multi_group' and approval_template.groups_approval_default_ids :
-                    approval_line = [{"group_ids": approval_template.groups_approval_default_ids.ids, "type_approval": "multi_group"}]
+                    approval_line = [approval_template.groups_approval_default_ids]
                 else:
-                    _logger.warning("No Approval %s.",approval_template.type_approval_default)
+                    _logger.warning("No Approval %s.", approval_template.type_approval_default)
             else:
                 _logger.warning("No Approval %s", approval_template.type_approval_default)
 
@@ -284,8 +302,10 @@ class ApprovalInstanceMixin(models.AbstractModel):
             approval_template = config_approval_task_line.get('approval_template') or self.approval_template_id
             model = approval_template.approval_task_line_model
             approval_task_line = approval_line
-        self.clear_approval()
-        self.env[model].create_approval_task_line(approval_task_line,**kwargs)
+
+        if not approval_clear:
+            self.clear_approval()
+        self.env[model].create_approval_task_line(approval_task_line, **kwargs)
 
     def get_transaction_currency(self, transaction_object):
         if hasattr(transaction_object, "currency_id"):

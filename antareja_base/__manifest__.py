@@ -17,7 +17,7 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://agus.ramdan.tech",
     'category': 'Base',
-    'version': '16.0.3.0.1',
+    'version': '16.0.3.1.0',
     'depends': ['base', 'base_setup', 'mail'],
     'data': [
         'security/ir.model.access.csv',
