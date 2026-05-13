@@ -40,8 +40,6 @@ class CeriaMobileNotification(models.Model):
     source_model = fields.Char()
     source_res_id = fields.Integer()
 
-    mobile_approval_id = fields.Many2one("ceria.mobile.approval", readonly=1)
-
     accept_data = fields.Text()
     errors_message = fields.Char()
     last_error = fields.Datetime()
