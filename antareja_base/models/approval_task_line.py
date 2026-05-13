@@ -343,28 +343,43 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def reject_from_popup_reject(self, **kwargs):
         return self.do_reject(**kwargs)
 
-    def create_approval_task_line(self, approval_task_line, approval_instance=None, transaction_object=None, **kwargs):
-        transaction_id = transaction_object.id
-        transaction_model_name = transaction_object._name
+    def create_approval_task_line(self, approval_task_line, **kwargs):
+        transaction_object = kwargs.get('transaction_object')
+        approval_instance = kwargs.get('approval_instance')
+        approval_template = kwargs.get('approval_template')
         _logger.info("create %s ", kwargs)
 
-        def ensure_dict(input):
-            if isinstance(input, dict):
-                return input
+        def ensure_dict(input_data):
+            if isinstance(input_data, dict):
+                return input_data
             else:
-                if have_method(input, 'prepare_dict_approval_task_line'):
-                    return safe_call_method(input, kwargs=kwargs)
-                return input.prepare_line_dict()
+                if have_method(input_data, 'prepare_dict_approval_task_line'):
+                    return safe_call_method(input_data, 'prepare_dict_approval_task_line', kwargs=kwargs)
+                return safe_call_method(input_data, 'prepare_line_dict', kwargs=kwargs)
 
         def ensure_list_create(record_list):
             return [ensure_dict(rec) for rec in record_list]
 
-        return self.with_context(
-            default_transaction_id=transaction_id,
-            default_transaction_model_name=transaction_model_name,
+        context = dict(
+            self.env.context,
             default_status_approval='waiting_approval',
-            default_approval_instance_id=approval_instance.id
-        ).create(ensure_list_create(approval_task_line))
+        )
+        if transaction_object:
+            context.update(
+                default_transaction_id=transaction_object.id,
+                default_transaction_model_name=transaction_object._name,
+            )
+        if kwargs.get("transaction_view_name"):
+            context['default_view_name'] = kwargs.get("transaction_view_name")
+        if approval_instance:
+            context['default_approval_instance_id'] = approval_instance.id
+            approval_template = approval_template or approval_instance.approval_template_id
+        if approval_template:
+            context['default_approval_template_id'] = approval_template.id
+            if approval_template.view_name and not context.get('default_view_name'):
+                context['default_view_name'] = approval_template.view_name
+
+        return self.with_context(context).create(ensure_list_create(approval_task_line))
 
 
 class ApprovalTaskLine(models.Model):

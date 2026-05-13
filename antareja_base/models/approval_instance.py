@@ -255,12 +255,16 @@ class ApprovalInstanceMixin(models.AbstractModel):
         approval_clear = False
         # bila skip create maka saat panggil config instance sudah melakukan crate approval
         method_create_approval_task_line = config_approval_task_line.get('method_create_approval_task_line')
-        if method_create_approval_task_line:
-            # object creator_approval_task_line bisa method atau object
-            creator = config_approval_task_line.get('creator_approval_task_line')
+        # object creator_approval_task_line bisa model atau object string of model
+        creator = config_approval_task_line.get('creator_approval_task_line')
+        if method_create_approval_task_line or creator:
+
             if isinstance(creator, str) and creator and creator in self.env:
-                creator =self.env[creator]
-            if not isinstance(creator, models.BaseModel) or have_method(creator, method_create_approval_task_line):
+                creator = self.env[creator]
+            if isinstance(creator, models.BaseModel):
+                if not method_create_approval_task_line:
+                    method_create_approval_task_line="create_approval_task_line"
+            if not isinstance(creator, models.BaseModel) or not have_method(creator, method_create_approval_task_line):
                 creator = config_approval_task_line.get('transaction_object')
                 object_method_name = getattr(creator, method_create_approval_task_line)
                 if not object_method_name:
