@@ -3,10 +3,10 @@
 import logging
 import firebase_admin
 
-from odoo import models, fields, api
-from firebase_admin import messaging
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
+
 
 class CeriaMobileDevice(models.Model):
     _inherit = 'ceria.mobile.device'
@@ -14,34 +14,30 @@ class CeriaMobileDevice(models.Model):
 
     active = fields.Boolean(default=True)
 
-    def check_activate_token_fcm(self,token=None):
+    def check_active_token_fcm(self, token=None):
+        record = self.browse()
         if token:
-            record=self.search([('token_fcm','=',token)],limit=1)
+            record = self.search([('token_fcm', '=', token)], limit=1)
         elif self:
-            record=self.ensure_one()
-        else:
-            record=self.browse()
-
+            record = self.ensure_one()
+            token = record.token_fcm
         if not record:
             return False
+
         self.env["firebase.config"]._initialize_firebase()
         if not firebase_admin._apps:
             return
-        try:
-            message = messaging.Message(
-                token=token,
-                data={"ping": "test"}
-            )
-            messaging.send(message)
-            active=True
-        except messaging.UnregisteredError:
-            active=False
-        except messaging.InvalidArgumentError:
-            active=False
-        except Exception as e:
-            _logger.error("Error lain: %s", e)
-            active=True
 
+        active = True
+        try:
+            message = firebase_admin.messaging.Message(token=token, data={"ping": "test"})
+            firebase_admin.messaging.send(message)
+        except firebase_admin.messaging.UnregisteredError:
+            active = False
+        except firebase_admin.messaging.InvalidArgumentError:
+            active = False
+        except Exception:
+            _logger.exception("Unexcpected error when checking FCM token %s:", token)
         if not active:
             record.write({'active':False})
         return active

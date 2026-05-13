@@ -21,7 +21,7 @@
             <field name="name">ceria.mobile.notification.tree</field>
             <field name="model">ceria.mobile.notification</field>
             <field name="arch" type="xml">
-                <tree string="Mobile Notification Log" create='false' edit='false' decoration-muted="state in ('done', 'cancel')" decoration-info="state=='ready_to_send'" decoration-danger="state in ('error', 'send_error')">
+                <tree string="Mobile Notification Log" create='false' edit='false' decoration-muted="state in ('done', 'cancel')" decoration-info="state=='ready'" decoration-danger="state in ('error', 'send_error')">
                     <field name="title"/>
                     <field name="notification_type"/>
                     <field name="to_user_id"/>
@@ -29,9 +29,9 @@
                     <field name="source_model"/>
                     <field name="source_res_id"/>
                     <field name="state" />
-                    <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="ready_to_send"/>
+                    <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="ready"/>
                     <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel"/>
-                    <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="ready_to_send"/>
+                    <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="ready"/>
                 </tree>
             </field>
         </record>
@@ -43,9 +43,9 @@
                 <form string="Mobile Notification Log" create='false' delete='false'>
                     <header>
                         <button name="event_update_approval" string="Update Approval" type="object" />
-                        <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="ready_to_send"/>
+                        <button name="send" string="Send Now" type="object" icon="fa-paper-plane text-success" states="ready"/>
                         <button name="mark_outgoing" string="Retry" type="object" icon="fa-repeat text-success" states="error,send_error,cancel"/>
-                        <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="ready_to_send"/>
+                        <button name="cancel" string="Cancel" type="object" icon="fa-times-circle text-danger" states="ready"/>
                         <button name="process" string="Process" type="object" />
                         <field name="state" widget="statusbar" readonly="1" />
                     </header>
@@ -96,7 +96,7 @@
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_ceria_mobile_notification_search"/>
             <!-- <field name="domain">[('api_type', '=', 'normal_api')]</field> -->
-            <field name="context">{ }</field>
+            <!-- <field name="context">{}</field> -->
         </record>
     </data>
 </odoo>
