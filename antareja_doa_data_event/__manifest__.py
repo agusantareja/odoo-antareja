@@ -8,7 +8,7 @@
     'website': 'https://agus.ramdan.tech',
     'summary': 'Event Data Config DOA for Sync',
     'description': "Event Data Config DOA for Sync",
-    'depends': ['base', 'amr_data_event', ],
+    'depends': ['base', 'antareja_doa', 'amr_data_event'],
     'data': ['data/event_data.xml'],
     'installable': True,
     'auto_install': False,
