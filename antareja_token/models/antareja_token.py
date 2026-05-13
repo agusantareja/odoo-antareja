@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import jwt
 import time
+
 from datetime import datetime, timedelta
 
-import jwt
 from jwt import InvalidTokenError
 from odoo import api, fields, models
 
