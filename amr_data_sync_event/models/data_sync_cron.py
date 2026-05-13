@@ -49,4 +49,4 @@ class ExternalDataSyncCron(models.Model):
             ('strategy', 'in', ['external_cud', 'external_cu', 'external_create']),
             '|', ('next_sync_datetime', '=', False), ('next_sync_datetime', '<=', fields.Datetime.now())
         ], order='next_sync_datetime asc')
-        super(ExternalDataSyncCron,data_sync_models).cron_sync_from_server()
+        data_sync_models and super(ExternalDataSyncCron,data_sync_models).cron_sync_from_server()

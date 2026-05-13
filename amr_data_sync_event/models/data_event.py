@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class InternalDataSync(models.Model):
     _name = 'external.data.event'
-    _description = "Internal data event yang akan assess oleh external app"
+    _description = "External Data Event yang akan di update ke Internal"
     _order = 'id desc'
 
     server_id = fields.Many2one(
