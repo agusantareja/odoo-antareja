@@ -390,6 +390,23 @@ class ExternalDataSync(models.Model):
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
                     })
                 return
+
+            inactive_data = item.get('active',True) == False or item.get('x_active',True) == False
+            if inactive_data:
+                if existing:
+                    _logger.info("action_archive data %s .", existing)
+                    existing.action_archive()
+                    self.write_done_internal_odoo(existing, input_dict)
+                else:
+                    self.write({
+                        'state': 'done',
+                        'error_info': "Not data active",
+                        'last_success': fields.Datetime.now(),
+                        'last_processing_datetime': fields.Datetime.now()
+                    })
+                _logger.info("Skip inactive data update %s", existing)
+                return
+
             input_dict = self.prepare_input_external(item, sync_strategy=sync_strategy)
             result_internal = sync_strategy.call_internal_process_method(existing, item, input_dict, self)
             skip_save = False
