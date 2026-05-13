@@ -102,11 +102,11 @@ class ResUsers(models.Model):
             if len(self.ids) > 1:
                 return {
                     'type_approval': 'multi_user',
-                    'group_ids': self.ids,
+                    'user_ids': self.ids,
                 }
             else:
                 return {
                     'type_approval': 'user',
-                    'group_ids': self.id,
+                    'user_ids': self.id,
                 }
         return {}

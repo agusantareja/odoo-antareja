@@ -36,7 +36,7 @@
 <!--                            <field name="sequence"/>-->
                             <field name="model_id"/>
                             <field name="approval_task_line_model_id"/>
-<!--                            <field name="view_name"/>-->
+                            <field name="view_name"/>
                         </group>
                     </group>
                     <notebook>
@@ -66,6 +66,15 @@
                                     </div>
                                 </div>
                             </page>
+                        <page string="Approval Default">
+                            <group>
+                                <group>
+                                    <field name="type_approval_default"/>
+                                    <field name="groups_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_group')]}"/>
+                                    <field name="users_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_user')]}"/>
+                                </group>
+                            </group>
+                        </page>
                         <page string="State Config">
                             <group>
                                 <group>
