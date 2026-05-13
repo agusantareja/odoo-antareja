@@ -14,6 +14,5 @@ class AccessToken(models.Model):
         # client_api
         client_id = self.env['client.api'].sudo().search([('token', '=', token)], limit=1)
         if client_id:
-            _logger.error("Token is not valid!")
             return True
         return super(AccessToken, self).client_token_validation(token)
