@@ -21,7 +21,7 @@ class HrEmployeeBase(models.Model):
             'antareja_approval_hr_employee_hierarchy.max_level_approver')) or 2
 
     def get_users_approval_employee(self, requester, company, max_level_approver=None):
-        max_level_approver = max_level_approver or self.get_max_level_approver()
+        max_level_approver = max_level_approver or self.env.context.get('__max_level_approver') or self.get_max_level_approver()
         requester_id = requester and int(requester) or self.env.context.get('default_requester_id')
         domain = [('user_id', '=', requester_id)]
         if company:
@@ -38,3 +38,21 @@ class HrEmployeeBase(models.Model):
                 except Exception:
                     break
         return user_ids
+
+    def get_approval_task_line_by_employee_hierarchy(self, requester, company, max_level_approver=None):
+        user_ids = self.get_users_approval_employee(requester, company, max_level_approver=max_level_approver)
+        return [{'type_approval':'user','user_id':user.id}for user in user_ids]
+
+    def prepare_dict_approval_task_line(self):
+        if self:
+            if len(self.ids) > 1:
+                return {
+                    'type_approval': 'multi_user',
+                    'user_ids': self.user_id.ids,
+                }
+            else:
+                return {
+                    'type_approval': 'user',
+                    'user_ids': self.user_id.id,
+                }
+        return {}
