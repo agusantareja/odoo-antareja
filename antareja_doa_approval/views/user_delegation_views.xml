@@ -35,6 +35,5 @@
         <field name="res_model">user.delegation</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('state','=','waiting_approval'),('access_approval', '=', True)]</field>
-        <field name="context">{'create':0,'update':0}</field>
     </record>
 </odoo>
