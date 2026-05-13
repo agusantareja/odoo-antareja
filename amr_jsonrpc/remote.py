@@ -2,11 +2,12 @@
 
 import base64
 import logging
+import requests
+
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-import requests
 from odoo.fields import Date, Datetime
 
 _logger = logging.getLogger(__name__)
