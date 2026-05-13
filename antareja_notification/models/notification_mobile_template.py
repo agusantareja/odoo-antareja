@@ -83,7 +83,7 @@ class NotificationMobileTemplate(models.Model):
 
     @api.model
     def send_notification(self,payload):
-        _logger.error("NotImplementation")
+        _logger.error("NotImplemented")
     # notification.mobile.target (internal,remote,firebase)
 
     @api.model
