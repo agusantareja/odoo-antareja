@@ -175,7 +175,7 @@ class UserDelegation(models.Model):
     @api.constrains('delegator_id', 'delegatee_id', 'start_date', 'end_date', 'state')
     def _check_duplicate_active_delegation(self):
         for rec in self:
-            if rec.state == 'cancelled':
+            if self.state in ['cancelled', 'expired']:
                 continue
             overlaps = self.search([
                 ('id', '!=', rec.id),
