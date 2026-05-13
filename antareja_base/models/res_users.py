@@ -88,6 +88,8 @@ class ResUsers(models.Model):
         """
         return self.browse()
 
+
+
     @api.model
     def get_delegate_user_group(self):
         """Get all delegations user group for this proxy user."""
