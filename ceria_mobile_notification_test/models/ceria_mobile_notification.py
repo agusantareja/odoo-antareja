@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models
-from firebase_admin import messaging
-
-import json
-import traceback
+from odoo import api, models
 
 
 class CeriaMobileNotification(models.Model):
