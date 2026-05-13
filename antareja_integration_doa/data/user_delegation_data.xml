@@ -11,6 +11,7 @@
             <field name="strategy">external_cu</field>
             <field name="internal_model">user.delegation</field>
             <field name="internal_lookup_fields">name</field>
+            <field name="exclude_fields">delegator_id,delegatee_id</field>
 <!--            <field name="internal_lookup_method">internal_lookup_for_doa</field>-->
             <field name="sync_cron" eval="True"/>
             <field name="filter_last_update" eval="True"/>
