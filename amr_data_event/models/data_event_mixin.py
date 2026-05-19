@@ -124,9 +124,14 @@ class DataEventMixin(models.AbstractModel):
 
         if not config:
             return
-
-        changed = set(vals.keys()) - {'write_uid', 'write_date', '__last_update'}
-
+        if isinstance(vals,dict):
+            changed = set(vals.keys()) - {'write_uid', 'write_date', '__last_update'}
+        elif isinstance(vals, list):
+            changed = set(vals) - {'write_uid', 'write_date', '__last_update'}
+            _logger.debug("Vals is list %s . ",vals)
+        elif isinstance(vals, set):
+            changed = vals - {'write_uid', 'write_date', '__last_update'}
+            _logger.debug("Vals is set %s . ", vals)
         fields_exclude = config.get_fields_exclude()
         if fields_exclude:
             changed -= set(fields_exclude)
