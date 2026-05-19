@@ -203,15 +203,13 @@ class UserDelegation(models.Model):
         }
 
     def read(self, fields=None, load='_classic_read'):
-        if self.env.context.get('__from_sync_data_api') or self.env.context.get(
-                '__read_data_for_sync_external_application'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
             if fields:
                 if 'delegator_group_ids' in fields:
                     fields.remove('delegator_group_ids')
 
         result = super(UserDelegation, self).read(fields=fields, load=load)
-        if self.env.context.get('__from_sync_data_api') or self.env.context.get(
-                '__read_data_for_sync_external_application'):
+        if self.env.context.get('__from_sync_data_api') or self.env.context.get('__read_data_for_sync_external_application'):
             delegator = {}
             for rec in self:
                 delegator[rec.id] = {
