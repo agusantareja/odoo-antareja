@@ -82,7 +82,7 @@ class ExternalDataSyncStrategy(models.Model):
         ('jsonrpc', 'Json-RPC'),
         ('rest', 'Rest'),
         ('method_call', 'Method Call'),
-    ], default='jsonrpc')
+    ], default='jsonrpc', help="Deprecated Depend and move ot sync server")
 
     parent_sync_strategy_id = fields.Many2one(
         'external.data.sync.strategy',
@@ -112,6 +112,9 @@ class ExternalDataSyncStrategy(models.Model):
     )
     internal_event_sync_done = fields.Char(
         help="Method ini di saat sync selesai"
+    )
+    internal_event_archived_done = fields.Char(
+        help="Data dilakukan archive maka internal_event_sync_done tidak akan di panggil",
     )
     sync_cron = fields.Boolean()
 
@@ -696,7 +699,15 @@ class ExternalDataSyncStrategy(models.Model):
     def event_external_data_sync_done(self, existing, item, input_dict):
         if not isinstance(existing, models.BaseModel) or not self.internal_event_sync_done:
             return existing
-        utils.call_with_savepoint(existing, self.internal_event_sync_done, kwargs={
+        return utils.call_with_savepoint(existing, self.internal_event_sync_done, kwargs={
+            'data_external': item,
+            'data_update': input_dict,
+        })
+
+    def event_external_archived_done(self, existing, item, input_dict):
+        if not isinstance(existing, models.BaseModel) or not self.internal_event_archived_done:
+            return existing
+        return utils.call_with_savepoint(existing, self.internal_event_archived_done, kwargs={
             'data_external': item,
             'data_update': input_dict,
         })
