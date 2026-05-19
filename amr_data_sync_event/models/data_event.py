@@ -68,6 +68,7 @@ class InternalDataSync(models.Model):
                         ]
                         data = self.data_ids.search(domain)
                         data.write({'external_deleted': True, 'deleted_datetime': self.event_datetime})
+                        data.validate_json_data_for_delete()
                     else:
                         data = self.data_ids.data_from_external(
                             item, sync_strategy, create_when_not_found=True
@@ -85,3 +86,6 @@ class InternalDataSync(models.Model):
             all_related_done = False
             # todo clear cache odoo
             self.write_error(traceback.format_exc())
+
+    def action_process(self):
+        self.process()
