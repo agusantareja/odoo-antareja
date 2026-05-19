@@ -88,8 +88,6 @@ class ResUsers(models.Model):
         """
         return self.browse()
 
-
-
     @api.model
     def get_delegate_user_group(self):
         """Get all delegations user group for this proxy user."""
@@ -109,6 +107,6 @@ class ResUsers(models.Model):
             else:
                 return {
                     'type_approval': 'user',
-                    'user_ids': self.id,
+                    'user_id': self.id,
                 }
         return {}

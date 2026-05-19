@@ -6,6 +6,8 @@ import traceback
 import base64
 import binascii
 
+from odoo import models
+
 _logger = logging.getLogger(__name__)
 
 
@@ -32,7 +34,10 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
     - args disesuaikan dengan signature
     """
 
-    if not obj or not method_name or not isinstance(method_name, str):
+    if not isinstance(obj,models.BaseModel) and not obj :
+        return None
+
+    if not method_name or not isinstance(method_name, str):
         return None
 
     if not hasattr(obj, method_name):
