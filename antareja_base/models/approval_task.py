@@ -276,8 +276,7 @@ class ApprovalTask(models.Model):
                                                                                  'get_internal_description'):
                 kw['description'] = transaction_object.get_internal_description()
 
-            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object,
-                                                                                   'get_internal_requester_id'):
+            if (not rec.requester_id or rec.requester_id.id ==1) and not kw.get('requester_id') and have_method(transaction_object,'get_internal_requester_id'):
                 kw['requester_id'] = transaction_object.get_internal_requester_id()
 
             if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
