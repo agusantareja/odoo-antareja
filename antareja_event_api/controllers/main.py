@@ -3,7 +3,7 @@
 from odoo import http
 from odoo.http import request
 from odoo.addons.antareja_base.tools.rest import object_read
-from odoo.addons.antareja_token.tools.utils import check_token_authorization
+#from odoo.addons.antareja_token.tools.utils import check_token_authorization
 
 import logging
 
@@ -21,7 +21,6 @@ class ControllerSync(http.Controller):
 
     @http.route([
         '/api/event/data',
-    ], type='http', auth="none", methods=['GET'], csrf=False)
-    @check_token_authorization(setup_session=False)
+    ], type='http', auth="jwt", methods=['GET'], csrf=False)
     def rest_api_event_data(self, **kwargs):
         return object_read('internal.data.event', kwargs, status_code=200)
