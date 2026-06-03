@@ -618,19 +618,20 @@ class ExternalDataSync(models.Model):
         external_data_sync = self.browse()
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
 
-        for t in sync_related:
-            process_related_id(t.id)
-            if t.state == 'done' and t.external_data_sync_id:
-                external_data_sync |= t.external_data_sync_id
+        for rec in sync_related:
+            rec.dispatch_process(True)
+            # process_related_id(t.id)
+            # if t.state == 'done' and t.external_data_sync_id:
+            #     external_data_sync |= t.external_data_sync_id
 
             if fields.Datetime.now() > limit_time:
                 break
-        limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
-        for t in external_data_sync:
-            process_rec_id(t.id)
-
-            if fields.Datetime.now() > limit_time:
-                break
+        # limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
+        # for t in external_data_sync:
+        #     process_rec_id(t.id)
+        #
+        #     if fields.Datetime.now() > limit_time:
+        #         break
 
         return True
 
