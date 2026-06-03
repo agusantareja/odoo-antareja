@@ -643,12 +643,12 @@ class ExternalDataSync(models.Model):
         return self.sync_strategy_id.get_internal_context()
 
     def get_internal_object(self, model=None):
-        if not model and self.sync_strategy_id:
+        if not isinstance(model, models.BaseModel) and self.sync_strategy_id:
             model = self.sync_strategy_id.internal_model_object()
-        if not model and self.internal_model:
+        if not isinstance(model, models.BaseModel)  and self.internal_model:
             model = self.env[self.internal_model]
-        if model:
-            return model.browse(self.internal_odoo_id)
+        if isinstance(model, models.BaseModel):
+            return model.with_context(active_test=False).browse(self.internal_odoo_id)
         return model
 
     # @savepoint
