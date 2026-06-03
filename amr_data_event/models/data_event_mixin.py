@@ -127,6 +127,7 @@ class DataEventMixin(models.AbstractModel):
 
         if not config:
             return
+        changed = {}
         if isinstance(vals,dict):
             changed = set(vals.keys()) - {'write_uid', 'write_date', '__last_update'}
         elif isinstance(vals, list):
