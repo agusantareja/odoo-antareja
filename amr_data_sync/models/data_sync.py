@@ -277,8 +277,9 @@ class ExternalDataSync(models.Model):
         existing = self.search(domain, limit=1)
         if existing:
             if existing.state != 'done' and existing.is_update_able_from_external():
-                input_dict = {'state': 'process'}
-                existing.write(input_dict)
+                # input_dict = {'state': 'process'}
+                # existing.write(input_dict)
+                existing.dispatch_process()
         elif sync_related.sync_strategy_id:
             input_dict = {
                 'display_name': display_name or f'ID {external_odoo_id}',
@@ -305,7 +306,8 @@ class ExternalDataSync(models.Model):
         self.need_get_data_json = True
         self.request_datetime = fields.Datetime.now()
         if self.state == 'done':
-            self.state = 'process'
+            self.dispatch_process()
+            # self.state = 'process'
 
     def is_update_able_from_external(self):
         return self.sync_strategy_id.is_update_able_from_external()
@@ -526,16 +528,18 @@ class ExternalDataSync(models.Model):
         self.ensure_one()
         self.data_json = json.dumps(self.get_external_one_data())
 
-    def cron_process_data(self, limit=1000):
-        def process_rec_id(id_):
+    def dispatch_process(self,run_immediate=False):
+        self.write({'state': 'process'})
+        if run_immediate:
+            id_= self.id
             with self.pool.cursor() as cr:
                 env = api.Environment(cr, self.env.uid, self.env.context)
                 rec = env[self._name].browse(id_)
                 try:
                     rec.process_data()
                     cr.commit()
-                except Exception :
-                    _logger.exception("Error rec %s", rec_id)
+                except Exception:
+                    _logger.exception("Error rec %s", self)
                     cr.rollback()
                     rec = env[self._name].browse(id_)
                     rec.write_error_safe({
@@ -544,56 +548,64 @@ class ExternalDataSync(models.Model):
                         'last_error': fields.Datetime.now(),
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
                     })
-        def process_related_id(id_):
-            with self.pool.cursor() as cr:
-                env = api.Environment(cr, self.env.uid, self.env.context)
-                rec = env['external.data.sync.related'].browse(id_)
-                try:
-                    rec.process_data()
-                    if rec.state != 'done' or not rec.external_data_sync_id:
-                        rec.write({
-                            'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                        })
-                    cr.commit()
-                except Exception :
-                    _logger.exception("Error rec %s", rec_id)
-                    cr.rollback()
-                    rec = env[self._name].browse(id_)
-                    rec.write_error_safe({
-                        'error_info': traceback.format_exc(),
-                        'state': 'error',
-                        'last_error': fields.Datetime.now(),
-                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                    })
+
+    def cron_process_data(self, limit=1000):
+        # def process_rec_id(id_):
+        #     with self.pool.cursor() as cr:
+        #         env = api.Environment(cr, self.env.uid, self.env.context)
+        #         rec = env[self._name].browse(id_)
+        #         try:
+        #             rec.process_data()
+        #             cr.commit()
+        #         except Exception :
+        #             _logger.exception("Error rec %s", rec_id)
+        #             cr.rollback()
+        #             rec = env[self._name].browse(id_)
+        #             rec.write_error_safe({
+        #                 'error_info': traceback.format_exc(),
+        #                 'state': 'error',
+        #                 'last_error': fields.Datetime.now(),
+        #                 'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+        #             })
+        # def process_related_id(id_):
+        #     with self.pool.cursor() as cr:
+        #         env = api.Environment(cr, self.env.uid, self.env.context)
+        #         rec = env['external.data.sync.related'].browse(id_)
+        #         try:
+        #             rec.process_data()
+        #             if rec.state != 'done' or not rec.external_data_sync_id:
+        #                 rec.write({
+        #                     'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+        #                 })
+        #             cr.commit()
+        #         except Exception :
+        #             _logger.exception("Error rec %s", rec_id)
+        #             cr.rollback()
+        #             rec = env[self._name].browse(id_)
+        #             rec.write_error_safe({
+        #                 'error_info': traceback.format_exc(),
+        #                 'state': 'error',
+        #                 'last_error': fields.Datetime.now(),
+        #                 'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+        #             })
         limit_time = fields.Datetime.now() + datetime.timedelta(minutes=10)
-        ids  = self.search(
+        records  = self.search(
             [('need_get_data_json', '=', True)],
             limit=limit, order='next_processing_datetime asc,last_processing_datetime asc, id '
-        ).ids
-        for rec_id in ids :
-            process_rec_id(rec_id)
-            # try:
-            #     with self.env.cr.savepoint():
-            #         t.process_data()
-            # except Exception:
-            #     _logger.exception("error")
-            #     t.write_error_safe({
-            #         'error_info': traceback.format_exc(),
-            #         'state': 'error',
-            #         'last_error': fields.Datetime.now(),
-            #         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-            #     })
+        )
+        for rec in records:
+            rec.dispatch_process(True)
             if fields.Datetime.now() > limit_time:
                 break
-        ids =self.search(
+        records =self.search(
             [('state', '!=', 'done'),
              '|',
              ('next_processing_datetime', '<=', fields.Datetime.now()),
              ('next_processing_datetime', '=', False)],
             limit=limit, order='next_processing_datetime asc,last_processing_datetime asc, id '
-        ).ids
-        for rec_id in ids :
-            process_rec_id(rec_id)
+        )
+        for rec in records :
+            rec.dispatch_process(True)
             if fields.Datetime.now() > limit_time:
                 break
 
@@ -610,23 +622,6 @@ class ExternalDataSync(models.Model):
             process_related_id(t.id)
             if t.state == 'done' and t.external_data_sync_id:
                 external_data_sync |= t.external_data_sync_id
-            # try:
-            #     with self.env.cr.savepoint():
-            #         t.process_data()
-            #     if t.state == 'done' and t.external_data_sync_id:
-            #         external_data_sync |= t.external_data_sync_id
-            #     else:
-            #         t.write({
-            #             'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-            #         })
-            # except Exception:
-            #     _logger.exception("error")
-            #     t.write_error_safe({
-            #         'error_info': traceback.format_exc(),
-            #         'state': 'error',
-            #         'last_error': fields.Datetime.now(),
-            #         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-            #     })
 
             if fields.Datetime.now() > limit_time:
                 break
