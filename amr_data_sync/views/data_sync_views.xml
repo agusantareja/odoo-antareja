@@ -117,7 +117,8 @@
 
                     <field name="internal_odoo_id"/>
                     <field name="internal_model"/>
-
+                    <field name="last_processing_datetime" optional="hide"/>
+                    <field name="next_processing_datetime" optional="hide"/>
                     <field name="last_success"/>
                     <field name="last_error"/>
                     <field name="state" />

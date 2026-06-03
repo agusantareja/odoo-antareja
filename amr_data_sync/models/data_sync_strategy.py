@@ -113,6 +113,9 @@ class ExternalDataSyncStrategy(models.Model):
     internal_event_sync_done = fields.Char(
         help="Method ini di saat sync selesai"
     )
+    internal_event_archived_done = fields.Char(
+        help="Data dilakukan archive maka internal_event_sync_done tidak akan di panggil",
+    )
     sync_cron = fields.Boolean()
 
     test_external_data_sync_id = fields.Many2one(
