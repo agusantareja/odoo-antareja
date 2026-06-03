@@ -52,6 +52,7 @@
                                         <field name="internal_lookup_fields" string="Lookup by Fields"/>
                                         <field name="internal_lookup_method" string="Lookup using Method"/>
                                         <field name="internal_event_sync_done" string="Done event Method"/>
+                                        <field name="internal_event_archived_done" string="Archived event Method" />
                                     </group>
                                 </group>
                             </page>

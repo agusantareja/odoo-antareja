@@ -47,11 +47,11 @@ class ExternalDataSync(models.Model):
     external_odoo_id = fields.Integer()
     external_last_update = fields.Datetime()
     external_deleted = fields.Boolean(
-        help="""
-        Flag bahwa di external data sudah di delete
-        """
+        help="Flag bahwa di external data sudah di delete"
     )
-
+    external_archived = fields.Boolean(
+        help="Flag bahwa di external data sudah di archived"
+    )
     internal_odoo_id = fields.Integer(
         help="""
         Ini adalah tanda bahwa external data telah di mapping ke internal data.
@@ -70,6 +70,9 @@ class ExternalDataSync(models.Model):
     request_datetime = fields.Datetime(default=fields.Datetime.now)
     deleted_datetime = fields.Datetime(
         help="Waktu data ini di tandai sebagai deleted dari external system."
+    )
+    archived_datetime = fields.Datetime(
+        help="Waktu data ini di tandai sebagai archived internal system"
     )
     related_ids = fields.One2many(
         'external.data.sync.related', 'external_data_sync_id',
@@ -130,19 +133,39 @@ class ExternalDataSync(models.Model):
             json_date = json.loads(self.data_json)
             if isinstance(json_date, dict):
                 return json_date
-        with self.env.cr.savepoint():
-            json_data = self.get_external_one_data()
-            data = {
+
+        json_data = self.get_external_one_data()
+        if json_data:
+            with self.env.cr.savepoint():
+                data = {
+                    'need_get_data_json': False,
+                    'data_json': json.dumps(json_data)
+                }
+                write_date = json_data.get('write_date')
+                if write_date:
+                    if isinstance(write_date, str):
+                        write_date = fields.Datetime.to_datetime(write_date)
+                    data['external_last_update'] = write_date
+                self.write(data)
+            return json_data
+        else:
+            self.write({
                 'need_get_data_json': False,
                 'data_json': json.dumps(json_data)
-            }
-            write_date = json_data.get('write_date')
-            if write_date:
-                if isinstance(write_date, str):
-                    write_date = fields.Datetime.to_datetime(write_date)
-                data['external_last_update'] = write_date
-            self.write(data)
-        return json_data
+            })
+            _logger.info("Deleter")
+            return {'active' : False}
+
+
+    def validate_json_data_for_delete(self):
+        self.ensure_one()
+        json_data = self.get_external_one_data()
+        if not json_data:
+            self.external_deleted=True
+            self.action_archive_internal_odoo(self.get_internal_object(),{},{})
+            return True
+
+        return False
 
     def action_reset_related(self):
         for rec in self:
@@ -293,10 +316,19 @@ class ExternalDataSync(models.Model):
     def is_create_able_from_external(self):
         return self.sync_strategy_id.is_create_able_from_external()
 
+    def action_archive_internal_odoo(self,internal_odoo, item, input_dict):
+        _logger.info("action_archive data %s %s.", self.internal_odoo_id ,internal_odoo)
+        internal_odoo and internal_odoo.action_archive()
+        _logger.info("Related Done Process after sync done")
+        self.sync_strategy_id.event_external_archived_done(internal_odoo, item, input_dict)
+        self.write_archived_internal_odoo(internal_odoo, input_dict)
+
     #@savepoint
     def write_done_internal_odoo(self, internal_odoo, payload=None):
         if internal_odoo:
             done_data = {
+                'external_deleted':False,
+                'external_archived': False,
                 'internal_odoo_id': internal_odoo.id,
                 'state': 'done',
                 'last_success': fields.Datetime.now(),
@@ -306,6 +338,19 @@ class ExternalDataSync(models.Model):
                 done_data['payload_json'] = json.dumps(payload, default=date_utils.json_default)
 
             self.write(done_data)
+
+        return internal_odoo
+
+    def write_archived_internal_odoo(self, internal_odoo, payload=None):
+        done_data = {
+            'state': 'done',
+            'external_archived': True,
+            'archived_datetime': fields.Datetime.now(),
+            'last_success': fields.Datetime.now(),
+            'last_processing_datetime': fields.Datetime.now(),
+            'payload_json':json.dumps(payload, default=date_utils.json_default)
+        }
+        self.write(done_data)
 
         return internal_odoo
 
@@ -353,6 +398,7 @@ class ExternalDataSync(models.Model):
         try:
             _logger.info("process_data start")
             item = self.get_json_data_for_create()
+            inactive_data = item.get('active', True) == False or item.get('x_active', True) == False
             sync_strategy = self.get_sync_strategy()
             if not sync_strategy:
                 self.write({
@@ -377,6 +423,16 @@ class ExternalDataSync(models.Model):
                 sync_strategy = sync_strategy.ensure_internal_context(default_company_id=company.id)
             ModelObject = sync_strategy.internal_model_object()
             existing = self.get_internal_object(ModelObject)
+            if inactive_data:
+                if not existing:
+                    self.write({
+                        'error_info': "Not data active",
+                    })
+                self.action_archive_internal_odoo(existing, item, input_dict)
+                sync_strategy.event_external_data_sync_done(existing, item, input_dict)
+                _logger.info("Skip inactive data update %s", existing)
+                return
+
             if not self.is_create_able_from_external() and not self.is_update_able_from_external():
                 if not existing:
                     existing = sync_strategy.internal_lookup(item)
@@ -389,22 +445,6 @@ class ExternalDataSync(models.Model):
                         'last_processing_datetime': fields.Datetime.now(),
                         'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=24),
                     })
-                return
-
-            inactive_data = item.get('active',True) == False or item.get('x_active',True) == False
-            if inactive_data:
-                if existing:
-                    _logger.info("action_archive data %s .", existing)
-                    existing.action_archive()
-                    self.write_done_internal_odoo(existing, input_dict)
-                else:
-                    self.write({
-                        'state': 'done',
-                        'error_info': "Not data active",
-                        'last_success': fields.Datetime.now(),
-                        'last_processing_datetime': fields.Datetime.now()
-                    })
-                _logger.info("Skip inactive data update %s", existing)
                 return
 
             input_dict = self.prepare_input_external(item, sync_strategy=sync_strategy)
@@ -603,12 +643,12 @@ class ExternalDataSync(models.Model):
         return self.sync_strategy_id.get_internal_context()
 
     def get_internal_object(self, model=None):
-        if not model and self.sync_strategy_id:
+        if not isinstance(model, models.BaseModel) and self.sync_strategy_id:
             model = self.sync_strategy_id.internal_model_object()
-        if not model and self.internal_model:
+        if not isinstance(model, models.BaseModel)  and self.internal_model:
             model = self.env[self.internal_model]
-        if model:
-            return model.browse(self.internal_odoo_id)
+        if isinstance(model, models.BaseModel):
+            return model.with_context(active_test=False).browse(self.internal_odoo_id)
         return model
 
     # @savepoint

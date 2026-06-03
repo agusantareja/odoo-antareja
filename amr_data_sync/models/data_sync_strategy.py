@@ -82,7 +82,7 @@ class ExternalDataSyncStrategy(models.Model):
         ('jsonrpc', 'Json-RPC'),
         ('rest', 'Rest'),
         ('method_call', 'Method Call'),
-    ], default='jsonrpc')
+    ], default='jsonrpc', help="Deprecated Depend and move ot sync server")
 
     parent_sync_strategy_id = fields.Many2one(
         'external.data.sync.strategy',
