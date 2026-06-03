@@ -16,7 +16,6 @@ EXCLUDE_MODELS = {
     'res.groups',
     'res.company',
     'res.config.settings',
-    'user.delegate',
 
     # Messaging
     'mail.message',
@@ -141,8 +140,20 @@ class DataEventMixin(models.AbstractModel):
         if not changed:
             return
 
+        filter_expr = config.filter_expr
+        filter_expr = filter_expr and filter_expr.strip()
+
+        if filter_expr:
+            records = self.browse()
+
+            for record in self:
+                if safe_eval(filter_expr, {"record": record}):
+                    records |= record
+        else:
+            records = self
+
         AuditEvent = self.env['internal.data.event'].sudo()
-        for rec in self:
+        for rec in records:
             data = {
                 'name': rec.display_name,
                 'res_model': rec._name,
