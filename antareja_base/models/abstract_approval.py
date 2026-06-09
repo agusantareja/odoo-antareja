@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
+
 from ..tools.utils import have_method
 
 
@@ -11,6 +12,232 @@ class ApprovalAccessMixin(models.AbstractModel):
     access_approval = fields.Boolean(
         string="Can Approve",
     )
+
+
+class ApprovalTieredMatrixRuleMixin(models.Model):
+    _name = "approval.matrix.rule.mixin"
+    _description = """ """
+
+    def get_approval_matrix_rule(self, **kwargs):
+        raise NotImplementedError(
+            "Method get_approval_matrix_rule harus diimplementasikan di model yang mewarisi ApprovalMatrixRuleMixin"
+        )
+
+    def get_approval_line(self, **kwargs):
+        raise NotImplementedError(
+            "Method get_approval_line harus diimplementasikan di model yang mewarisi ApprovalMatrixRuleMixin"
+        )
+
+    def prepare_list_approval_task_line(self, **kwargs):
+        raise NotImplementedError(
+            "Method get_approval_matrix_rule harus diimplementasikan di model yang mewarisi ApprovalMatrixRuleMixin"
+        )
+
+
+class ApprovalTaskLineAssignmentMixin(models.AbstractModel):
+    _name = "approval.task.line.assignment.mixin"
+    _description = "Mixin : Approval Task Line Assignment"
+
+    responsible_user_id = fields.Many2one('res.users', 'Responsible User')
+
+    def search_responsible_user(self, user_id):
+        return self.search([('responsible_user_id', '=', user_id)])
+
+    def revoke_assignment(self):
+        self.write({
+            'responsible_user_id': False,
+        })
+
+    def do_assignment(self, new_user_id, reason=None):
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        self.env['approval.task.assignment.history'].sudo().create([{
+            'task_line_id': self.id,
+            'task_line_model': self._name,
+            'from_user_ids': [(6, 0, old_users.ids)] if old_users else [],
+            'new_user_id': int(new_user_id),
+            'reason': reason,
+            'reassigned_by': self.env.uid
+        }])
+        self.write({
+            'responsible_user_id': int(new_user_id),
+        })
+        if have_method(self, "register_to_approval_task"):
+            self.register_to_approval_task()
+
+    def action_assignment(self):
+        self.ensure_one()
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        # call wizard to select new user and reason
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reassign Approval Task',
+            'res_model': 'approval.task.line.assignment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_task_line_id': self.id,
+                'default_task_line_model': self._name,
+                'default_from_user_ids': old_users.ids if old_users else [],
+            }
+        }
+
+
+class ApprovalTaskLineAccess(models.AbstractModel):
+    _name = "approval.task.line.access.mixin"
+
+    access_approval = fields.Boolean(
+        string="Can Approve",
+        compute="_compute_access_rights",
+        store=False,
+    )
+
+    @api.depends_context('uid')
+    def _compute_access_rights(self):
+        """Hitung apakah user login punya akses approve/reject."""
+        current_user = self.env.user
+        for rec in self:
+            rec.access_approval = current_user in rec.get_users_for_approval()
+
+    def get_users(self):
+        return self.env['res.users'].browse()
+
+    def get_groups(self):
+        return self.env['res.groups'].browse()
+
+    def prepare_approval_task_dict(self):
+        """Prepare dict untuk create record approval task."""
+        self.ensure_one()
+        kw = {
+            'approval_task_line': self,
+            'approval_model': self._name,
+            'approval_res_id': self.id,
+        }
+        return kw
+
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_approval(company=company)
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_notification(company=company)
+
+
+class ApprovalTaskLineAssignmentMixin(models.AbstractModel):
+    _name = "approval.task.line.assignment.mixin"
+    _description = "Mixin : Approval Task Line Assignment"
+
+    responsible_user_id = fields.Many2one('res.users', 'Responsible User')
+
+    def search_responsible_user(self, user_id):
+        return self.search([('responsible_user_id', '=', user_id)])
+
+    def revoke_assignment(self):
+        self.write({
+            'responsible_user_id': False,
+        })
+
+    def do_assignment(self, new_user_id, reason=None):
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        self.env['approval.task.assignment.history'].sudo().create([{
+            'task_line_id': self.id,
+            'task_line_model': self._name,
+            'from_user_ids': [(6, 0, old_users.ids)] if old_users else [],
+            'new_user_id': int(new_user_id),
+            'reason': reason,
+            'reassigned_by': self.env.uid
+        }])
+        self.write({
+            'responsible_user_id': int(new_user_id),
+        })
+        if have_method(self, "register_to_approval_task"):
+            self.register_to_approval_task()
+
+    def action_assignment(self):
+        self.ensure_one()
+        if have_method(self, 'get_users'):
+            old_users = self.get_users()
+        else:
+            old_users = self.responsible_user_id
+        # call wizard to select new user and reason
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reassign Approval Task',
+            'res_model': 'approval.task.line.assignment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_task_line_id': self.id,
+                'default_task_line_model': self._name,
+                'default_from_user_ids': old_users.ids if old_users else [],
+            }
+        }
+
+
+class ApprovalTaskLineAccess(models.AbstractModel):
+    _name = "approval.task.line.access.mixin"
+
+    access_approval = fields.Boolean(
+        string="Can Approve",
+        compute="_compute_access_rights",
+        store=False,
+    )
+
+    @api.depends_context('uid')
+    def _compute_access_rights(self):
+        """Hitung apakah user login punya akses approve/reject."""
+        current_user = self.env.user
+        for rec in self:
+            rec.access_approval = current_user in rec.get_users_for_approval()
+
+    def get_users(self):
+        return self.env['res.users'].browse()
+
+    def get_groups(self):
+        return self.env['res.groups'].browse()
+
+    def prepare_approval_task_dict(self):
+        """Prepare dict untuk create record approval task."""
+        self.ensure_one()
+        kw = {
+            'approval_task_line': self,
+            'approval_model': self._name,
+            'approval_res_id': self.id
+        }
+        return kw
+
+    def get_users_for_approval(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_approval(company=company)
+
+    def get_users_for_notification(self, **kwargs):
+        record = self.ensure_one()
+        users = kwargs.get('users') or record.get_users()
+        company = None
+        if 'company_id' in self._fields:
+            company = self.company_id
+        return users.get_users_for_notification(company=company)
 
 
 class ApprovalTaskLineAssignmentMixin(models.AbstractModel):
@@ -194,7 +421,7 @@ class AbstractApprovalType(models.AbstractModel):
         kw = {
             'approval_task_line': self,
             'approval_model': self._name,
-            'approval_res_id': self.id
+            'approval_res_id': self.id,
         }
         if self.responsible_user_id:
             kw['user_ids'] = self.responsible_user_id
@@ -255,7 +482,7 @@ class AbstractApprovalAccess(models.AbstractModel):
         string="Can Approve",
         compute="_compute_access_rights",
         search='search_filter_access_approval',
-        store=False
+        store=False,
     )
 
     def _compute_access_rights(self):
@@ -350,7 +577,7 @@ APPROVAL_STATUS_LIST = [
     (APPROVAL_STATUS_NOT_APPROVE, 'Waiting Approval'),
     (APPROVAL_STATUS_APPROVED, 'Approved'),
     (APPROVAL_STATUS_REJECTED, 'Rejected'),
-    (APPROVAL_STATUS_CANCELLED, 'Cancelled')
+    (APPROVAL_STATUS_CANCELLED, 'Cancelled'),
 ]
 
 

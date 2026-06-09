@@ -2,7 +2,7 @@
 
 import logging
 
-from odoo import api, fields, models
+from odoo import fields, models
 from odoo.exceptions import UserError
 
 from ..tools.utils import have_method, safe_call_method
@@ -76,9 +76,13 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         if self:
             transaction_model_name = self[0].transaction_model_name
             transaction_id = self[0].transaction_id
-            return self.env['approval.instance'].search(
-                [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
-                limit=1)
+            return self.env["approval.instance"].search(
+                [
+                    ('transaction_id', '=', transaction_id),
+                    ('transaction_model_name', '=', transaction_model_name),
+                ],
+                limit=1,
+            )
         return self.env['approval.instance'].browse()
 
     def get_all_approval_task_line(self, transaction_id=None, transaction_model_name=None):
@@ -91,7 +95,11 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         if not transaction_model_name or not transaction_id:
             raise UserError(" Transaction not set ")
         return self.search(
-            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)])
+            [
+                ('transaction_id', '=', transaction_id),
+                ('transaction_model_name', '=', transaction_model_name),
+            ]
+        )
 
     def get_previous_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         end_task = self.ensure_one()
@@ -105,8 +113,13 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
     def get_last_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         return self.search(
-            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
-            order='id desc', limit=1)
+            [
+                ('transaction_id', '=', transaction_id),
+                ('transaction_model_name', '=', transaction_model_name),
+            ],
+            order="id desc",
+            limit=1,
+        )
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         if not transaction_id or not transaction_model_name:
@@ -122,7 +135,6 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         return result
 
     def register_approval_task(self, **kwargs):
-
         return self.register_to_approval_task(**kwargs)
 
     def register_to_approval_task(self, **kwargs):
@@ -160,7 +172,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 return transaction_object.create_approval_log(**kw)
             kw.update(
                 transaction_id=transaction_object.id,
-                transaction_model_name=transaction_object._name
+                transaction_model_name=transaction_object._name,
             )
         return self.env['approval.audit.log'].create_audit_log(**kw)
 
@@ -194,12 +206,15 @@ class ApprovalTaskLineMixin(models.AbstractModel):
     def set_rejected_status(self, **kwargs):
         if have_method(self, "set_reject_state"):
             self.set_reject_state()
-        self.write({
-            'user_execution_id': self.env.uid,
-            'date_execution': fields.Datetime.now(),
-            'reject_reason': kwargs.get('reject_reason') or kwargs.get('reason') or self.env.context.get(
-                '__reject_reason')
-        })
+        self.write(
+            {
+                'user_execution_id': self.env.uid,
+                'date_execution': fields.Datetime.now(),
+                'reject_reason': kwargs.get('reject_reason')
+                or kwargs.get('reason')
+                or self.env.context.get('__reject_reason'),
+            }
+        )
 
     def set_waiting_status(self, **kwargs):
         if have_method(self, "set_waiting_approval_state"):
@@ -308,8 +323,9 @@ class ApprovalTaskLineMixin(models.AbstractModel):
                 approval_task_line_next, approval_task_line_between = self.reject_method_legacy(reason, **kwargs)
             else:
                 approval_task_line_next = kwargs.get('approval_task_line_next')
-                approval_task_line_between = kwargs.get('approve_task_line_between') or self.get_approval_start_task(
-                    approval_task_line_next)
+                approval_task_line_between = kwargs.get(
+                    'approve_task_line_between'
+                ) or self.get_approval_start_task(approval_task_line_next)
             is_approval_done = not approval_task_line_next
         if is_approval_done:
             kw['is_approval_done'] = True
@@ -384,12 +400,13 @@ class ApprovalTaskLineMixin(models.AbstractModel):
 
 class ApprovalTaskLine(models.Model):
     _name = 'approval.task.line'
-    _inherit = ['approval.task.line.assignment.mixin',
-                'approval.task.line.mixin',
-                'abstract.approval.status',
-                'abstract.approval.access',
-                'approval.transaction.view.able.mixin'
-                ]
+    _inherit = [
+        'approval.task.line.assignment.mixin',
+        'approval.task.line.mixin',
+        'abstract.approval.status',
+        'abstract.approval.access',
+        'approval.transaction.view.able.mixin',
+    ]
     _description = 'This is Approval Task Line for Approval helper waiting approval'
     _order = 'id'
 
@@ -406,10 +423,10 @@ class ApprovalTaskLine(models.Model):
             elif rec.type_approval == 'group' and rec.group_id:
                 type_name = f"Group - {rec.group_id.name}"
             elif rec.type_approval == 'multi_group' and rec.group_ids:
-                groups_name = ",".join([r.name for r in rec.group_ids])
+                groups_name = ",".join(r.name for r in rec.group_ids)
                 type_name = f"Groups - [{groups_name}]"
             elif rec.type_approval == 'multi_user' and rec.user_ids:
-                groups_name = ",".join([r.name for r in rec.user_ids])
+                groups_name = ",".join(r.name for r in rec.user_ids)
                 type_name = f"Users - [{groups_name}]"
             result.append((rec.id, type_name))
 
@@ -441,8 +458,12 @@ class ApprovalTaskLine(models.Model):
         transaction_id = transaction_id or self.transaction_id
         transaction_model_name = transaction_model_name or self.transaction_model_name
         return self.search(
-            [('transaction_id', '=', transaction_id), ('transaction_model_name', '=', transaction_model_name)],
-            order='id asc')
+            [
+                ('transaction_id', '=', transaction_id),
+                ('transaction_model_name', '=', transaction_model_name),
+            ],
+            order='id asc',
+        )
 
     def get_next_approval_task_line(self, transaction_id=None, transaction_model_name=None):
         # transaction_id = transaction_id or self.transaction_id
@@ -482,5 +503,5 @@ class ApprovalTaskLine(models.Model):
         self.send_notification(**kwargs)
 
     def send_notification(self, **kwargs):
-        # implment di module notification
+        # implement di module notification
         pass

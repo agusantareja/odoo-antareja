@@ -19,16 +19,24 @@ class ResGroups(models.Model):
             return self.users.get_users_for_approval(company=company)
         return self.users.browse()
 
-    def prepare_dict_approval_task_line(self):
-        if self:
-            if len(self.ids) > 1:
-                return {
-                    'type_approval': 'multi_group',
-                    'group_ids': self.ids,
-                }
-            else:
-                return {
-                    'type_approval':'group',
-                    'group_ids': self.id,
-                }
-        return {}
+    def prepare_dict_approval_task_line(self, **kwargs):
+        if not self:
+            return {}
+        line_id = self._context.get('approval_matrix_rule_line_id')
+        if line_id:
+            line = self.env['approval.matrix.rule.line'].browse(line_id)
+            res = line.prepare_dict_approval_task_line(**kwargs) or {}
+        else:
+            res = {}
+
+        if len(self.ids) > 1:
+            res.update({
+                'type_approval': 'multi_group',
+                'group_ids': self.ids,
+            })
+        else:
+            res = {
+                'type_approval': 'group',
+                'group_id': self.id,
+            }
+        return res

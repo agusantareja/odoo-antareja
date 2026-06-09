@@ -33,19 +33,22 @@ def safe_call_method(obj, method_name, args=None, kwargs=None):
     - method harus callable
     - args disesuaikan dengan signature
     """
-
-    if not isinstance(obj,models.BaseModel) and not obj :
+    if not obj and not isinstance(obj, models.BaseModel):
+        _logger.warning(f"Object not eligible process {obj}")
         return None
 
     if not method_name or not isinstance(method_name, str):
+        _logger.warning(f"Object not eligible process {obj}")
         return None
 
     if not hasattr(obj, method_name):
-        raise AttributeError(f"Method {method_name} not found")
+        _logger.warning(f"Method {method_name} not found")
+        return None
 
     method = getattr(obj, method_name, None)
     if not callable(method):
-        raise AttributeError(f"Callable method '{method_name}' not found on {obj}")
+        _logger.warning(f"Callable method '{method_name}' not found on {obj}")
+        return None
 
     # === signature aware ===
     sig = inspect.signature(method)

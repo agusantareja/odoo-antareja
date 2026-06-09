@@ -9,10 +9,8 @@
                   parent="base_parent_menu"
                   sequence="12"
     />
-    <menuitem id="base_notification_menu"
-                  name="Notification"
+    <menuitem id="base_notification_menu" name="Notification" sequence="14"
                   parent="base_parent_menu"
-                  sequence="14"
     />
     <menuitem id="base_task_approval_menu"
                   name="Task Approval"
@@ -24,6 +22,11 @@
               action="action_approval_template"
               sequence="20"
     />
+    <menuitem id="approval_matrix_rule" name="Approval Matrix" parent="base_task_approval_menu"
+              action="action_approval_matrix_rule" sequence="21" groups="base.user_admin"
+    />
+
+
     <menuitem id="approval_instance_menu"
               parent="base_task_approval_menu"
               action="action_approval_instance"
@@ -40,6 +43,9 @@
               name="Manager Approved"
               action="view_approval_audit_log_action"
               sequence="50"
+    />
+    <menuitem id="approval_task_assignment_history_menu" name="Task Assignment" sequence="50"
+              action="approval_task_assignment_history_action" parent="base_task_approval_menu"
     />
 
     <menuitem id="base_reporting_menu"

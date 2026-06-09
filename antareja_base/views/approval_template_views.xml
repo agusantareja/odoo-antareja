@@ -22,20 +22,12 @@
         <field name="arch" type="xml">
             <form string="Approval Template">
                 <header>
-<!--                    <field name="active" invisible="1"/>-->
-
-<!--                    <button name="action_try_config"-->
-<!--                            string="Try Config"-->
-<!--                            type="object"-->
-<!--                            class="btn-secondary"/>-->
+                    <field name="model" invisible="1"/>
                 </header>
                 <sheet>
                     <group>
                         <group>
-<!--                            <field name="name"/>-->
-<!--                            <field name="sequence"/>-->
-                            <field name="model_id"/>
-                            <field name="approval_task_line_model_id"/>
+                            <field name="model_id" options="{'no_create': True}"/>
                             <field name="view_name"/>
                         </group>
                     </group>
@@ -45,6 +37,7 @@
                                    placeholder="Enter Python code here. Help about Python expression is available in the help tab of this document."
                             />
                         </page>
+
                         <page string="Help" name="help_info" autofocus="autofocus" >
                                 <div style="margin-top: 4px;">
                                     <h3>Help with Python expressions</h3>
@@ -66,9 +59,13 @@
                                     </div>
                                 </div>
                             </page>
-                        <page string="Approval Default">
+                        <page string="Approval">
                             <group>
-                                <group>
+                                <group string="Approval Matrix/Line">
+                                    <field name="approval_matrix_id" string="Approval Matrix"/>
+                                    <field name="approval_task_line_model_id" string="Approval Task Line" options="{'no_create': True}" />
+                                </group>
+                                <group string="Approval Default">
                                     <field name="type_approval_default"/>
                                     <field name="groups_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_group')]}"/>
                                     <field name="users_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_user')]}"/>
@@ -114,8 +111,8 @@
 
     <record id="approval_template_migrate_action" model="ir.actions.server" >
         <field name="name">Migrate Approval Template</field>
-        <field name="model_id" ref="antareja_base.model_approval_template" />
-        <field name="binding_model_id" ref="antareja_base.model_approval_template" />
+        <field name="model_id" ref="model_approval_template" />
+        <field name="binding_model_id" ref="model_approval_template" />
         <field name="state">code</field>
         <field name="code">
 records.migrate_approval_task()

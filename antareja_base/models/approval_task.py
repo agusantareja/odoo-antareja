@@ -74,9 +74,7 @@ class ApprovalTask(models.Model):
         'res.users', compute='_compute_approval_user_ids', compute_sudo=True
     )
 
-    assignment_able = fields.Boolean(
-        compute='_compute_assignment_able'
-    )
+    assignment_able = fields.Boolean(compute='_compute_assignment_able')
 
     def _compute_approval_user_ids(self):
         for rec in self:
@@ -272,12 +270,18 @@ class ApprovalTask(models.Model):
             if not rec.document and not kw.get('document') and have_method(transaction_object, 'get_internal_document'):
                 kw['document'] = transaction_object.get_internal_document()
 
-            if not rec.description and not kw.get('description') and have_method(transaction_object,
-                                                                                 'get_internal_description'):
+            if (
+                not rec.description
+                and not kw.get('description')
+                and have_method(transaction_object, 'get_internal_description')
+            ):
                 kw['description'] = transaction_object.get_internal_description()
 
-            if not rec.requester_id and not kw.get('requester_id') and have_method(transaction_object,
-                                                                                   'get_internal_requester_id'):
+            if (
+                not rec.requester_id
+                and not kw.get('requester_id')
+                and have_method(transaction_object, 'get_internal_requester_id')
+            ):
                 kw['requester_id'] = transaction_object.get_internal_requester_id()
 
             if not rec.url and 'url' not in kw and have_method(transaction_object, 'get_internal_url'):
@@ -369,7 +373,7 @@ class ApprovalTask(models.Model):
         users = kwargs.get('users')
         if not isinstance(users, models.BaseModel):
             users = record.get_users()
-        #users = kwargs.get('users') or record.get_users()
+        # users = kwargs.get('users') or record.get_users()
         if users:
             return users.get_users_for_approval(company=self.company_id)
         else:
@@ -403,8 +407,9 @@ class ApprovalTask(models.Model):
 
     def _compute_assignment_able(self):
         for rec in self:
-            rec.assignment_able = self.approval_model in self.env \
-                                  and have_method(self.env[self.approval_model], 'action_assignment')
+            rec.assignment_able = self.approval_model in self.env and have_method(
+                self.env[self.approval_model], "action_assignment"
+            )
 
     def action_assign(self):
         return self.action_assignment()

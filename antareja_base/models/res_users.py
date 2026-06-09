@@ -97,16 +97,23 @@ class ResUsers(models.Model):
             'user_delegate_ids': []
             }
 
-    def prepare_dict_approval_task_line(self):
-        if self:
-            if len(self.ids) > 1:
-                return {
-                    'type_approval': 'multi_user',
-                    'user_ids': self.ids,
-                }
-            else:
-                return {
-                    'type_approval': 'user',
-                    'user_id': self.id,
-                }
-        return {}
+    def prepare_dict_approval_task_line(self, **kwargs):
+        if not self:
+            return {}
+        line = self._context.get('approval_matrix_rule_line')
+        if line:
+            res = line.prepare_dict_approval_task_line(**kwargs) or {}
+        else:
+            res = {}
+        if len(self.ids) > 1:
+            res.update({
+                'type_approval': 'multi_user',
+                'user_ids': self.ids,
+            })
+        else:
+            res.update({
+                'type_approval': 'user',
+                'user_id': self.id,
+            })
+
+        return res

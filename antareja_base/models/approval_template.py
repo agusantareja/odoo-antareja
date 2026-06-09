@@ -34,9 +34,31 @@ class ApprovalTemplateMixin(models.AbstractModel):
     model_id = fields.Many2one('ir.model')
     model = fields.Char(related='model_id.model')
 
+    action_id = fields.Many2one(
+        'ir.actions.act_window',
+        'Window Transaction',
+        domain="[('res_model', '=', model)]",
+    )
+    menu_id = fields.Many2one(
+        'ir.ui.menu',
+        'Menu Transaction',
+    )
+    # approval.matrix.mixin
+    approval_matrix_id = fields.Many2one(
+        "approval.matrix.rule.mixin", string="Approval Matrix"
+    )
+    approval_matrix_model = fields.Char()
     # approval.task.line.mixin
     approval_task_line_model_id = fields.Many2one('ir.model')
-    approval_task_line_model = fields.Char(related='approval_task_line_model_id.model')
+    approval_task_line_model = fields.Char(
+        related='approval_task_line_model_id.model'
+    )
+
+    view_id = fields.Many2one(
+        'ir.ui.view',
+        'Form Transaction',
+        domain="[('model', '=', model)]",
+    )
 
     view_name = fields.Char()
 
@@ -115,12 +137,15 @@ class ApprovalTemplateMixin(models.AbstractModel):
         response = {
             'approval_instance': approval_instance,
             'transaction_object': transaction_object,
+            'transaction_model_name': self.model,
             'approval_template': self,
         }
-        return {
+
+        result = {
             'env': self.env,
             'uid': self._uid,
             'user': self.env.user,
+            'ref': self.env.ref,
             # 'time': tools.safe_eval.time,
             # 'datetime': tools.safe_eval.datetime,
             # 'dateutil': tools.safe_eval.dateutil,
@@ -133,6 +158,8 @@ class ApprovalTemplateMixin(models.AbstractModel):
             'transaction_object': transaction_object,
             'response': response
         }
+        result.update(response)
+        return result
 
     @api.constrains('code')
     def _check_python_code(self):
@@ -158,6 +185,11 @@ class ApprovalTemplateMixin(models.AbstractModel):
 
         return self.search([('model_id.model', '=', transaction_model_name)], limit=1)
 
+    def get_approval_matrix_model(self, default='approval.matrix.rule'):
+        if self.approval_matrix_id:
+            return self.approval_matrix_id._name
+        return default
+
     @api.model
     def get_notification_approval(self):
         return None
@@ -179,6 +211,8 @@ class ApprovalTemplate(models.Model):
     _sql_constraints = [
         ('model_id_unique', 'unique(model_id)', 'Model must be uniq!')
     ]
+
+    approval_matrix_id = fields.Many2one("approval.matrix.rule", string="Matrix")
 
     def migrate_approval_task(self, raise_exception=True, skip_send_notification=True):
         env = self.env
