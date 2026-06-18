@@ -7,8 +7,8 @@
     'author': "Agus Muhammad Ramdan",
     'website': "http://www.agus.ramdan.tech",
     'category': 'Uncategorized',
-    'version': '13.0.1.0.3',
-    'depends': ['base', 'mail', 'ahda_dynamic_whatsapp_client', 'antareja_notification'],
+    'version': '13.0.2.0.1',
+    'depends': ['base', 'mail', 'ahda_dynamic_whatsapp_client', 'antareja_notification', 'amr_service_client'],
     # always loaded
     'data': [
         'data/cron.xml',

@@ -35,13 +35,13 @@ class WhatsAppLog(models.Model):
         else:
             api_server = self.api_id.search([],limit=1)
 
-        def build_headers():
-            try:
-                header = ast.literal_eval(api_server.header)
-            except Exception as e:
-                _logger.error("Error parsing headers for WhatsApp API ID %s: %s", api_server.id, e)
-                header = {}
-            return header
+        # def build_headers():
+        #     try:
+        #         header = ast.literal_eval(api_server.header)
+        #     except Exception as e:
+        #         _logger.error("Error parsing headers for WhatsApp API ID %s: %s", api_server.id, e)
+        #         header = {}
+        #     return header
 
         if not api_server:
             self.sudo().write({
@@ -49,7 +49,7 @@ class WhatsAppLog(models.Model):
                 'failure_reason': "No API Service. Please check config WhatsApp API Client",
             })
             return
-        headers = build_headers()
+        headers  = api_server.get_request_headers()
         payload = json.loads(self.payload)
         url = api_server.endpoint
         try:
