@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, _
 import ast
 import json
 import logging
+
 import requests
+
+from odoo import _, fields, models
 
 _logger = logging.getLogger(__name__)
 
+
 def have_method(obj, method):
     return hasattr(obj, method) and callable(getattr(obj, method))
+
 
 class WhatsAppLog(models.Model):
     _inherit = 'whatsapp.log'
@@ -65,13 +69,22 @@ class WhatsAppLog(models.Model):
                 if record and have_method(record, 'message_post'):
                     if self.template_id:
                         record.sudo().message_post(
-                        body=_('WhatsApp message is sent to %s via template %s' % (self.recipient_partner_id.name,self.template_id.name)),
-                        author_id=1,  # OdooBot partner_id is always 1
+                            body=_(
+                                'WhatsApp message is sent to %s via template %s'
+                                % (
+                                    self.recipient_partner_id.name,
+                                    self.template_id.name,
+                                )
+                            ),
+                            author_id=1,  # OdooBot partner_id is always 1
                         )
                     else:
                         record.sudo().message_post(
-                        body=_('WhatsApp message is sent to %s' % (self.recipient_partner_id.name,)),
-                        author_id=1,  # OdooBot partner_id is always 1
+                            body=_(
+                                'WhatsApp message is sent to %s'
+                                % (self.recipient_partner_id.name,)
+                            ),
+                            author_id=1,  # OdooBot partner_id is always 1
                         )
             self.sudo().write({
                 'status': 'sent',

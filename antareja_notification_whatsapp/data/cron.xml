@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <record model="ir.cron" id="notification_whatsapp_cron">
-    <field name="name">Notification Whatsapp Cron</field>
+    <field name="name">Notification WhatsApp Cron</field>
     <field name="model_id" ref="ahda_dynamic_whatsapp_client.model_whatsapp_log"/>
     <field name="state">code</field>
     <field name="code">model.cron_send()</field>

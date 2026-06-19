@@ -4,7 +4,7 @@ import json
 import logging
 import requests
 
-from odoo import models, fields, api, _
+from odoo import _ ,fields, models
 from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
