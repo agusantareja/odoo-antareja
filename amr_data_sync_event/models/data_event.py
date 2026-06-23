@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo.addons.amr_jsonrpc.utils import savepoint
+
 from odoo import models, fields
 import traceback
 import logging
@@ -39,7 +39,6 @@ class InternalDataSync(models.Model):
     ], default='pending', index=True)
     error_message = fields.Text()
 
-    @savepoint
     def write_error(self, stack_trace):
         error_data = {
             'error_message': stack_trace,
@@ -73,18 +72,15 @@ class InternalDataSync(models.Model):
                         data = self.data_ids.data_from_external(
                             item, sync_strategy, create_when_not_found=True
                         )
-
+                        # update company ensure same
+                        if data and self.company_id and data.company_id.id != self.company_id:
+                            data.write({'company_id': self.company_id.id})
                     data and data_ids.extend(data.ids)
-                # for strategy in self.strategy_ids:
-                #     strategy.process_data_event(self)
-                # self.state = 'done'
                 self.write({
                     'state': 'done',
                     'data_ids': [(6, 0, data_ids)]
                 })
         except Exception:
-            all_related_done = False
-            # todo clear cache odoo
             self.write_error(traceback.format_exc())
 
     def action_process(self):
