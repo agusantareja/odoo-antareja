@@ -4,9 +4,9 @@ import ast
 import json
 import logging
 import traceback
+import datetime
 
 from odoo import api, fields, models, SUPERUSER_ID
-from odoo.addons.amr_jsonrpc.utils import savepoint
 from odoo.tools import date_utils
 
 from ..tools.utils import is_callable_method
@@ -33,12 +33,12 @@ class ExternalDataSyncRelated(models.Model):
     )
     field_after_create = fields.Boolean()
     field_type = fields.Selection(
-        [('many2one', 'Many2one'), ('one2many', 'One2many'), ('many2many', 'Many2many')],
+        [('parent', 'Parent'),('many2one', 'Many2one'), ('one2many', 'One2many'), ('many2many', 'Many2many')],
     )
     state = fields.Selection([
         ('draft', 'Draft'), ('process', 'Process'), ('need_resolve', 'Need Resolve'),
         ('error', 'Error'), ('done', 'Done'),
-    ])
+    ],default='draft')
     data_json = fields.Text()
     internal_data_eval = fields.Text()
     related_external_data_sync_id = fields.Many2one(
@@ -47,6 +47,39 @@ class ExternalDataSyncRelated(models.Model):
     )
     mandatory_before_create = fields.Boolean()
     next_processing_datetime = fields.Datetime()
+
+    def get_relation_data(self,name,external_data_sync):
+        return self.search([('name','=',name),('external_data_sync_id','=',int(external_data_sync))])
+
+    def create_parent(self, name, external_data_sync,value):
+        sync_strategy = external_data_sync.sync_strategy_id
+        return self.create({
+            'name': name,
+            'field_type': 'parent',
+            'external_data_sync_id': external_data_sync.id,
+            'sync_strategy_id':sync_strategy.id,
+            'internal_model': sync_strategy.internal_model,
+            'data_json': json.dumps(value)
+        })
+
+    def create_many2one(self, name, external_data_sync, value, sync_strategy):
+        return self.create({
+            'name':name,
+            'field_type': 'many2one',
+            'external_data_sync_id': external_data_sync.id,
+            'sync_strategy_id': sync_strategy.id,
+            'internal_model': sync_strategy.internal_model,
+            'data_json':json.dumps(value)
+        })
+
+    def create_many2many(self,name,external_data_sync,value,sync_strategy):
+        return self.create({
+            'name':name,
+            'field_type': 'many2many',
+            'external_data_sync_id': external_data_sync.id,
+            'sync_strategy_id': sync_strategy.id,
+            'data_json':json.dumps(value)
+        })
 
     def get_All_data_relation(self):
         if self.env.context.get("__try_process_relation"):
@@ -69,41 +102,59 @@ class ExternalDataSyncRelated(models.Model):
         for related in self.with_context(__process_relation=True, __try_process_relation=True):
             related.process_data()
 
-    # @savepoint(rethrow=True)
     def process_field_after_create(self):
         if self.env.context.get("__process_relation") or self.env.context.get("__process_field_after_create"):
             _logger.info(f"rekursif terdekteksi {self.name} , {self.internal_model}")
             return
         self.with_context(__process_relation=True, __process_field_after_create=True).process_data()
 
-    def dispatch_process(self,run_immediate=False):
+    def process_with_handel_error(self):
+        try:
+            with self.env.cr.savepoint():
+                self.process_data()
+        except Exception:
+            _logger.exception("Error rec %s", self)
+            self.write_error_safe({
+                'error_info': traceback.format_exc(),
+                'state': 'error',
+                'last_error': fields.Datetime.now(),
+                'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
+            })
+
+    def dispatch_process(self, run_immediate=False):
         self.write({'state': 'process'})
         if run_immediate:
-            id_= self.id
-            with self.pool.cursor() as cr:
-                env = api.Environment(cr, self.env.uid, self.env.context)
-                rec = env[self._name].browse(id_)
-                try:
-                    rec.process_data()
-                    cr.commit()
-                except Exception:
-                    import datetime
-                    _logger.exception("Error rec %s", self)
-                    cr.rollback()
-                    rec = env[self._name].browse(id_)
-                    rec.write_error_safe({
-                        'error_info': traceback.format_exc(),
-                        'state': 'error',
-                        'last_error': fields.Datetime.now(),
-                        'next_processing_datetime': fields.Datetime.now() + datetime.timedelta(hours=1),
-                    })
+            self.process_with_handel_error()
 
-    # @savepoint(rethrow=True)
     def process_data(self):
         try:
             if not self.data_json:
                 return
             item = json.loads(self.data_json)
+            if self.sync_strategy_id.internal_id_same_as_external:
+                internal_id_offset = self.sync_strategy_id.internal_id_offset
+                if self.field_type in ['parent','many2one']:
+                    _logger.info("Parent do not need parse")
+                    internal_data_eval = None
+                    if isinstance(item, dict):
+                        internal_data_eval = item.get('id')
+                    if isinstance(item, list):
+                        internal_data_eval = item[0]
+                    if isinstance(item, int):
+                        internal_data_eval = item
+                    if internal_data_eval is not None:
+                        internal_data_eval += internal_id_offset
+                        self.internal_data_eval = str(internal_data_eval)
+                        self.state = 'done'
+                    return
+                elif self.field_type == 'many2many' and isinstance(item, list):
+                    item_list = item
+                    if internal_id_offset >0:
+                        item_list=[i + internal_id_offset for i in item]
+                    self.internal_data_eval = str(item_list)
+                    self.state = 'done'
+                    return
+
             if self.field_type == 'many2one':
                 if self.related_external_data_sync_id:
                     external_data_sync = self.related_external_data_sync_id
@@ -178,7 +229,6 @@ class ExternalDataSyncRelated(models.Model):
             _logger.error("Error process related data %s : %s", self.name, stack_trace)
             raise
 
-    # @savepoint(rethrow=True)
     def get_data_relation(self):
 
         if self.state != 'done':
@@ -234,6 +284,12 @@ class ExternalDataSyncRelated(models.Model):
         if existing:
             existing.write(update)
             return existing
+
+        if field_type == 'many2one' and related_external_data_sync_id:
+            if internal_model == external_data_sync_id.internal_model:
+                return self.create_parent(field_name, external_data_sync_id, value)
+            else:
+                return self.create_many2one(field_name, external_data_sync_id, value, related_external_data_sync_id)
 
         create_dict = {
             'name': field_name,

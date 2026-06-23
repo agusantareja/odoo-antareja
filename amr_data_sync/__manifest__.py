@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': "External Data Sync ",
-    'summary': """
-        Store infomation data from external system
-        """,
-    'description': """
-    """,
+    'summary': "Store information data from external system",
+    'description': "Store information data from external system",
     'author': "Agus Muhammad Ramdan",
     "license": "AGPL-3",
     'website': "http://agus.ramdan.tech",
     'category': 'API',
-    'version': '13.0.2.2.8',
-    'depends': ['base', 'mail', 'amr_jsonrpc'],
-    # always loaded
+    'version': '13.0.3.0.0',
+    'depends': ['base', 'mail', 'amr_resource', 'amr_service_client'],
     'data': [
         'security/ir.model.access.csv',
         'views/data_sync_views.xml',
@@ -24,7 +20,10 @@
         'views/data_sync_cron_views.xml',
         'views/data_lookup_views.xml',
         'views/data_mapping_views.xml',
+        'views/data_update_views.xml',
+        'views/res_config_settings_views.xml',
         'views/menuitem.xml',
+
         'data/cron.xml',
     ],
 }

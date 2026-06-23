@@ -10,6 +10,7 @@ from . import data_sync_server
 from . import data_sync_strategy
 from . import data_sync_cron
 from . import data_sync_exclude
+from . import data_update
 
 from . import internal_data
 
@@ -20,3 +21,5 @@ from . import res_currency
 from . import res_lang
 from . import res_partner
 from . import res_users
+
+from . import res_config_settings
