@@ -13,7 +13,7 @@ class NotificationTemplate(models.Model):
 
     template_whatsapp = fields.Many2one('whatsapp.template')
 
-    def send_notification_to_user_wa(self, notification_to_user, res_id,**kwargs):
+    def send_notification_to_user_wa(self, notification_to_user, res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
         self.ensure_one()
@@ -64,7 +64,12 @@ class NotificationTemplate(models.Model):
         phone_formatted = WhatsappTemplate._format_phone_number(phone)
         if not phone_formatted:
             if partner:
-                 _logger.warning("Invalid phone number for partner ID %s , name %s , %s", partner.id, partner.name,phone)
+                _logger.warning(
+                    "Invalid phone number for partner ID %s , name %s , %s",
+                    partner.id,
+                    partner.name,
+                    phone,
+                )
             else:
                 _logger.warning("Invalid phone number: %s", phone)
             return None
@@ -85,7 +90,7 @@ class NotificationTemplate(models.Model):
             create_dict['recipient_partner_id'] = partner.id
         return self.env['whatsapp.log'].sudo().create(create_dict)
 
-    def send_notification_to_user_whatsapp(self, notification_to_user, res_id,**kwargs):
+    def send_notification_to_user_whatsapp(self, notification_to_user, res_id, **kwargs):
         if not notification_to_user or not res_id:
             return
         if self.template_whatsapp and kwargs.get('send_notification_whatsapp', True):
@@ -93,9 +98,9 @@ class NotificationTemplate(models.Model):
 
         return None
 
-    def send_notification_to_user(self, notification_to_user, res_id,**kwargs):
-        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id,**kwargs) or {}
-        result = self.send_notification_to_user_whatsapp(notification_to_user, res_id,**kwargs)
+    def send_notification_to_user(self, notification_to_user, res_id, **kwargs):
+        notif_log = super(NotificationTemplate,self).send_notification_to_user(notification_to_user, res_id, **kwargs) or {}
+        result = self.send_notification_to_user_whatsapp(notification_to_user, res_id, **kwargs)
         if result:
             notif_log['whatsapp_id'] = result.ids[0]
             notif_log['whatsapp_model'] = result._name

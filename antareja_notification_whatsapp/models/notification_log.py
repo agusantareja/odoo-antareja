@@ -23,10 +23,14 @@ class NotificationLog(models.Model):
             }
 
     def send_whatsapp(self):
-        result = self.notification_template_id.with_user(self.user_id).send_notification_to_user_whatsapp(
-            self.receiver_id,self.res_id,
+        self.ensure_one()
+        result = self.notification_template_id.with_user(
+            self.user_id
+        ).send_notification_to_user_whatsapp(
+            self.receiver_id,
+            self.res_id,
             transaction_id=self.transaction_id,
-            transaction_model_name=self.transaction_model_name
+            transaction_model_name=self.transaction_model_name,
         )
         if result:
             self.write(result)

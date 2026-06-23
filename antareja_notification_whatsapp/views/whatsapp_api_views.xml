@@ -1,0 +1,22 @@
+<odoo>
+    <data>
+        <record id="whatsapp_api_form" model="ir.ui.view">
+            <field name="name">whatsapp.api.form</field>
+            <field name="model">whatsapp.api</field>
+            <field name="inherit_id" ref="ahda_dynamic_whatsapp_client.whatsapp_api_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//label[@for='header']" position="before">
+                    <label for="credential_id"/>
+                    <div>
+                        <field name="credential_id"/>
+                        <div class="form-text text-muted" style="margin-top:8px">
+                            Credential config
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
