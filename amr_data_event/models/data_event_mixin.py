@@ -2,6 +2,7 @@
 import logging
 
 from odoo import models
+from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ EXCLUDE_PREFIXES = (
     'approval.',
     'antareja.',
     'notification.'
-    'user.delegate.'
+    'user.delegation.'
     'whatsapp.'
 )
 
@@ -107,9 +108,10 @@ class DataEventMixin(models.AbstractModel):
                 'operation': 'create',
                 'changed_fields': "",
             }
-            if 'company_id' in self._fields:
-                data['company_id'] = int(rec.company_id)
-            AuditEvent.create(data)
+            if 'company_id' in rec._fields and rec.company_id:
+                data['company_id'] = rec.company_id.id
+            event = AuditEvent.create(data)
+            event.send_events()
 
     def _event_light_log_modified(self, vals):
         # safety
@@ -169,9 +171,10 @@ class DataEventMixin(models.AbstractModel):
                 'operation': 'write',
                 'changed_fields': ",".join(changed),
             }
-            if 'company_id' in self._fields:
-                data['company_id'] = int(rec.company_id)
-            AuditEvent.create(data)
+            if 'company_id' in rec._fields and rec.company_id:
+                data['company_id'] = rec.company_id.id
+            event = AuditEvent.create(data)
+            event.send_events()
 
     def _event_light_log_unlink(self):
         # safety
@@ -199,6 +202,7 @@ class DataEventMixin(models.AbstractModel):
                 'operation': 'unlink',
                 'changed_fields': "",
             }
-            if 'company_id' in self._fields:
-                data['company_id'] = int(rec.company_id)
-            AuditEvent.create(data)
+            if 'company_id' in rec._fields and rec.company_id:
+                data['company_id'] = rec.company_id.id
+            event = AuditEvent.create(data)
+            event.send_events()
