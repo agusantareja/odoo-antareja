@@ -8,7 +8,9 @@
     'website': "http://agus.ramdan.tech",
     'category': 'API',
     'version': '13.0.0.0.0',
-    'depends': ['base','amr_data_sync', 'queue_job'],
+    'depends': ['base', 'amr_data_sync', 'queue_job'],
     # always loaded
-    'data': [],
+    'data': [
+        "views/data_sync_views.xml",
+    ],
 }
