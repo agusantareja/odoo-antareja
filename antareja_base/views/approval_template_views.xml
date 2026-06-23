@@ -39,36 +39,38 @@
                         </page>
 
                         <page string="Help" name="help_info" autofocus="autofocus" >
-                                <div style="margin-top: 4px;">
-                                    <h3>Help with Python expressions</h3>
-                                    <p>Various fields may use Python code or Python expressions. The following variables can be used:</p>
-                                    <ul>
-                                        <li><code>env</code>: Odoo Environment on which the action is triggered</li>
-                                        <li><code>transaction_object</code>: TODO </li>
-                                        <li><code>time</code>, <code>datetime</code>, <code>dateutil</code>, <code>timezone</code>: useful Python libraries</li>
-                                        <li><code>log(message, level='info')</code>:logging function to record debug information in <code>ir.logging</code> table</li>
-                                        <li><code>UserError</code>: Warning Exception to use with <code>raise</code></li>
-                                        <li>To return an response, assign: <code> = {...}</code></li>
-                                        <li>Bila ingin custom approval line bisa memasukan data ke response['approval_line']</li>
-                                    </ul>
-                                    <div >
-                                        <p>Example of Python code</p>
+                            <div style="margin-top: 4px;">
+                                <h3>Help with Python expressions</h3>
+                                <p>Various fields may use Python code or Python expressions. The following variables can be used:</p>
+                                <ul>
+                                    <li><code>env</code>: Odoo Environment on which the action is triggered</li>
+                                    <li><code>transaction_object</code>: TODO </li>
+                                    <li><code>time</code>, <code>datetime</code>, <code>dateutil</code>, <code>timezone</code>: useful Python libraries</li>
+                                    <li><code>log(message, level='info')</code>:logging function to record debug information in <code>ir.logging</code> table</li>
+                                    <li><code>UserError</code>: Warning Exception to use with <code>raise</code></li>
+                                    <li>To return an response, assign: <code> = {...}</code></li>
+                                    <li>Bila ingin custom approval line bisa memasukan data ke response['approval_line']</li>
+                                </ul>
+                                <div >
+                                    <p>Example of Python code</p>
 <code style="white-space: pre-wrap">
 
 </code>
-                                    </div>
                                 </div>
-                            </page>
+                            </div>
+                        </page>
                         <page string="Approval">
                             <group>
                                 <group string="Approval Matrix/Line">
-                                    <field name="approval_matrix_id" string="Approval Matrix"/>
-                                    <field name="approval_task_line_model_id" string="Approval Task Line" options="{'no_create': True}" />
+                                    <field name="approval_mode" string="Matrix Mode"/>
+                                    <field name="approval_matrix_id" string="Matrix Id" attrs="{'invisible':[('approval_mode', '!=', 'matrix')]}"/>
+                                    <field name="approval_matrix_model_id" string="Model" attrs="{'invisible':[('approval_mode', '!=', 'model')]}"/>
+                                    <field name="approval_task_line_model_id" string="Approval Line" />
                                 </group>
                                 <group string="Approval Default">
                                     <field name="type_approval_default"/>
-                                    <field name="groups_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_group')]}"/>
-                                    <field name="users_approval_default_ids" attrs="{'invisible':[('type_approval_default','!=','multi_user')]}"/>
+                                    <field name="groups_approval_default_ids" attrs="{'invisible':[('type_approval_default', '!=', 'multi_group')]}"/>
+                                    <field name="users_approval_default_ids" attrs="{'invisible':[('type_approval_default', '!=', 'multi_user')]}"/>
                                 </group>
                             </group>
                         </page>

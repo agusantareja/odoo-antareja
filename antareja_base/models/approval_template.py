@@ -3,13 +3,14 @@
 import base64
 import logging
 
-from odoo import api, fields, models, tools
+from pytz import timezone
+
+from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare
 from odoo.tools.safe_eval import safe_eval, test_python_expr
-from pytz import timezone
 
-from ..tools.utils import safe_call_method
+from ..tools.utils import have_method, safe_call_method
 
 _logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ _logger = logging.getLogger(__name__)
 class ApprovalTemplateMixin(models.AbstractModel):
     _name = 'approval.template.mixin'
     _rec_name = 'model_id'
+
     DEFAULT_PYTHON_CODE = """# Available variables:
         #  - env: Odoo Environment on which the action is triggered
         #  - time, datetime, dateutil, timezone: useful Python libraries
@@ -44,11 +46,16 @@ class ApprovalTemplateMixin(models.AbstractModel):
         'Menu Transaction',
     )
     # approval.matrix.mixin
+    approval_mode = fields.Selection([
+        ('matrix', 'Approval Matrix'),
+        ('model', 'By Model'),
+    ], required=True, default='matrix')
     approval_matrix_id = fields.Many2one(
         "approval.matrix.rule.mixin", string="Approval Matrix"
     )
     approval_matrix_model = fields.Char()
-    # approval.task.line.mixin
+    approval_matrix_model_id = fields.Many2one('ir.model', string="Target Model")
+    # # approval.task.line.mixin
     approval_task_line_model_id = fields.Many2one('ir.model')
     approval_task_line_model = fields.Char(
         related='approval_task_line_model_id.model'
@@ -59,7 +66,6 @@ class ApprovalTemplateMixin(models.AbstractModel):
         'Form Transaction',
         domain="[('model', '=', model)]",
     )
-
     view_name = fields.Char()
 
     state_field = fields.Char()
@@ -190,6 +196,29 @@ class ApprovalTemplateMixin(models.AbstractModel):
             return self.approval_matrix_id._name
         return default
 
+    def get_approval_matrix(self, **kwargs):
+        self.ensure_one()
+        if self.approval_mode == 'matrix':
+            return self.approval_matrix_id
+        approval_matrix_model = self.get_approval_matrix_model()
+        if approval_matrix_model and approval_matrix_model in self.env:
+            matrix_model = self.env[approval_matrix_model]
+            return safe_call_method(
+                matrix_model, 'get_approval_matrix_rule', kwargs=kwargs
+            )
+
+    def get_approval_line_from_matrix(self, **kwargs):
+        self.ensure_one()
+        approval_matrix_rule = kwargs.get('approval_matrix_rule') or self.get_approval_matrix(**kwargs)
+        if have_method(approval_matrix_rule, 'prepare_list_approval_task_line'):
+            return safe_call_method(
+                approval_matrix_rule, 'prepare_list_approval_task_line', kwargs=kwargs
+            )
+        elif have_method(approval_matrix_rule, 'get_approval_task_line'):
+            return safe_call_method(
+                approval_matrix_rule, 'get_approval_task_line', kwargs=kwargs
+            )
+
     @api.model
     def get_notification_approval(self):
         return None
@@ -206,7 +235,9 @@ class ApprovalTemplateMixin(models.AbstractModel):
 class ApprovalTemplate(models.Model):
     _name = 'approval.template'
     _inherit = ['approval.template.mixin']
-    _description = """Template configurasi dari appporval tempalate agar lebih mudah untuk di register/unregister approval.task"""
+    _description = """
+    Template configuration from instance template easy register/unregister approval.task
+    """
 
     _sql_constraints = [
         ('model_id_unique', 'unique(model_id)', 'Model must be uniq!')
@@ -227,7 +258,9 @@ class ApprovalTemplate(models.Model):
                         transaction_id=rec.transaction_id
                     )
                     if approval_instance.is_status_waiting_approval():
-                        approval_instance.register_approval_transaction_task(skip_send_notification=skip_send_notification)
+                        approval_instance.register_approval_transaction_task(
+                            skip_send_notification=skip_send_notification
+                        )
                         transaction_ids.append(rec.transaction_id)
                     else:
                         approval_instance.unregister_approval_transaction_task()

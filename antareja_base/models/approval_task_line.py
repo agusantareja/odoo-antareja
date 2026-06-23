@@ -300,6 +300,7 @@ class ApprovalTaskLineMixin(models.AbstractModel):
         raise NotImplemented
 
     def do_reject(self, reason=None, **kwargs):
+        self.ensure_one()
         kw = dict(kwargs)
         if not self.access_approval:
             raise UserError("User not allow to reject")
