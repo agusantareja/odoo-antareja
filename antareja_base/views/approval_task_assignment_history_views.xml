@@ -1,4 +1,5 @@
 <odoo>
+
     <record id="view_approval_task_assignment_history_tree" model="ir.ui.view">
         <field name="name">approval.task.assignment.history.tree</field>
         <field name="model">approval.task.assignment.history</field>
