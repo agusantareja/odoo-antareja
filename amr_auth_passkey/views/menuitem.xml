@@ -1,0 +1,9 @@
+<odoo>
+
+    <!-- technical -->
+    <menuitem id="menu_res_users_passkey" name="User Passkey" sequence="110"
+              action="action_res_users_passkey" parent="base.menu_users" groups="base.group_no_one"
+
+    />
+
+</odoo>
