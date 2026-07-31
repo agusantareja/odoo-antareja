@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="login" inherit_id="web.login" name="QR Login">
+        <xpath expr="//form" position="after">
+            <a href="/qr-login" class="btn btn-link float-right" role="button">QR Login</a>
+        </xpath>
+    </template>
+</odoo>
