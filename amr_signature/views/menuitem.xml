@@ -1,0 +1,10 @@
+<odoo>
+
+
+    <!-- technical -->
+    <menuitem id="menu_signature" name="Digital Signatures" sequence="60"
+              action="action_signature"  parent="base.menu_users" groups="base.group_no_one"
+    />
+    />
+
+</odoo>
