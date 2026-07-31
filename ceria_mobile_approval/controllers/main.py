@@ -6,7 +6,7 @@ from odoo.http import request
 from odoo import registry as registry_get
 #from odoo.addons.cni_api.controllers.main import check_valid_token
 from odoo.addons.antareja_base.tools.rest import valid_response,invalid_response,get_body_json
-from odoo.addons.antareja_token.tools.utils import check_token_authorization
+#from odoo.addons.antareja_token.tools.utils import check_token_authorization
 try:
     import simplejson as json
 except ImportError:
@@ -17,8 +17,8 @@ _logger = logging.getLogger(__name__)
 
 class MainController(http.Controller):
 
-    @http.route('/api/intra/mobile/approval', methods=['POST'], type='http', auth='none', csrf=False)
-    @check_token_authorization
+    @http.route('/api/intra/mobile/approval', methods=['POST'], type='http', auth='machine', csrf=False)
+    #@check_token_authorization
     def post_mobile_approval(self,**post):
         data = post or get_body_json()
         if not data:
@@ -30,8 +30,7 @@ class MainController(http.Controller):
 
         return valid_response(200,result)
 
-    @http.route('/api/intra/mobile/approval', methods=['GET'], type='http', auth='none', csrf=False)
-    @check_token_authorization
+    @http.route('/api/intra/mobile/approval', methods=['GET'], type='http', auth='machine', csrf=False)
     def get_mobile_approval(self,**post):
         data = post
         new_registry = registry_get(request.session.get('db'))
@@ -40,8 +39,8 @@ class MainController(http.Controller):
             result = env['ceria.mobile.approval'].api_get_approvals(**data)
         return valid_response(200,result)
 
-    @http.route('/api/intra/mobile/approval/distinct', methods=['GET'], type='http', auth='none', csrf=False)
-    @check_token_authorization
+    @http.route('/api/intra/mobile/approval/distinct', methods=['GET'], type='http', auth='machine', csrf=False)
+    # @check_token_authorization
     def get_mobile_approval_distinct(self, **post):
         data = post
         new_registry = registry_get(request.session.get('db'))
