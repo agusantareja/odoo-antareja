@@ -8,7 +8,7 @@
     'website': "http://www.yourcompany.com",
     'category': 'Uncategorized',
     'version': '13.0.0.0.0',
-    'depends': ['base', 'mail', 'amr_approval', 'amr_esign_pdf'],
+    'depends': ['base', 'mail', 'antareja_base', 'amr_esign_pdf'],
     'data': [
 
         'views/approval_views.xml',

@@ -21,5 +21,5 @@ _logger = logging.getLogger(__name__)
 
 
 class PdfSign(models.Model):
-    _name = 'pdf.sign'
-    _inherit = [_name, 'approval.line.auto.register.mixin']
+    _inherit = 'pdf.sign'
+    # _inherit = [_name, 'approval.line.auto.register.mixin']
