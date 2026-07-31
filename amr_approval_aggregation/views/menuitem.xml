@@ -1,0 +1,9 @@
+<odoo>
+
+    <menuitem id="base_approval_aggregation_menu" name="Approval Aggregation" sequence="16"
+              parent="base_parent_menu"
+    />
+    <menuitem id="approval_aggregation_waiting_approval_menu" name="Manager Waiting" sequence="20"
+              action="approval_aggregation_waiting_approval_manager_action" parent="base_approval_menu"
+    />
+</odoo>
